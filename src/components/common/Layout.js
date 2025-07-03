@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X } from 'lucide-react';
+import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Layout = () => {
