@@ -18,8 +18,9 @@ const DocumentHistory = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await documentAPI.getDocuments();
-      setDocuments(data);
+      const response = await documentAPI.getDocuments();
+      // API returns { documents, total, hasMore }
+      setDocuments(response.documents || []);
     } catch (err) {
       console.error('Failed to load documents:', err);
       setError('Failed to load document history. Please try again.');
@@ -158,10 +159,10 @@ const DocumentHistory = () => {
                           <FileText className="h-5 w-5 text-gray-400 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {getDocumentTypeLabel(doc.document_type)}
+                              {getDocumentTypeLabel(doc.documentType || doc.document_type)}
                             </p>
                             <p className="text-sm text-gray-500">
-                              Case #{doc.case_info?.case_number || 'N/A'}
+                              Case #{doc.caseNumber || doc.case_info?.case_number || 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -169,21 +170,21 @@ const DocumentHistory = () => {
                         <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Building className="h-4 w-4 mr-1" />
-                            {doc.metadata?.vasp_name || 'Unknown VASP'}
+                            {doc.vaspName || doc.metadata?.vasp_name || 'Unknown VASP'}
                           </div>
                           <div className="flex items-center">
                             <Hash className="h-4 w-4 mr-1" />
-                            {doc.transactions?.length || 0} transactions
+                            {doc.transactionDetails ? JSON.parse(doc.transactionDetails).length : 0} transactions
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {formatDate(doc.created_at)}
+                            {formatDate(doc.createdAt || doc.created_at)}
                           </div>
                         </div>
                         
-                        {doc.case_info?.crime_description && (
+                        {(doc.crimeDescription || doc.case_info?.crime_description) && (
                           <p className="mt-1 text-sm text-gray-600 line-clamp-1">
-                            {doc.case_info.crime_description}
+                            {doc.crimeDescription || doc.case_info.crime_description}
                           </p>
                         )}
                       </div>
@@ -248,12 +249,12 @@ const DocumentHistory = () => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Case Information</h4>
                     <div className="mt-1 text-sm text-gray-600">
-                      <p>Case Number: {selectedDocument.case_info?.case_number || 'N/A'}</p>
-                      {selectedDocument.case_info?.statute && (
-                        <p>Statute: {selectedDocument.case_info.statute}</p>
+                      <p>Case Number: {selectedDocument.caseNumber || selectedDocument.case_info?.case_number || 'N/A'}</p>
+                      {(selectedDocument.statute || selectedDocument.case_info?.statute) && (
+                        <p>Statute: {selectedDocument.statute || selectedDocument.case_info.statute}</p>
                       )}
-                      {selectedDocument.case_info?.crime_description && (
-                        <p className="mt-1">{selectedDocument.case_info.crime_description}</p>
+                      {(selectedDocument.crimeDescription || selectedDocument.case_info?.crime_description) && (
+                        <p className="mt-1">{selectedDocument.crimeDescription || selectedDocument.case_info.crime_description}</p>
                       )}
                     </div>
                   </div>
