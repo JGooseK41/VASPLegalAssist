@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Eye } from 'lucide-react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 import SmartTemplateUpload from './SmartTemplateUpload';
 import MarkerMappingEditor from './MarkerMappingEditor';

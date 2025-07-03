@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, X, Eye, Map } from 'lucide-react';
+import { Upload, FileText, AlertCircle, CheckCircle, Map } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 
 const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const [file, setFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadResponse, setUploadResponse] = useState(null);
@@ -62,7 +61,6 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
       const response = await templateAPI.uploadTemplate(formData);
       
       setUploadResponse(response);
-      setUploadProgress(100);
       
       if (response.validation.warnings.length > 0) {
         console.warn('Template warnings:', response.validation.warnings);
