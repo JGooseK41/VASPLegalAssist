@@ -29,7 +29,11 @@ const Layout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <Shield className="h-8 w-8 mr-3" />
+              <img 
+                src="data:image/png;base64,YOUR_BASE64_CODE_HERE" 
+                alt="The Block Audit Logo" 
+                className="h-10 w-auto mr-3"
+              />
               <h1 className="text-xl font-bold">VASP Legal Process Assistant</h1>
             </div>
 

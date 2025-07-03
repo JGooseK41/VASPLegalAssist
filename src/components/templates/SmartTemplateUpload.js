@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, Map } from 'lucide-react';
+import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 
 const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
@@ -7,6 +7,7 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadResponse, setUploadResponse] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
   const [templateData, setTemplateData] = useState({
     templateName: '',
     templateType: 'letterhead',
@@ -83,11 +84,68 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   return (
     <div className="bg-white shadow-lg rounded-lg p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Upload Smart Template</h2>
-        <p className="text-sm text-gray-600">
-          Upload a document template with smart markers like {'{{VASP_NAME}}'}, {'{{CASE_NUMBER}}'}, etc.
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Upload Smart Template</h2>
+            <p className="text-sm text-gray-600">
+              Upload your personalized document template with smart placeholders for automatic data filling.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowHelp(!showHelp)}
+            className="text-blue-600 hover:text-blue-800 p-2"
+            title="Template creation guide"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </button>
+        </div>
       </div>
+
+      {showHelp && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-blue-900 mb-2">How to Create Your Personalized Template</h3>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                  <li><strong>Start with your existing document</strong> - Use your agency's official letterhead or subpoena template in Word format</li>
+                  <li><strong>Add smart placeholders</strong> - Replace static text with placeholders in double curly braces: {`{{PLACEHOLDER_NAME}}`}</li>
+                  <li><strong>Save and upload</strong> - Save your Word document and upload it here. Give it a memorable name!</li>
+                  <li><strong>Reuse anytime</strong> - Your template will be saved to your account and available for all future sessions</li>
+                </ol>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-blue-900 mb-2">Common Placeholders You Can Use:</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{VASP_NAME}}`} - Service provider name</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{CASE_NUMBER}}`} - Case reference</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{DATE}}`} - Current date</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{AGENT_NAME}}`} - Your name</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{AGENCY_NAME}}`} - Your agency</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{VASP_ADDRESS}}`} - Provider address</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{CRIME_TYPE}}`} - Crime description</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{STATUTE}}`} - Legal statute</div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded p-3">
+                <p className="text-xs text-gray-600">
+                  <strong>Example:</strong> Replace "ABC Exchange, Inc." in your template with {`{{VASP_NAME}}`}. 
+                  When you generate documents, this will automatically fill with the selected VASP's name.
+                </p>
+              </div>
+              
+              <p className="text-sm font-semibold text-blue-900">
+                ✓ Templates are saved permanently to your account<br/>
+                ✓ Create multiple templates for different purposes<br/>
+                ✓ Edit or update your templates anytime
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
@@ -141,6 +199,7 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Template Name
+                  <span className="text-xs font-normal text-gray-500 ml-2">(This will be saved for future use)</span>
                 </label>
                 <input
                   type="text"
