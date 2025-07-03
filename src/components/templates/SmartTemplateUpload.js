@@ -26,14 +26,6 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
       const allowedTypes = ['.docx', '.html', '.txt'];
       const fileExt = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
       
-      // Also check MIME types for Word documents
-      const allowedMimeTypes = [
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-        'text/html',
-        'text/plain'
-      ];
-      
       if (!allowedTypes.includes(fileExt)) {
         setError(`Invalid file type. Please upload a DOCX, HTML, or TXT file. (Detected: ${fileExt})`);
         return;
