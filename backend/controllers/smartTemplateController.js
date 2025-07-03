@@ -24,10 +24,20 @@ const fileFilter = (req, file, cb) => {
   const allowedTypes = ['.docx', '.html', '.txt'];
   const ext = path.extname(file.originalname).toLowerCase();
   
-  if (allowedTypes.includes(ext)) {
+  // Also allow by MIME type
+  const allowedMimeTypes = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword',
+    'text/html',
+    'text/plain'
+  ];
+  
+  console.log('Upload file check:', file.originalname, 'ext:', ext, 'mimetype:', file.mimetype);
+  
+  if (allowedTypes.includes(ext) || allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only DOCX, HTML, and TXT files are allowed.'), false);
+    cb(new Error(`Invalid file type. Only DOCX, HTML, and TXT files are allowed. (Got: ${ext}, MIME: ${file.mimetype})`), false);
   }
 };
 
