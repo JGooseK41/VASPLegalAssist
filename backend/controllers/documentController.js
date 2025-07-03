@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const pdfGenerator = require('../services/pdfGenerator');
+const wordGenerator = require('../services/wordGenerator');
 const csvParser = require('../services/csvParser');
 const multer = require('multer');
 const path = require('path');
@@ -35,7 +36,8 @@ const createDocument = async (req, res) => {
       crimeDescription,
       statute,
       transactions,
-      requestedInfo
+      requestedInfo,
+      outputFormat = 'pdf' // Default to PDF for backward compatibility
     } = req.body;
 
     // Get user info
@@ -56,12 +58,13 @@ const createDocument = async (req, res) => {
       return res.status(400).json({ error: 'No template found' });
     }
 
-    // Generate PDF
-    const pdfData = await pdfGenerator.generateDocument({
+    // Prepare document data
+    const documentData = {
       caseNumber,
       vaspName,
       vaspEmail,
       vaspAddress,
+      vaspJurisdiction,
       investigatorName: `${user.firstName} ${user.lastName}`,
       agencyName: user.agencyName,
       badgeNumber: user.badgeNumber,
@@ -69,7 +72,32 @@ const createDocument = async (req, res) => {
       crimeDescription,
       transactions: transactions || [],
       requestedInfo: requestedInfo || []
-    }, template, documentType.toLowerCase());
+    };
+
+    let generatedDoc;
+    let documentUrl;
+    let documentPath;
+
+    // Generate document based on output format and template type
+    if (outputFormat === 'docx' && template.fileType === 'docx' && template.fileUrl) {
+      // Generate Word document from smart template
+      generatedDoc = await wordGenerator.generateFromSmartTemplate(
+        template.id,
+        req.userId,
+        documentData
+      );
+      documentUrl = generatedDoc.url;
+      documentPath = generatedDoc.filepath;
+    } else {
+      // Generate PDF (default behavior)
+      generatedDoc = await pdfGenerator.generateDocument(
+        documentData,
+        template,
+        documentType.toLowerCase()
+      );
+      documentUrl = generatedDoc.url;
+      documentPath = generatedDoc.filepath;
+    }
 
     // Save document record
     const document = await prisma.document.create({
@@ -85,13 +113,17 @@ const createDocument = async (req, res) => {
         statute,
         transactionDetails: JSON.stringify(transactions || []),
         requestedData: JSON.stringify(requestedInfo || []),
-        pdfUrl: pdfData.url
+        pdfUrl: documentUrl, // This field name is kept for backward compatibility
+        outputFormat: outputFormat,
+        filePath: documentPath
       }
     });
 
     res.status(201).json({
       document,
-      pdfUrl: pdfData.url
+      documentUrl,
+      outputFormat,
+      filename: generatedDoc.filename
     });
   } catch (error) {
     console.error('Create document error:', error);

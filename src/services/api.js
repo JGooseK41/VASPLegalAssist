@@ -129,7 +129,24 @@ export const templateAPI = {
 // Document API
 export const documentAPI = {
   createDocument: async (documentData) => {
-    const response = await api.post('/documents', documentData);
+    // Transform frontend data to match backend expectations
+    const transformedData = {
+      vaspId: documentData.vasp_id,
+      vaspName: documentData.metadata?.vasp_name || '',
+      vaspJurisdiction: documentData.vasp_jurisdiction || '',
+      vaspEmail: documentData.vasp_email || '',
+      vaspAddress: documentData.vasp_address || '',
+      templateId: documentData.template_id,
+      documentType: documentData.document_type,
+      caseNumber: documentData.case_info?.case_number || '',
+      crimeDescription: documentData.case_info?.crime_description || '',
+      statute: documentData.case_info?.statute || '',
+      transactions: documentData.transactions || [],
+      requestedInfo: documentData.requested_info || [],
+      outputFormat: documentData.outputFormat || 'pdf'
+    };
+    
+    const response = await api.post('/documents', transformedData);
     return response.data;
   },
   

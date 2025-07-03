@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const templateParser = require('../services/templateParser');
+const wordGenerator = require('../services/wordGenerator');
 
 const prisma = new PrismaClient();
 
@@ -222,7 +223,7 @@ const previewTemplate = async (req, res) => {
 };
 
 // Process template with actual data for document generation
-const processTemplateForDocument = async (templateId, userId, documentData) => {
+const processTemplateForDocument = async (templateId, userId, documentData, outputFormat = 'pdf') => {
   try {
     const template = await prisma.documentTemplate.findFirst({
       where: {
@@ -231,8 +232,23 @@ const processTemplateForDocument = async (templateId, userId, documentData) => {
       }
     });
 
-    if (!template || !template.templateContent) {
-      throw new Error('Template not found or has no content');
+    if (!template) {
+      throw new Error('Template not found');
+    }
+
+    // If Word output is requested and template is a Word file, use Word generator
+    if (outputFormat === 'docx' && template.fileType === 'docx' && template.fileUrl) {
+      const result = await wordGenerator.generateFromSmartTemplate(templateId, userId, documentData);
+      return {
+        ...result,
+        fileType: 'docx',
+        templateName: template.templateName
+      };
+    }
+
+    // Otherwise, process for PDF generation
+    if (!template.templateContent) {
+      throw new Error('Template has no content for PDF generation');
     }
 
     const markerMappings = template.markerMappings ? JSON.parse(template.markerMappings) : {};

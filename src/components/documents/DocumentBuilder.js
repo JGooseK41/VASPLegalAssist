@@ -45,6 +45,7 @@ const DocumentBuilder = () => {
   // Template
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [outputFormat, setOutputFormat] = useState('pdf');
 
   useEffect(() => {
     // Check for selected VASP from session storage
@@ -159,21 +160,23 @@ const DocumentBuilder = () => {
         metadata: {
           vasp_name: selectedVASP.name,
           created_at: new Date().toISOString()
-        }
+        },
+        outputFormat: outputFormat
       };
 
       const response = await documentAPI.createDocument(documentData);
       
-      if (response.pdf_url) {
-        // Download the PDF
+      if (response.documentUrl || response.pdf_url) {
+        // Download the document
         const link = document.createElement('a');
-        link.href = response.pdf_url;
-        link.download = `${documentType}_${selectedVASP.name}_${caseInfo.case_number}.pdf`;
+        link.href = response.documentUrl || response.pdf_url;
+        const fileExtension = response.outputFormat === 'docx' ? 'docx' : 'pdf';
+        link.download = `${documentType}_${selectedVASP.name}_${caseInfo.case_number}.${fileExtension}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        setSuccess('Document created successfully!');
+        setSuccess(`Document created successfully as ${fileExtension.toUpperCase()}!`);
         
         // Navigate to history after a short delay
         setTimeout(() => {
@@ -268,7 +271,7 @@ const DocumentBuilder = () => {
         {/* Document Type and Template */}
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Document Settings</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Document Type
@@ -297,6 +300,24 @@ const DocumentBuilder = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Output Format
+              </label>
+              <select
+                value={outputFormat}
+                onChange={(e) => setOutputFormat(e.target.value)}
+                className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="pdf">PDF Document</option>
+                <option value="docx">Word Document (DOCX)</option>
+              </select>
+              {outputFormat === 'docx' && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Word output requires a Word template with smart placeholders
+                </p>
+              )}
             </div>
           </div>
         </div>
