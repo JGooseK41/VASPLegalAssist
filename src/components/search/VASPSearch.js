@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Upload, Plus, Trash2, Download, Save, AlertCircle, CheckCircle, X } from 'lucide-react';
-import { documentAPI, templateAPI, vaspAPI } from '../../services/api';
+import { Upload, Plus, Trash2, Download, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { documentAPI, templateAPI } from '../../services/api';
 
 const DocumentBuilder = () => {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const DocumentBuilder = () => {
     
     // Load templates
     loadTemplates();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadTemplates = async () => {
     try {

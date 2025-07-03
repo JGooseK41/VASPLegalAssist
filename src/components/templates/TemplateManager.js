@@ -31,15 +31,14 @@ const TemplateManager = () => {
   const handleSaveTemplate = async (templateData) => {
     try {
       setError(null);
-      let response;
       
       if (templateData.id) {
         // Update existing template
-        response = await templateAPI.updateTemplate(templateData.id, templateData);
+        await templateAPI.updateTemplate(templateData.id, templateData);
         setSuccess('Template updated successfully!');
       } else {
         // Create new template
-        response = await templateAPI.createTemplate(templateData);
+        await templateAPI.createTemplate(templateData);
         setSuccess('Template created successfully!');
       }
       
