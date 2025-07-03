@@ -2,6 +2,9 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const puppeteer = require('puppeteer');
+const handlebars = require('handlebars');
+const templateParser = require('./templateParser');
 
 class PDFGenerator {
   constructor() {
@@ -172,6 +175,113 @@ class PDFGenerator {
         fs.unlinkSync(filepath);
       }
     }
+  }
+
+  // Generate document from smart template
+  async generateSmartDocument(data, template) {
+    try {
+      const markerMappings = template.markerMappings ? JSON.parse(template.markerMappings) : {};
+      
+      // Process template with actual data
+      const processedContent = await templateParser.processTemplate(
+        template.templateContent,
+        data,
+        markerMappings
+      );
+
+      // Generate filename
+      const filename = `smart-${data.caseNumber}-${uuidv4()}.pdf`;
+      const filepath = path.join(this.outputDir, filename);
+
+      // Convert HTML to PDF using puppeteer
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      
+      const page = await browser.newPage();
+      
+      // Add basic styling
+      const styledContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 40px;
+              line-height: 1.6;
+            }
+            h1, h2, h3 { color: #333; }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              margin: 20px 0;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .footer {
+              margin-top: 50px;
+            }
+            .page-break {
+              page-break-after: always;
+            }
+          </style>
+        </head>
+        <body>
+          ${processedContent}
+        </body>
+        </html>
+      `;
+      
+      await page.setContent(styledContent, { waitUntil: 'networkidle0' });
+      
+      // Generate PDF
+      await page.pdf({
+        path: filepath,
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '1in',
+          right: '1in',
+          bottom: '1in',
+          left: '1in'
+        }
+      });
+      
+      await browser.close();
+
+      return {
+        filename,
+        filepath,
+        url: `/pdfs/${filename}`
+      };
+    } catch (error) {
+      console.error('Error generating smart document:', error);
+      throw error;
+    }
+  }
+
+  // Enhanced document generation that checks for smart templates
+  async generateDocumentWithSmartTemplate(data, template, type = 'letterhead') {
+    // Check if template has smart template content
+    if (template.templateContent && template.fileType) {
+      return this.generateSmartDocument(data, template);
+    }
+    
+    // Otherwise use traditional PDF generation
+    return this.generateDocument(data, template, type);
   }
 }
 

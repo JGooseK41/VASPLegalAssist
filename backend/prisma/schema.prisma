@@ -40,6 +40,16 @@ model DocumentTemplate {
   signatureBlock  String
   customFields    String?
   isDefault       Boolean   @default(false)
+  
+  // Smart template support
+  fileUrl         String?   // URL to uploaded template file
+  fileType        String?   // docx, pdf, html
+  fileSize        Int?      // Size in bytes
+  originalFilename String?  // Original filename
+  templateContent String?   // Extracted template content
+  markers         String?   // JSON array of detected markers
+  markerMappings  String?   // JSON mapping of markers to fields
+  
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   

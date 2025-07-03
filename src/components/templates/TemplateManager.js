@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Eye } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import SmartTemplateUpload from './SmartTemplateUpload';
+import MarkerMappingEditor from './MarkerMappingEditor';
 
 const TemplateManager = () => {
   const [templates, setTemplates] = useState([]);
@@ -9,6 +11,8 @@ const TemplateManager = () => {
   const [success, setSuccess] = useState(null);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
+  const [showSmartUpload, setShowSmartUpload] = useState(false);
+  const [mappingTemplate, setMappingTemplate] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -90,16 +94,25 @@ const TemplateManager = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Customize your subpoena and letterhead templates
+              Customize your subpoena and letterhead templates or upload smart templates
             </p>
           </div>
-          <button
-            onClick={() => setShowNewTemplate(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Template
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowSmartUpload(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Smart Template
+            </button>
+            <button
+              onClick={() => setShowNewTemplate(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Basic Template
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -144,6 +157,28 @@ const TemplateManager = () => {
           />
         )}
 
+        {showSmartUpload && (
+          <SmartTemplateUpload
+            onSuccess={(template) => {
+              setShowSmartUpload(false);
+              setMappingTemplate(template);
+              loadTemplates();
+            }}
+            onCancel={() => setShowSmartUpload(false)}
+          />
+        )}
+
+        {mappingTemplate && (
+          <MarkerMappingEditor
+            template={mappingTemplate}
+            onSave={(template) => {
+              setMappingTemplate(null);
+              loadTemplates();
+            }}
+            onCancel={() => setMappingTemplate(null)}
+          />
+        )}
+
         <div className="grid grid-cols-1 gap-6">
           {templates.map((template) => (
             <div key={template.id}>
@@ -158,6 +193,7 @@ const TemplateManager = () => {
                   template={template}
                   onEdit={() => setEditingTemplate(template)}
                   onDelete={() => handleDeleteTemplate(template.id)}
+                  onConfigureMarkers={() => setMappingTemplate(template)}
                 />
               )}
             </div>
@@ -186,7 +222,7 @@ const TemplateManager = () => {
   );
 };
 
-const TemplateCard = ({ template, onEdit, onDelete }) => {
+const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
   const getDocumentTypeLabel = (type) => {
     switch (type) {
       case 'subpoena':
@@ -198,14 +234,38 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
     }
   };
 
+  const isSmartTemplate = template.fileUrl || template.templateContent;
+  const markers = template.markers ? JSON.parse(template.markers) : [];
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
+          <div className="flex items-center space-x-2">
+            <h3 className="text-lg font-medium text-gray-900">{template.templateName || template.name}</h3>
+            {isSmartTemplate && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <Upload className="h-3 w-3 mr-1" />
+                Smart Template
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 mt-1">
-            Type: {getDocumentTypeLabel(template.document_type)}
+            Type: {getDocumentTypeLabel(template.templateType || template.document_type)}
           </p>
+
+          {isSmartTemplate && markers.length > 0 && (
+            <div className="mt-3">
+              <p className="text-sm text-gray-600">
+                {markers.length} smart markers • {markers.filter(m => m.isKnown).length} recognized
+              </p>
+              {template.originalFilename && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Uploaded from: {template.originalFilename}
+                </p>
+              )}
+            </div>
+          )}
           
           {template.header_info && Object.keys(template.header_info).length > 0 && (
             <div className="mt-4">
@@ -236,6 +296,15 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
         </div>
         
         <div className="ml-6 flex items-center space-x-2">
+          {isSmartTemplate && (
+            <button
+              onClick={onConfigureMarkers}
+              className="bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded"
+              title="Configure markers"
+            >
+              <Map className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={onEdit}
             className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded"

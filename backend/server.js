@@ -23,8 +23,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files for PDFs
+// Static files for PDFs and templates
 app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

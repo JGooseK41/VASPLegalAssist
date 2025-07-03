@@ -98,6 +98,31 @@ export const templateAPI = {
   setDefaultTemplate: async (id, templateType) => {
     const response = await api.put(`/templates/${id}/default`, { templateType });
     return response.data;
+  },
+  
+  // Smart template endpoints
+  uploadTemplate: async (formData) => {
+    const response = await api.post('/templates/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+  
+  updateMarkerMappings: async (id, mappings) => {
+    const response = await api.put(`/templates/${id}/mappings`, { mappings });
+    return response.data;
+  },
+  
+  previewTemplate: async (id, data) => {
+    const response = await api.post(`/templates/${id}/preview`, data);
+    return response.data;
+  },
+  
+  getAvailableMarkers: async () => {
+    const response = await api.get('/templates/markers');
+    return response.data;
   }
 };
 
