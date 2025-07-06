@@ -1,7 +1,7 @@
 # Netlify configuration
 [build]
   base = "github-deployment"
-  command = "npm install && npm run build"
+  command = "CI= npm install && CI= npm run build"
   publish = "github-deployment/build"
 
 [build.environment]
