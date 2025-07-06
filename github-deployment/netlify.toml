@@ -1,6 +1,6 @@
 # Netlify configuration
 [build]
-  command = "npm run build"
+  command = "npm install && npm run build"
   publish = "build"
 
 [build.environment]
