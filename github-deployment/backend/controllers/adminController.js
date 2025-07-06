@@ -1,0 +1,393 @@
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const prisma = new PrismaClient();
+
+// VASP Management
+const getVasps = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search, isActive } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const where = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { legal_name: { contains: search, mode: 'insensitive' } },
+        { jurisdiction: { contains: search, mode: 'insensitive' } },
+        { compliance_email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    if (isActive !== undefined) {
+      where.isActive = isActive === 'true';
+    }
+    
+    const [vasps, total] = await Promise.all([
+      prisma.vasp.findMany({
+        where,
+        skip,
+        take: parseInt(limit),
+        orderBy: { name: 'asc' }
+      }),
+      prisma.vasp.count({ where })
+    ]);
+    
+    res.json({
+      vasps,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching VASPs:', error);
+    res.status(500).json({ error: 'Failed to fetch VASPs' });
+  }
+};
+
+const createVasp = async (req, res) => {
+  try {
+    const vasp = await prisma.vasp.create({
+      data: {
+        name: req.body.name,
+        legal_name: req.body.legal_name,
+        jurisdiction: req.body.jurisdiction,
+        compliance_email: req.body.compliance_email,
+        compliance_contact: req.body.compliance_contact,
+        service_address: req.body.service_address,
+        phone: req.body.phone,
+        processing_time: req.body.processing_time || '5-10 business days',
+        preferred_method: req.body.preferred_method,
+        required_document: req.body.required_document,
+        info_types: req.body.info_types || [],
+        accepts_us_service: req.body.accepts_us_service || false,
+        has_own_portal: req.body.has_own_portal || false,
+        law_enforcement_url: req.body.law_enforcement_url,
+        notes: req.body.notes
+      }
+    });
+    
+    res.status(201).json(vasp);
+  } catch (error) {
+    console.error('Error creating VASP:', error);
+    res.status(500).json({ error: 'Failed to create VASP' });
+  }
+};
+
+const updateVasp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const vasp = await prisma.vasp.update({
+      where: { id: parseInt(id) },
+      data: {
+        name: req.body.name,
+        legal_name: req.body.legal_name,
+        jurisdiction: req.body.jurisdiction,
+        compliance_email: req.body.compliance_email,
+        compliance_contact: req.body.compliance_contact,
+        service_address: req.body.service_address,
+        phone: req.body.phone,
+        processing_time: req.body.processing_time,
+        preferred_method: req.body.preferred_method,
+        required_document: req.body.required_document,
+        info_types: req.body.info_types,
+        accepts_us_service: req.body.accepts_us_service,
+        has_own_portal: req.body.has_own_portal,
+        law_enforcement_url: req.body.law_enforcement_url,
+        notes: req.body.notes,
+        isActive: req.body.isActive
+      }
+    });
+    
+    res.json(vasp);
+  } catch (error) {
+    console.error('Error updating VASP:', error);
+    res.status(500).json({ error: 'Failed to update VASP' });
+  }
+};
+
+const deleteVasp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Soft delete by setting isActive to false
+    await prisma.vasp.update({
+      where: { id: parseInt(id) },
+      data: { isActive: false }
+    });
+    
+    res.json({ message: 'VASP deactivated successfully' });
+  } catch (error) {
+    console.error('Error deleting VASP:', error);
+    res.status(500).json({ error: 'Failed to delete VASP' });
+  }
+};
+
+// User Management
+const getUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search, role, isApproved } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const where = {};
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { agencyName: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    if (role) {
+      where.role = role;
+    }
+    if (isApproved !== undefined) {
+      where.isApproved = isApproved === 'true';
+    }
+    
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          agencyName: true,
+          badgeNumber: true,
+          title: true,
+          phone: true,
+          role: true,
+          isApproved: true,
+          createdAt: true,
+          _count: {
+            select: {
+              documents: true,
+              comments: true
+            }
+          }
+        },
+        skip,
+        take: parseInt(limit),
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
+    
+    res.json({
+      users,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
+
+const approveUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { isApproved: true }
+    });
+    
+    res.json({ message: 'User approved successfully', user });
+  } catch (error) {
+    console.error('Error approving user:', error);
+    res.status(500).json({ error: 'Failed to approve user' });
+  }
+};
+
+const rejectUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+    
+    res.json({ message: 'User rejected and removed' });
+  } catch (error) {
+    console.error('Error rejecting user:', error);
+    res.status(500).json({ error: 'Failed to reject user' });
+  }
+};
+
+const updateUserRole = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+    
+    if (!['USER', 'ADMIN'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+    
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { role }
+    });
+    
+    res.json({ message: 'User role updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+};
+
+// VASP Submissions
+const getSubmissions = async (req, res) => {
+  try {
+    const { status = 'PENDING' } = req.query;
+    
+    const submissions = await prisma.vaspSubmission.findMany({
+      where: { status },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            agencyName: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    res.json(submissions);
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    res.status(500).json({ error: 'Failed to fetch submissions' });
+  }
+};
+
+const approveSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    
+    // Get the submission
+    const submission = await prisma.vaspSubmission.findUnique({
+      where: { id: submissionId }
+    });
+    
+    if (!submission) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+    
+    // Create the VASP
+    const vasp = await prisma.vasp.create({
+      data: {
+        name: submission.name,
+        legal_name: submission.legal_name,
+        jurisdiction: submission.jurisdiction,
+        compliance_email: submission.compliance_email,
+        compliance_contact: submission.compliance_contact,
+        service_address: submission.service_address,
+        phone: submission.phone,
+        processing_time: submission.processing_time,
+        preferred_method: submission.preferred_method,
+        required_document: submission.required_document,
+        info_types: submission.info_types,
+        accepts_us_service: submission.accepts_us_service,
+        has_own_portal: submission.has_own_portal,
+        law_enforcement_url: submission.law_enforcement_url,
+        notes: submission.notes
+      }
+    });
+    
+    // Update submission status
+    await prisma.vaspSubmission.update({
+      where: { id: submissionId },
+      data: {
+        status: 'APPROVED',
+        reviewedAt: new Date(),
+        reviewedBy: req.userId
+      }
+    });
+    
+    res.json({ message: 'Submission approved and VASP created', vasp });
+  } catch (error) {
+    console.error('Error approving submission:', error);
+    res.status(500).json({ error: 'Failed to approve submission' });
+  }
+};
+
+const rejectSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const { reason } = req.body;
+    
+    await prisma.vaspSubmission.update({
+      where: { id: submissionId },
+      data: {
+        status: 'REJECTED',
+        rejectionReason: reason,
+        reviewedAt: new Date(),
+        reviewedBy: req.userId
+      }
+    });
+    
+    res.json({ message: 'Submission rejected' });
+  } catch (error) {
+    console.error('Error rejecting submission:', error);
+    res.status(500).json({ error: 'Failed to reject submission' });
+  }
+};
+
+// Dashboard Stats
+const getDashboardStats = async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      pendingUsers,
+      totalVasps,
+      activeVasps,
+      pendingSubmissions,
+      totalDocuments
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { isApproved: false } }),
+      prisma.vasp.count(),
+      prisma.vasp.count({ where: { isActive: true } }),
+      prisma.vaspSubmission.count({ where: { status: 'PENDING' } }),
+      prisma.document.count()
+    ]);
+    
+    res.json({
+      totalUsers,
+      pendingUsers,
+      totalVasps,
+      activeVasps,
+      pendingSubmissions,
+      totalDocuments
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
+};
+
+module.exports = {
+  // VASP Management
+  getVasps,
+  createVasp,
+  updateVasp,
+  deleteVasp,
+  
+  // User Management
+  getUsers,
+  approveUser,
+  rejectUser,
+  updateUserRole,
+  
+  // VASP Submissions
+  getSubmissions,
+  approveSubmission,
+  rejectSubmission,
+  
+  // Dashboard
+  getDashboardStats
+};
