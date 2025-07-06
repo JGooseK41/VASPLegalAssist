@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, XCircle, Edit2, Trash2, Plus } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Edit2, Trash2, Plus, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { submissionAPI } from '../../services/api';
 

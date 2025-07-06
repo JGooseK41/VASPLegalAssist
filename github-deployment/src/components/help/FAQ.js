@@ -198,7 +198,7 @@ const FAQ = () => {
               <p>Yes! Smart template upload allows you to:</p>
               <ol className="list-decimal list-inside mt-2 space-y-1">
                 <li>Upload existing Word (.docx) templates</li>
-                <li>The system will detect placeholders like {{case_number}}</li>
+                <li>The system will detect placeholders like {`{{case_number}}`}</li>
                 <li>Map detected markers to system fields</li>
                 <li>Use your custom template for document generation</li>
               </ol>

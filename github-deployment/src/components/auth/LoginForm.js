@@ -19,8 +19,8 @@ const LoginForm = () => {
 
   const useDemoAccount = () => {
     setFormData({
-      email: 'demo@vaspla.gov',
-      password: 'demo2024'
+      email: 'demo@theblockaudit.com',
+      password: 'Crypto'
     });
   };
 
@@ -49,8 +49,8 @@ const LoginForm = () => {
                   <div className="mt-2 text-sm text-blue-700">
                     <p>You can use our demo account to explore the application:</p>
                     <div className="mt-2 font-mono text-xs bg-blue-100 p-2 rounded">
-                      Email: demo@vaspla.gov<br />
-                      Password: demo2024
+                      Email: demo@theblockaudit.com<br />
+                      Password: Crypto
                     </div>
                     <button
                       type="button"
