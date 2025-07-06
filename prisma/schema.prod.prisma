@@ -1,0 +1,77 @@
+// Production schema with PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Rest of schema remains the same...
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  agencyName      String
+  badgeNumber     String
+  title           String?
+  phone           String?
+  role            String    @default("USER")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  templates       DocumentTemplate[]
+  documents       Document[]
+}
+
+model DocumentTemplate {
+  id              String    @id @default(uuid())
+  userId          String
+  templateType    String
+  templateName    String
+  agencyHeader    String
+  agencyAddress   String
+  agencyContact   String
+  footerText      String
+  signatureBlock  String
+  customFields    String?
+  isDefault       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model Document {
+  id                  String    @id @default(uuid())
+  userId              String
+  vaspId              Int
+  vaspName            String
+  vaspJurisdiction    String
+  vaspEmail           String
+  documentType        String
+  caseNumber          String
+  crimeDescription    String
+  statute             String
+  transactionDetails  String
+  requestedData       String
+  pdfUrl              String?
+  createdAt           DateTime  @default(now())
+  
+  user                User      @relation(fields: [userId], references: [id])
+  transactionImports  TransactionImport[]
+}
+
+model TransactionImport {
+  id              String    @id @default(uuid())
+  documentId      String
+  csvData         String
+  processed       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  
+  document        Document  @relation(fields: [documentId], references: [id])
+}
