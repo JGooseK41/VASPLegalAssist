@@ -788,6 +788,59 @@ Badge #{{badge_number}}
           icon: Shield
         }
       ]
+    },
+    {
+      title: 'Pricing & Membership',
+      items: [
+        {
+          question: 'Is this program free to use?',
+          answer: (
+            <div>
+              <p className="mb-3">The VASP Legal Assistant offers different access levels:</p>
+              
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <h5 className="font-semibold text-blue-900 mb-2">🆓 Demo Account</h5>
+                  <p className="text-sm text-blue-800">
+                    The demo account with limited functionality will always be free to use. 
+                    This allows you to explore the platform and understand its capabilities before committing.
+                  </p>
+                </div>
+                
+                <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                  <h5 className="font-semibold text-green-900 mb-2">✅ Full Member Accounts</h5>
+                  <p className="text-sm text-green-800 mb-2">
+                    Full member accounts are currently free for:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-green-800 space-y-1">
+                    <li>Operation Shamrock members</li>
+                    <li>Crypto Coalition members</li>
+                  </ul>
+                  <p className="text-sm text-green-700 mt-2">
+                    At least for now, these accounts have access to all features without any fees.
+                  </p>
+                </div>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <h5 className="font-semibold text-yellow-900 mb-2">💰 Future Pricing</h5>
+                  <p className="text-sm text-yellow-800">
+                    There was considerable cost in the development of this application, as well as 
+                    scaling costs associated with hosting and data storage needs as we obtain new users. 
+                    At some point, there will be a minimal monthly fee for new members not already 
+                    with accounts, or the tool will be available as an add-on to our other service offerings.
+                  </p>
+                </div>
+              </div>
+              
+              <p className="mt-4 text-sm text-gray-600">
+                Current members with approved accounts will be notified well in advance of any 
+                pricing changes that might affect them.
+              </p>
+            </div>
+          ),
+          icon: HelpCircle
+        }
+      ]
     }
   ];
   
