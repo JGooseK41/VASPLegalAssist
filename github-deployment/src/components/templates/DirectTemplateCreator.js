@@ -82,6 +82,8 @@ Office: {{agent_phone}}`,
 
       console.log('Sending template data:', dataToSend);
       console.log('Using encryption:', useEncryption);
+      console.log('Template content length:', dataToSend.templateContent?.length);
+      console.log('Markers:', dataToSend.markers);
       
       let response;
       if (useEncryption && encryptedAPI) {
