@@ -81,13 +81,18 @@ function getClientIp(req) {
 async function trackVisitor(req, res, next) {
   try {
     // Skip tracking for certain paths
-    const skipPaths = ['/api/health', '/api/analytics', '/favicon.ico', '/robots.txt'];
+    const skipPaths = ['/api/health', '/api/analytics', '/favicon.ico', '/robots.txt', '/api/contributors'];
     if (skipPaths.some(path => req.path.startsWith(path))) {
       return next();
     }
     
     // Skip tracking for non-GET requests to avoid double counting
     if (req.method !== 'GET') {
+      return next();
+    }
+    
+    // Skip tracking for API calls (only track page views)
+    if (req.path.startsWith('/api/')) {
       return next();
     }
     
@@ -100,16 +105,14 @@ async function trackVisitor(req, res, next) {
     let sessionId = req.cookies?.sessionId;
     
     if (!sessionId) {
-      // Get geolocation data
-      const geo = await getGeoLocation(ip);
-      
-      // Create new session
+      // Create new session without geolocation first (non-blocking)
       const session = await prisma.visitorSession.create({
         data: {
           anonymizedIp,
           userAgent,
           referrer,
-          ...geo
+          country: 'Pending',
+          countryCode: 'XX'
         }
       });
       
@@ -122,6 +125,16 @@ async function trackVisitor(req, res, next) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax'
       });
+      
+      // Update geolocation asynchronously (non-blocking)
+      getGeoLocation(ip).then(geo => {
+        if (geo) {
+          prisma.visitorSession.update({
+            where: { id: sessionId },
+            data: geo
+          }).catch(err => console.error('Error updating geo:', err));
+        }
+      }).catch(err => console.error('Geolocation error:', err));
     }
     
     // Track page view

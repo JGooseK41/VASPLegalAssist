@@ -75,8 +75,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Analytics tracking middleware (temporarily disabled for performance)
-// app.use(trackVisitor);
+// Analytics tracking middleware
+app.use(trackVisitor);
 
 // Static files for PDFs, Word documents, and templates
 app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs')));
