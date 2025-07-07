@@ -6,6 +6,17 @@ const path = require('path');
 // Load environment variables
 dotenv.config();
 
+// Run migrations before starting server
+const { execSync } = require('child_process');
+console.log('🔧 Checking database migrations...');
+try {
+  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+  console.log('✅ Migrations completed');
+} catch (error) {
+  console.error('❌ Migration failed:', error.message);
+  // Continue anyway - migrations might already be applied
+}
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
