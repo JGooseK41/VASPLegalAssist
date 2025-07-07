@@ -30,17 +30,6 @@ const DocumentBuilder = () => {
     date: ''
   }]);
   
-  // Requested Info
-  const [requestedInfo, setRequestedInfo] = useState({
-    kyc_info: true,
-    transaction_history: true,
-    ip_addresses: false,
-    device_info: false,
-    account_activity: false,
-    linked_accounts: false,
-    source_of_funds: false,
-    communications: false
-  });
   
   // Template
   const [templates, setTemplates] = useState([]);
@@ -154,9 +143,6 @@ const DocumentBuilder = () => {
         document_type: documentType,
         case_info: caseInfo,
         transactions: transactions.filter(t => t.transaction_id),
-        requested_info: Object.entries(requestedInfo)
-          .filter(([_, value]) => value)
-          .map(([key, _]) => key),
         metadata: {
           vasp_name: selectedVASP.name,
           created_at: new Date().toISOString()
@@ -242,7 +228,6 @@ const DocumentBuilder = () => {
                 <div>
                   <h3 className="font-medium text-gray-900">{selectedVASP.name}</h3>
                   <p className="text-sm text-gray-600">{selectedVASP.legal_name}</p>
-                  <p className="text-sm text-gray-500">{selectedVASP.jurisdiction}</p>
                   {selectedVASP.compliance_email && (
                     <p className="text-sm text-gray-500">{selectedVASP.compliance_email}</p>
                   )}
@@ -281,8 +266,11 @@ const DocumentBuilder = () => {
                 onChange={(e) => setDocumentType(e.target.value)}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="subpoena">Grand Jury Subpoena</option>
+                <option value="subpoena">Subpoena</option>
                 <option value="letterhead">Agency Letterhead</option>
+                <option value="freeze_request">Freeze Request</option>
+                <option value="records_request">Records Request</option>
+                <option value="seizure_warrant">Seizure Warrant</option>
               </select>
             </div>
             <div>
@@ -493,32 +481,6 @@ const DocumentBuilder = () => {
           </div>
         </div>
 
-        {/* Requested Information */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Requested Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries({
-              kyc_info: 'KYC Information',
-              transaction_history: 'Transaction History',
-              ip_addresses: 'IP Addresses',
-              device_info: 'Device Information',
-              account_activity: 'Account Activity',
-              linked_accounts: 'Linked Accounts',
-              source_of_funds: 'Source of Funds',
-              communications: 'Communications'
-            }).map(([key, label]) => (
-              <label key={key} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={requestedInfo[key]}
-                  onChange={(e) => setRequestedInfo({...requestedInfo, [key]: e.target.checked})}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">{label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">

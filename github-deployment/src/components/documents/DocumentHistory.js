@@ -70,9 +70,15 @@ const DocumentHistory = () => {
   const getDocumentTypeLabel = (type) => {
     switch (type) {
       case 'subpoena':
-        return 'Grand Jury Subpoena';
+        return 'Subpoena';
       case 'letterhead':
         return 'Agency Letterhead';
+      case 'freeze_request':
+        return 'Freeze Request';
+      case 'records_request':
+        return 'Records Request';
+      case 'seizure_warrant':
+        return 'Seizure Warrant';
       default:
         return type;
     }

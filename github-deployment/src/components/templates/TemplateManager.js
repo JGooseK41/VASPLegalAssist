@@ -226,9 +226,15 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
   const getDocumentTypeLabel = (type) => {
     switch (type) {
       case 'subpoena':
-        return 'Grand Jury Subpoena';
+        return 'Subpoena';
       case 'letterhead':
         return 'Agency Letterhead';
+      case 'freeze_request':
+        return 'Freeze Request';
+      case 'records_request':
+        return 'Records Request';
+      case 'seizure_warrant':
+        return 'Seizure Warrant';
       default:
         return type;
     }
@@ -381,8 +387,11 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="subpoena">Grand Jury Subpoena</option>
+                <option value="subpoena">Subpoena</option>
                 <option value="letterhead">Agency Letterhead</option>
+                <option value="freeze_request">Freeze Request</option>
+                <option value="records_request">Records Request</option>
+                <option value="seizure_warrant">Seizure Warrant</option>
               </select>
             </div>
           </div>

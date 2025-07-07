@@ -206,6 +206,138 @@ const FAQ = () => {
             </div>
           ),
           icon: FileText
+        },
+        {
+          question: 'How do I create a custom agency template/subpoena with smart placeholders?',
+          answer: (
+            <div>
+              <h4 className="font-semibold mb-3">Step-by-Step Guide to Creating Smart Templates</h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Step 1: Create Your Word Document</h5>
+                  <ol className="list-decimal list-inside ml-4 space-y-1 text-sm">
+                    <li>Open Microsoft Word or any DOCX-compatible editor</li>
+                    <li>Create your document with all your standard legal language and formatting</li>
+                    <li>Leave placeholders where variable information will be inserted</li>
+                    <li>Save as a .docx file (not .doc or PDF)</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Step 2: Add Smart Placeholders</h5>
+                  <p className="text-sm mb-2">Replace variable text with these exact placeholders (including double curly braces):</p>
+                  <div className="bg-gray-100 p-3 rounded-md space-y-2 text-sm font-mono">
+                    <div><span className="text-blue-600">{`{{vasp_name}}`}</span> - VASP's display name</div>
+                    <div><span className="text-blue-600">{`{{vasp_legal_name}}`}</span> - VASP's legal entity name</div>
+                    <div><span className="text-blue-600">{`{{vasp_email}}`}</span> - VASP compliance email</div>
+                    <div><span className="text-blue-600">{`{{case_number}}`}</span> - Your case number</div>
+                    <div><span className="text-blue-600">{`{{statute}}`}</span> - Legal statute/code</div>
+                    <div><span className="text-blue-600">{`{{crime_description}}`}</span> - Description of criminal activity</div>
+                    <div><span className="text-blue-600">{`{{transaction_id}}`}</span> - Cryptocurrency transaction ID</div>
+                    <div><span className="text-blue-600">{`{{from_address}}`}</span> - Sending wallet address</div>
+                    <div><span className="text-blue-600">{`{{to_address}}`}</span> - Receiving wallet address</div>
+                    <div><span className="text-blue-600">{`{{amount}}`}</span> - Transaction amount</div>
+                    <div><span className="text-blue-600">{`{{currency}}`}</span> - Cryptocurrency type</div>
+                    <div><span className="text-blue-600">{`{{date}}`}</span> - Transaction date</div>
+                    <div><span className="text-blue-600">{`{{current_date}}`}</span> - Today's date</div>
+                    <div><span className="text-blue-600">{`{{agency_name}}`}</span> - Your agency name</div>
+                    <div><span className="text-blue-600">{`{{agent_name}}`}</span> - Your name</div>
+                    <div><span className="text-blue-600">{`{{agent_title}}`}</span> - Your title</div>
+                    <div><span className="text-blue-600">{`{{badge_number}}`}</span> - Your badge number</div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Step 3: Example Template Structure</h5>
+                  <div className="bg-gray-50 border border-gray-200 p-4 rounded-md text-sm">
+                    <div className="whitespace-pre-line font-mono text-xs">
+{`UNITED STATES DISTRICT COURT
+FOR THE [DISTRICT NAME]
+
+SUBPOENA TO {{vasp_name}}
+
+Case Number: {{case_number}}
+
+TO: {{vasp_legal_name}}
+    {{vasp_email}}
+
+YOU ARE COMMANDED to produce the following records related to the investigation of {{crime_description}} under {{statute}}:
+
+1. Complete KYC information for the following cryptocurrency transactions:
+   Transaction ID: {{transaction_id}}
+   From: {{from_address}}
+   To: {{to_address}}
+   Amount: {{amount}} {{currency}}
+   Date: {{date}}
+
+2. All account records and transaction history associated with the above addresses.
+
+This subpoena is issued on {{current_date}} by:
+
+{{agent_name}}
+{{agent_title}}
+Badge #{{badge_number}}
+{{agency_name}}`}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Step 4: Upload Your Template</h5>
+                  <ol className="list-decimal list-inside ml-4 space-y-1 text-sm">
+                    <li>Go to "Template Manager" in the navigation</li>
+                    <li>Click "Upload Smart Template"</li>
+                    <li>Select your .docx file</li>
+                    <li>Give your template a descriptive name</li>
+                    <li>Select the document type (Subpoena, Freeze Request, etc.)</li>
+                    <li>The system will detect all your placeholders</li>
+                    <li>Configure any custom field mappings if needed</li>
+                    <li>Save your template</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Step 5: Using Your Template</h5>
+                  <ol className="list-decimal list-inside ml-4 space-y-1 text-sm">
+                    <li>Go to "Create Document"</li>
+                    <li>Select your VASP</li>
+                    <li>Choose your custom template from the dropdown</li>
+                    <li>Fill in the case information and transaction details</li>
+                    <li>Generate your document - all placeholders will be replaced automatically</li>
+                  </ol>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
+                  <h5 className="font-medium text-blue-900 mb-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Best Practices
+                  </h5>
+                  <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
+                    <li>Always use double curly braces {`{{ }}`} for placeholders</li>
+                    <li>Don't add spaces inside the braces: {`{{correct}}`} not {`{{ incorrect }}`}</li>
+                    <li>Use exact placeholder names from the list above</li>
+                    <li>Test your template with sample data first</li>
+                    <li>Keep a backup of your original template</li>
+                    <li>For multiple transactions, the system will duplicate transaction sections automatically</li>
+                  </ul>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <h5 className="font-medium text-yellow-900 mb-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Custom Fields
+                  </h5>
+                  <p className="text-sm text-yellow-800">
+                    If you need placeholders that aren't in the standard list, you can still use them! 
+                    The system will detect them as "custom fields" and allow you to map them to data 
+                    or fill them in manually during document creation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ),
+          icon: FileText
         }
       ]
     },
