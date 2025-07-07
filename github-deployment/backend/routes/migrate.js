@@ -114,23 +114,18 @@ router.post('/vasps', async (req, res) => {
         await prisma.vasp.create({
           data: {
             name: vaspName,
-            legalName: vasp['Legal Name'] || vaspName,
-            street: street,
-            city: city,
-            state: state,
-            zipCode: zipCode,
-            country: country,
+            legal_name: vasp['Legal Name'] || vaspName,
+            service_address: legalAddress,
             jurisdiction: jurisdiction,
-            supportEmail: vasp['Support Email'] || null,
-            complianceEmail: vasp['Compliance Email'] || vasp['Support Email'] || null,
-            serviceUrl: vasp['Law Enforcement URL'] || null,
-            additionalInfo: vasp['Additional Info'] || null,
-            acceptsInternational: vasp['Accepts International'] !== 'No',
-            requiredDocuments: vasp['Required Documents'] || 'Letterhead',
-            serviceMethod: (vasp['Service Method'] || 'email').toLowerCase(),
-            processingTime: vasp['Processing Time'] || '5-10 business days',
-            informationAvailable: vasp['Information Available'] || 'KYC, Transaction History',
-            status: 'ACTIVE'
+            compliance_email: vasp['Compliance Email'] || vasp['Support Email'] || '',
+            law_enforcement_url: vasp['Law Enforcement URL'] || null,
+            notes: vasp['Additional Info'] || null,
+            accepts_us_service: vasp['Accepts International'] !== 'No',
+            required_document: vasp['Required Documents'] || 'Letterhead',
+            preferred_method: (vasp['Service Method'] || 'email').toLowerCase(),
+            processing_time: vasp['Processing Time'] || '5-10 business days',
+            info_types: ['KYC', 'Transaction History'],
+            isActive: true
           }
         });
         

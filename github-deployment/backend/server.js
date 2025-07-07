@@ -9,8 +9,9 @@ dotenv.config();
 
 // FORCE REDEPLOY - Run migrations before starting server
 console.log('🚀 VASP Legal Assistant Backend Starting...');
-console.log('Version: 1.0.2 - VASP ROUTES FIXED');
+console.log('Version: 1.0.3 - FORCE REDEPLOY WITH MIGRATE FIX');
 console.log('Time:', new Date().toISOString());
+console.log('🔧 All routes now use isActive field instead of status field');
 
 const { execSync } = require('child_process');
 console.log('\n🔧 Running database migrations...');
