@@ -94,19 +94,21 @@ const createTemplate = async (req, res) => {
     const templateData = {
       userId: req.userId,
       templateType: actualTemplateType,
-      templateName: actualTemplateName,
+      templateName: isClientEncrypted && typeof actualTemplateName === 'object' 
+        ? JSON.stringify(actualTemplateName) 
+        : (actualTemplateName || ''),
       isClientEncrypted: isClientEncrypted || false,
       encryptionVersion: encryptionVersion || null,
       isGlobal: user?.role === 'ADMIN' && isGlobal === true
     };
     
     if (isClientEncrypted) {
-      // Store encrypted data as-is
-      templateData.agencyHeader = agencyHeader || '';
-      templateData.agencyAddress = agencyAddress || '';
-      templateData.agencyContact = agencyContact || '';
-      templateData.footerText = actualFooterText || '';
-      templateData.signatureBlock = signatureBlock || '';
+      // Store encrypted data as JSON strings
+      templateData.agencyHeader = typeof agencyHeader === 'object' ? JSON.stringify(agencyHeader) : (agencyHeader || '');
+      templateData.agencyAddress = typeof agencyAddress === 'object' ? JSON.stringify(agencyAddress) : (agencyAddress || '');
+      templateData.agencyContact = typeof agencyContact === 'object' ? JSON.stringify(agencyContact) : (agencyContact || '');
+      templateData.footerText = typeof actualFooterText === 'object' ? JSON.stringify(actualFooterText) : (actualFooterText || '');
+      templateData.signatureBlock = typeof signatureBlock === 'object' ? JSON.stringify(signatureBlock) : (signatureBlock || '');
       templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
     } else {
       // Store unencrypted data (legacy support)
@@ -120,13 +122,19 @@ const createTemplate = async (req, res) => {
     
     // Add smart template fields if provided
     if (templateContent) {
-      templateData.templateContent = templateContent;
+      templateData.templateContent = isClientEncrypted && typeof templateContent === 'object' 
+        ? JSON.stringify(templateContent)
+        : templateContent;
     }
     if (markers) {
-      templateData.markers = typeof markers === 'string' ? markers : JSON.stringify(markers);
+      templateData.markers = typeof markers === 'object' && !Array.isArray(markers)
+        ? JSON.stringify(markers) 
+        : (typeof markers === 'string' ? markers : JSON.stringify(markers));
     }
     if (markerMappings) {
-      templateData.markerMappings = typeof markerMappings === 'string' ? markerMappings : JSON.stringify(markerMappings);
+      templateData.markerMappings = typeof markerMappings === 'object' && !Array.isArray(markerMappings)
+        ? JSON.stringify(markerMappings)
+        : (typeof markerMappings === 'string' ? markerMappings : JSON.stringify(markerMappings));
     }
     if (fileUrl) {
       templateData.fileUrl = fileUrl;
