@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock } from 'lucide-react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
@@ -16,6 +16,7 @@ const TemplateManager = () => {
   const [showSmartUpload, setShowSmartUpload] = useState(false);
   const [mappingTemplate, setMappingTemplate] = useState(null);
   const [showEncryptionStatus, setShowEncryptionStatus] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   
   // Initialize encryption
   const encryption = useEncryption();
@@ -29,8 +30,12 @@ const TemplateManager = () => {
   useEffect(() => {
     if (encryptedAPI) {
       loadTemplates();
+    } else if (encryption.isKeyReady === false) {
+      // If encryption failed to initialize, still show the UI
+      setLoading(false);
+      setError('Encryption initialization failed. Templates may not be available.');
     }
-  }, [encryptedAPI]);
+  }, [encryptedAPI, encryption.isKeyReady]);
 
   const loadTemplates = async () => {
     try {
@@ -39,6 +44,7 @@ const TemplateManager = () => {
       
       if (!encryptedAPI) {
         setError('Encryption not ready. Please refresh the page.');
+        setLoading(false);
         return;
       }
       
@@ -148,6 +154,13 @@ const TemplateManager = () => {
           </div>
           <div className="flex space-x-2">
             <button
+              onClick={() => setShowHelp(true)}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded flex items-center"
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              Help Guide
+            </button>
+            <button
               onClick={() => setShowSmartUpload(true)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
             >
@@ -250,19 +263,260 @@ const TemplateManager = () => {
         </div>
 
         {templates.length === 0 && !showNewTemplate && (
-          <div className="bg-white shadow rounded-lg p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No templates yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by creating your first document template.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => setShowNewTemplate(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
-              >
-                Create Template
-              </button>
+          <div className="space-y-6">
+            {/* Welcome Message */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <Lightbulb className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">Welcome to Template Manager!</h3>
+                  <p className="text-sm text-blue-800">
+                    Templates allow you to create professional legal documents quickly and consistently. 
+                    Your templates are encrypted and only visible to you.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Getting Started Guide */}
+            <div className="bg-white shadow rounded-lg p-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Choose How to Get Started</h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Basic Template Option */}
+                <div className="border border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
+                  <div className="flex items-center mb-4">
+                    <FileText className="h-8 w-8 text-blue-600 mr-3" />
+                    <h4 className="text-lg font-medium text-gray-900">Basic Template</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Perfect for simple documents. Fill out forms to add your agency information, 
+                    headers, and footers.
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>• Quick and easy setup</li>
+                    <li>• No technical knowledge required</li>
+                    <li>• Good for standard formats</li>
+                  </ul>
+                  <button
+                    onClick={() => setShowNewTemplate(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+                  >
+                    Create Basic Template
+                  </button>
+                </div>
+
+                {/* Smart Template Option */}
+                <div className="border border-gray-200 rounded-lg p-6 hover:border-green-300 transition-colors">
+                  <div className="flex items-center mb-4">
+                    <FileCode className="h-8 w-8 text-green-600 mr-3" />
+                    <h4 className="text-lg font-medium text-gray-900">Smart Template</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Upload your existing Word documents with placeholders. Maintains your exact 
+                    formatting and branding.
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>• Use your existing templates</li>
+                    <li>• Preserves complex formatting</li>
+                    <li>• Supports logos and images</li>
+                  </ul>
+                  <button
+                    onClick={() => setShowSmartUpload(true)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
+                  >
+                    Upload Smart Template
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowHelp(true)}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
+                >
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  View Detailed Guide
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Help Modal */}
+        {showHelp && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                  <HelpCircle className="h-6 w-6 mr-2 text-blue-600" />
+                  Template Creation Guide
+                </h2>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="p-6 space-y-8">
+                {/* Overview Section */}
+                <section>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Overview</h3>
+                  <p className="text-gray-600 mb-4">
+                    The Template Manager allows you to create reusable document templates for generating legal documents 
+                    quickly and consistently. All templates are encrypted and only accessible by you.
+                  </p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-green-800">
+                      <strong>Security Note:</strong> Your templates are encrypted using military-grade encryption. 
+                      Not even administrators can see your templates or generated documents.
+                    </p>
+                  </div>
+                </section>
+
+                {/* Basic Templates Section */}
+                <section>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Creating Basic Templates</h3>
+                  <div className="space-y-4">
+                    <p className="text-gray-600">
+                      Basic templates are perfect for simple documents where you need standard formatting.
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Steps:</h4>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                        <li>Click "New Basic Template"</li>
+                        <li>Choose a document type (Subpoena, Letterhead, etc.)</li>
+                        <li>Fill in your agency information:
+                          <ul className="list-disc list-inside ml-5 mt-1">
+                            <li>Agency name and address</li>
+                            <li>Contact information</li>
+                            <li>Badge/ID numbers</li>
+                          </ul>
+                        </li>
+                        <li>Customize header and footer text</li>
+                        <li>Save your template</li>
+                      </ol>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Smart Templates Section */}
+                <section>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Creating Smart Templates</h3>
+                  <div className="space-y-4">
+                    <p className="text-gray-600">
+                      Smart templates let you upload existing Word documents with placeholders that automatically 
+                      fill with case data.
+                    </p>
+                    
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-900 mb-2">Available Placeholders:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
+                        <div>{{`{{vasp_name}}`}}</div>
+                        <div>{{`{{case_number}}`}}</div>
+                        <div>{{`{{vasp_legal_name}}`}}</div>
+                        <div>{{`{{statute}}`}}</div>
+                        <div>{{`{{vasp_email}}`}}</div>
+                        <div>{{`{{crime_description}}`}}</div>
+                        <div>{{`{{transaction_id}}`}}</div>
+                        <div>{{`{{amount}}`}}</div>
+                        <div>{{`{{from_address}}`}}</div>
+                        <div>{{`{{currency}}`}}</div>
+                        <div>{{`{{to_address}}`}}</div>
+                        <div>{{`{{date}}`}}</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Steps:</h4>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                        <li>Create your template in Microsoft Word</li>
+                        <li>Add placeholders where you want data inserted (e.g., {{`{{case_number}}`}})</li>
+                        <li>Include your agency letterhead, logos, and formatting</li>
+                        <li>Save as .docx format (not .doc or PDF)</li>
+                        <li>Click "Upload Smart Template"</li>
+                        <li>Select your file and upload</li>
+                        <li>The system will detect placeholders automatically</li>
+                        <li>Map any custom placeholders if needed</li>
+                      </ol>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Pro Tip:</strong> You can use conditional formatting in Word. For example, 
+                        create different sections for different types of requests, and only include the 
+                        placeholders you need in each section.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Best Practices */}
+                <section>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Best Practices</h3>
+                  <ul className="space-y-3 text-gray-600">
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">✓</span>
+                      <span>Create separate templates for different types of requests (subpoenas, freeze requests, etc.)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">✓</span>
+                      <span>Include your official letterhead and logos in smart templates</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">✓</span>
+                      <span>Test your templates with sample data before using them for real cases</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">✓</span>
+                      <span>Keep placeholder names consistent across templates</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">✓</span>
+                      <span>Name templates descriptively (e.g., "Federal Subpoena - Crypto Exchange")</span>
+                    </li>
+                  </ul>
+                </section>
+
+                {/* Troubleshooting */}
+                <section>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Troubleshooting</h3>
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Placeholders not detected?</h4>
+                      <p className="text-sm text-gray-600">
+                        Ensure you're using double curly braces {{`{{like_this}}`}} and that your document is 
+                        saved as .docx format.
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Formatting lost after upload?</h4>
+                      <p className="text-sm text-gray-600">
+                        Make sure you're using a .docx file (not .doc). Complex formatting like tables and 
+                        images are preserved in smart templates.
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Template not saving?</h4>
+                      <p className="text-sm text-gray-600">
+                        Check that all required fields are filled. Demo accounts cannot save templates - 
+                        you need a full account.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                >
+                  Close Guide
+                </button>
+              </div>
             </div>
           </div>
         )}

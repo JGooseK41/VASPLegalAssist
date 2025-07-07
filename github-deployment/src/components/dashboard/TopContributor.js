@@ -57,7 +57,7 @@ function TopContributor() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Trophy className="w-5 h-5 mr-2" />
-              <span className="font-medium">Top Contributor</span>
+              <span className="font-bold">Top Contributor</span>
               <button
                 onClick={() => setShowInfoModal(true)}
                 className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
@@ -163,7 +163,7 @@ function TopContributor() {
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center">
             <Trophy className="w-5 h-5 mr-2" />
-            <span className="font-medium">Top Contributor</span>
+            <span className="font-bold">Top Contributor</span>
             <button
               onClick={() => setShowInfoModal(true)}
               className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
@@ -175,13 +175,13 @@ function TopContributor() {
           
           <div className="flex items-center space-x-4">
             <div className="text-right flex-1">
-              <div className="font-semibold text-lg">{topContributor.firstName} {topContributor.lastName}</div>
-              <div className="text-sm opacity-90">{topContributor.agencyName}</div>
+              <div className="font-bold text-lg">{topContributor.name}</div>
+              <div className="font-semibold text-sm">{topContributor.agencyName}</div>
             </div>
             
             <div className="text-center border-l border-white/30 pl-4">
               <div className="text-2xl font-bold">{topContributor.score}</div>
-              <div className="text-xs opacity-90">points</div>
+              <div className="text-xs font-semibold">points</div>
             </div>
             
             <Link
