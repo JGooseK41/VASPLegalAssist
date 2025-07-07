@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { adminAPI } from '../../services/api';
 
 const StatCard = ({ icon: Icon, title, value, color = 'blue' }) => {
@@ -26,7 +25,7 @@ const StatCard = ({ icon: Icon, title, value, color = 'blue' }) => {
   );
 };
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ onNavigate }) => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     pendingUsers: 0,
@@ -119,9 +118,12 @@ const AdminDashboard = () => {
                 <span className="text-sm font-medium text-yellow-900">
                   {stats.pendingUsers} users awaiting approval
                 </span>
-                <Link to="/admin/users?filter=pending" className="text-sm text-yellow-700 hover:text-yellow-800 font-medium">
+                <button 
+                  onClick={() => onNavigate && onNavigate('users')}
+                  className="text-sm text-yellow-700 hover:text-yellow-800 font-medium"
+                >
                   Review →
-                </Link>
+                </button>
               </div>
             )}
             {stats.pendingSubmissions > 0 && (
@@ -129,26 +131,35 @@ const AdminDashboard = () => {
                 <span className="text-sm font-medium text-orange-900">
                   {stats.pendingSubmissions} VASP submissions pending
                 </span>
-                <Link to="/admin/submissions" className="text-sm text-orange-700 hover:text-orange-800 font-medium">
+                <button
+                  onClick={() => onNavigate && onNavigate('submissions')}
+                  className="text-sm text-orange-700 hover:text-orange-800 font-medium"
+                >
                   Review →
-                </Link>
+                </button>
               </div>
             )}
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <span className="text-sm font-medium text-blue-900">
                 Add new VASP
               </span>
-              <Link to="/admin/vasps/new" className="text-sm text-blue-700 hover:text-blue-800 font-medium">
+              <button
+                onClick={() => onNavigate && onNavigate('vasps')}
+                className="text-sm text-blue-700 hover:text-blue-800 font-medium"
+              >
                 Create →
-              </Link>
+              </button>
             </div>
             <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
               <span className="text-sm font-medium text-purple-900">
                 View analytics
               </span>
-              <Link to="/admin/analytics" className="text-sm text-purple-700 hover:text-purple-800 font-medium">
+              <button
+                onClick={() => onNavigate && onNavigate('analytics')}
+                className="text-sm text-purple-700 hover:text-purple-800 font-medium"
+              >
                 View →
-              </Link>
+              </button>
             </div>
           </div>
         </div>
