@@ -11,9 +11,11 @@ function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch('/api/contributors/leaderboard', {
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${API_BASE_URL}/contributors/leaderboard`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Content-Type': 'application/json'
           }
         });
 
@@ -24,7 +26,8 @@ function Leaderboard() {
         const data = await response.json();
         setLeaderboard(data.leaderboard);
       } catch (err) {
-        setError(err.message);
+        console.error('Error loading leaderboard:', err);
+        setError(`Error loading leaderboard: ${err.message}`);
       } finally {
         setLoading(false);
       }
