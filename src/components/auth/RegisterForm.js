@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Mail, Lock, User, Building, Badge, Phone, AlertCircle } from 'lucide-react';
+import { Shield, Mail, Lock, User, Building, Badge, Phone, AlertCircle, Info, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -66,6 +66,27 @@ const RegisterForm = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex">
+              <Info className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">Important Notice</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p className="mb-2">
+                    This site is intended for use by law enforcement and legal professionals only. 
+                    An official email address from a recognized law enforcement agency or legal organization 
+                    must be used for registration.
+                  </p>
+                  <div className="flex items-center">
+                    <HelpCircle className="h-4 w-4 mr-1" />
+                    <Link to="/faq" className="text-sm font-medium text-blue-600 hover:text-blue-500 underline">
+                      Visit our FAQ for more information
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           {(error || validationError) && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">

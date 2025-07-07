@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare } from 'lucide-react';
+import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Layout = () => {
@@ -8,15 +8,22 @@ const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'VASP Search', href: '/search', icon: Search },
     { name: 'Generate Document', href: '/documents/new', icon: FileEdit },
-    { name: 'Document History', href: '/documents/history', icon: Clock },
-    { name: 'Templates', href: '/templates', icon: FileText },
-    { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
     { name: 'FAQ', href: '/faq', icon: HelpCircle },
+  ];
+  
+  // User dropdown menu items
+  const userNavigation = [
+    { name: 'My Profile', href: '/profile', icon: User },
+    { name: 'My Templates', href: '/templates', icon: FileText },
+    { name: 'Document History', href: '/documents/history', icon: Clock },
+    { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
   ];
   
   // Add admin portal link for admin users
@@ -28,6 +35,17 @@ const Layout = () => {
     logout();
     navigate('/login');
   };
+  
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -46,7 +64,7 @@ const Layout = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="hidden md:flex items-center space-x-2">
               {[...navigation, ...adminNavigation].map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
@@ -54,10 +72,10 @@ const Layout = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 border ${
                       isActive
-                        ? 'bg-blue-800 text-white'
-                        : 'text-blue-100 hover:bg-blue-800 hover:text-white'
+                        ? 'bg-blue-800 text-white border-blue-700 shadow-md'
+                        : 'bg-blue-700 text-blue-100 border-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-500 hover:shadow-md'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -68,25 +86,51 @@ const Layout = () => {
             </nav>
 
             {/* User Menu */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm">
-                <User className="h-4 w-4" />
-                <span>{user?.firstName} {user?.lastName}</span>
-                <span className="text-blue-300">({user?.role})</span>
+            <div className="hidden md:flex items-center space-x-4" ref={userMenuRef}>
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 text-sm bg-blue-700 text-blue-100 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-md transition-colors border border-blue-600"
+                >
+                  <User className="h-4 w-4" />
+                  <span>{user?.firstName} {user?.lastName}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
+                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                      <div className="font-medium">{user?.firstName} {user?.lastName}</div>
+                      <div className="text-gray-500">{user?.role}</div>
+                    </div>
+                    
+                    {userNavigation.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Icon className="h-4 w-4 mr-3" />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                    
+                    <div className="border-t">
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <Link
-                to="/profile"
-                className="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </button>
             </div>
 
             {/* Mobile menu button */}
@@ -102,6 +146,7 @@ const Layout = () => {
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-blue-800">
               <nav className="space-y-2">
+                {/* Main Navigation */}
                 {[...navigation, ...adminNavigation].map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.href;
@@ -121,21 +166,35 @@ const Layout = () => {
                     </Link>
                   );
                 })}
-                <Link
-                  to="/profile"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:bg-blue-800 hover:text-white"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-700"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
+                
+                {/* User Navigation - Divider */}
+                <div className="border-t border-blue-700 pt-2 mt-2">
+                  <div className="px-3 py-2 text-xs uppercase text-blue-300">My Account</div>
+                  
+                  {/* User Navigation Items */}
+                  {userNavigation.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:bg-blue-800 hover:text-white"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-700 mt-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               </nav>
             </div>
           )}
