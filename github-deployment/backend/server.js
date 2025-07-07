@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Load environment variables
 dotenv.config();
@@ -59,6 +60,8 @@ const contributorRoutes = require('./routes/contributors');
 const vaspResponseRoutes = require('./routes/vaspResponses');
 const migrateRoutes = require('./routes/migrate');
 const debugRoutes = require('./routes/debug');
+const analyticsRoutes = require('./routes/analytics');
+const { trackVisitor } = require('./middleware/analytics');
 
 const app = express();
 
@@ -69,6 +72,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Analytics tracking middleware (before routes)
+app.use(trackVisitor);
 
 // Static files for PDFs, Word documents, and templates
 app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs')));
@@ -88,6 +95,7 @@ app.use('/api/contributors', contributorRoutes);
 app.use('/api/vasp-responses', vaspResponseRoutes);
 app.use('/api/migrate', migrateRoutes);
 app.use('/api/debug', debugRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

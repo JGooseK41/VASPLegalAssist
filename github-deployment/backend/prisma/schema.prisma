@@ -239,3 +239,37 @@ model VaspResponse {
   @@index([userId])
   @@index([documentId])
 }
+
+model VisitorSession {
+  id                    String    @id @default(uuid())
+  anonymizedIp          String
+  country               String?
+  countryCode           String?
+  region                String?
+  city                  String?
+  latitude              Float?
+  longitude             Float?
+  userAgent             String?
+  referrer              String?
+  createdAt             DateTime  @default(now())
+  
+  pageViews             PageView[]
+  
+  @@index([createdAt])
+  @@index([country])
+  @@index([countryCode])
+}
+
+model PageView {
+  id                    String    @id @default(uuid())
+  sessionId             String
+  path                  String
+  duration              Int?      // Duration in seconds
+  createdAt             DateTime  @default(now())
+  
+  session               VisitorSession @relation(fields: [sessionId], references: [id])
+  
+  @@index([sessionId])
+  @@index([path])
+  @@index([createdAt])
+}

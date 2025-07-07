@@ -35,6 +35,12 @@ const getTopContributor = async (req, res) => {
           select: {
             id: true
           }
+        },
+        // Get VASP responses submitted by the user
+        vaspResponses: {
+          select: {
+            id: true
+          }
         }
       }
     });
@@ -52,7 +58,10 @@ const getTopContributor = async (req, res) => {
       // 1 point per comment made
       const commentPoints = user.comments.length * 1;
       
-      const totalScore = vaspPoints + upvotePoints + commentPoints;
+      // 5 points per VASP response logged
+      const vaspResponsePoints = user.vaspResponses.length * 5;
+      
+      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints;
       
       return {
         userId: user.id,
@@ -66,7 +75,9 @@ const getTopContributor = async (req, res) => {
             total + (comment.voteScore > 0 ? comment.voteScore : 0), 0),
           upvotePoints,
           commentsCount: user.comments.length,
-          commentPoints
+          commentPoints,
+          vaspResponses: user.vaspResponses.length,
+          vaspResponsePoints
         }
       };
     });
@@ -116,6 +127,12 @@ const getLeaderboard = async (req, res) => {
           select: {
             id: true
           }
+        },
+        // Get VASP responses submitted by the user
+        vaspResponses: {
+          select: {
+            id: true
+          }
         }
       }
     });
@@ -133,7 +150,10 @@ const getLeaderboard = async (req, res) => {
       // 1 point per comment made
       const commentPoints = user.comments.length * 1;
       
-      const totalScore = vaspPoints + upvotePoints + commentPoints;
+      // 5 points per VASP response logged
+      const vaspResponsePoints = user.vaspResponses.length * 5;
+      
+      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints;
       
       return {
         userId: user.id,
@@ -147,7 +167,9 @@ const getLeaderboard = async (req, res) => {
             total + (comment.voteScore > 0 ? comment.voteScore : 0), 0),
           upvotePoints,
           commentsCount: user.comments.length,
-          commentPoints
+          commentPoints,
+          vaspResponses: user.vaspResponses.length,
+          vaspResponsePoints
         }
       };
     });
