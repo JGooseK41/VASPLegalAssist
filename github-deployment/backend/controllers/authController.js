@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -152,7 +153,139 @@ const createDefaultTemplates = async (userId) => {
   });
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return res.json({ 
+        message: 'If an account exists with this email, you will receive password reset instructions.' 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    // Set expiration to 1 hour from now
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Save token to database
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        token: hashedToken,
+        expiresAt
+      }
+    });
+
+    // In a production environment, you would send an email here
+    // For now, we'll return the token in the response (development only)
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+    
+    console.log('Password reset URL:', resetUrl);
+    
+    // In production, send email instead of returning URL
+    res.json({ 
+      message: 'If an account exists with this email, you will receive password reset instructions.',
+      // Remove this in production - only for development/testing
+      resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process password reset request' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    // Hash the token to match what's in database
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find valid token
+    const passwordReset = await prisma.passwordResetToken.findFirst({
+      where: {
+        token: hashedToken,
+        expiresAt: {
+          gt: new Date()
+        },
+        used: false
+      },
+      include: {
+        user: true
+      }
+    });
+
+    if (!passwordReset) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password and mark token as used
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: passwordReset.userId },
+        data: { password: hashedPassword }
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: passwordReset.id },
+        data: { used: true }
+      })
+    ]);
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+
+const validateResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({ valid: false });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const passwordReset = await prisma.passwordResetToken.findFirst({
+      where: {
+        token: hashedToken,
+        expiresAt: {
+          gt: new Date()
+        },
+        used: false
+      }
+    });
+
+    res.json({ valid: !!passwordReset });
+  } catch (error) {
+    console.error('Validate token error:', error);
+    res.status(500).json({ valid: false });
+  }
+};
+
 module.exports = {
   register,
-  login
+  login,
+  forgotPassword,
+  resetPassword,
+  validateResetToken
 };

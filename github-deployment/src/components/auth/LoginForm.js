@@ -101,9 +101,18 @@ const LoginForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-sm text-blue-600 hover:text-blue-500"
+                >
+                  Forgot password?
+                </button>
+              </div>
               <div className="mt-1 relative">
                 <input
                   type="password"

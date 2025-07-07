@@ -5,6 +5,8 @@ import PrivateRoute from './components/common/PrivateRoute';
 import Layout from './components/common/Layout';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
 import Dashboard from './components/dashboard/Dashboard';
 import VASPSearch from './components/search/VASPSearch';
 import DocumentBuilder from './components/documents/DocumentBuilder';
@@ -24,6 +26,8 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Protected routes */}
           <Route element={<PrivateRoute />}>
