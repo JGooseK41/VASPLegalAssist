@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
+const emailService = require('../services/emailService');
 
 const prisma = new PrismaClient();
 
@@ -43,6 +44,11 @@ const register = async (req, res) => {
 
     // Create default templates for new user
     await createDefaultTemplates(user.id);
+
+    // Send welcome email (don't wait for it)
+    emailService.sendWelcomeEmail(user.email, user.firstName).catch(err => {
+      console.error('Failed to send welcome email:', err);
+    });
 
     // Generate token
     const token = generateToken(user.id, user.role);
@@ -186,16 +192,22 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    // In a production environment, you would send an email here
-    // For now, we'll return the token in the response (development only)
+    // Create reset URL
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
     
-    console.log('Password reset URL:', resetUrl);
+    // Send email
+    try {
+      await emailService.sendPasswordResetEmail(user.email, resetUrl);
+      console.log('Password reset email sent to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError);
+      // Don't reveal email sending failed to prevent user enumeration
+    }
     
-    // In production, send email instead of returning URL
+    // Always return the same message for security
     res.json({ 
       message: 'If an account exists with this email, you will receive password reset instructions.',
-      // Remove this in production - only for development/testing
+      // Only show URL in development mode for testing
       resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined
     });
   } catch (error) {
