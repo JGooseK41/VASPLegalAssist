@@ -102,19 +102,19 @@ const createTemplate = async (req, res) => {
     
     if (isClientEncrypted) {
       // Store encrypted data as-is
-      templateData.agencyHeader = agencyHeader;
-      templateData.agencyAddress = agencyAddress;
-      templateData.agencyContact = agencyContact;
-      templateData.footerText = actualFooterText;
-      templateData.signatureBlock = signatureBlock;
+      templateData.agencyHeader = agencyHeader || '';
+      templateData.agencyAddress = agencyAddress || '';
+      templateData.agencyContact = agencyContact || '';
+      templateData.footerText = actualFooterText || '';
+      templateData.signatureBlock = signatureBlock || '';
       templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
     } else {
       // Store unencrypted data (legacy support)
-      templateData.agencyHeader = agencyHeader || header_info?.agency_name;
-      templateData.agencyAddress = agencyAddress || header_info?.address;
-      templateData.agencyContact = agencyContact || header_info?.email;
-      templateData.footerText = actualFooterText;
-      templateData.signatureBlock = signatureBlock;
+      templateData.agencyHeader = agencyHeader || header_info?.agency_name || '';
+      templateData.agencyAddress = agencyAddress || header_info?.address || '';
+      templateData.agencyContact = agencyContact || header_info?.email || '';
+      templateData.footerText = actualFooterText || '';
+      templateData.signatureBlock = signatureBlock || '';
       templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
     }
     
