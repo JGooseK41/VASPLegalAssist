@@ -57,11 +57,11 @@ const Layout = () => {
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
             <div className="flex items-center">
-              <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
                 <img
                   src="/images/logo.png"
                   alt="VASP Legal Assistant Logo"
-                  className="h-8 w-8"
+                  className="h-10 w-10 bg-white rounded-lg p-1 shadow-sm"
                 />
               </a>
               <span className="ml-3 text-xl font-semibold text-white">
@@ -81,7 +81,7 @@ const Layout = () => {
                     className={`flex items-center justify-center space-x-2 px-5 py-2.5 h-10 min-w-[120px] rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
                       isActive
                         ? 'bg-white text-blue-900 shadow-md border border-white/20'
-                        : 'bg-blue-800/40 text-white border border-blue-700/50 hover:bg-blue-800/60 hover:border-blue-600/50 hover:shadow-md hover:scale-[1.02]'
+                        : 'bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 hover:border-blue-500/90 hover:shadow-md hover:scale-[1.02]'
                     }`}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
@@ -96,7 +96,7 @@ const Layout = () => {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center justify-center space-x-2 px-5 py-2.5 h-10 min-w-[140px] rounded-lg text-sm font-medium bg-blue-800/40 text-white border border-blue-700/50 hover:bg-blue-800/60 hover:border-blue-600/50 hover:shadow-md transition-all duration-200 shadow-sm"
+                  className="flex items-center justify-center space-x-2 px-5 py-2.5 h-10 min-w-[140px] rounded-lg text-sm font-medium bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 hover:border-blue-500/90 hover:shadow-md transition-all duration-200 shadow-sm"
                 >
                   <User className="h-4 w-4 flex-shrink-0" />
                   <span className="whitespace-nowrap">{user?.firstName} {user?.lastName}</span>
@@ -142,7 +142,7 @@ const Layout = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg bg-blue-800/40 text-white border border-blue-700/50 hover:bg-blue-800/60 transition-all duration-200"
+              className="md:hidden p-2 rounded-lg bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 transition-all duration-200"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -164,7 +164,7 @@ const Layout = () => {
                       className={`flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-white text-blue-900 shadow-md'
-                          : 'text-white bg-blue-800/40 hover:bg-blue-800/60'
+                          : 'text-white bg-blue-700/80 hover:bg-blue-600/90'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -185,7 +185,7 @@ const Layout = () => {
                         key={item.name}
                         to={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium text-white bg-blue-800/40 hover:bg-blue-800/60 transition-all duration-200"
+                        className="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium text-white bg-blue-700/80 hover:bg-blue-600/90 transition-all duration-200"
                       >
                         <Icon className="h-4 w-4" />
                         <span>{item.name}</span>

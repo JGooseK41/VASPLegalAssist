@@ -47,7 +47,7 @@ const Dashboard = () => {
             Welcome back, {user?.firstName}
           </h1>
           <p className="mt-1 text-sm text-gray-600">
-            {user?.agencyName} • Badge #{user?.badgeNumber}
+            {user?.agencyName}
           </p>
         </div>
 
