@@ -1,5 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+
+// Configure multer for file uploads
+const upload = multer({ 
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Use encryption middleware to get the appropriate controller
 const { documentController } = require('../middleware/encryptionMiddleware');
@@ -7,8 +14,7 @@ const {
   createDocument,
   getDocuments,
   getDocument,
-  importTransactions,
-  upload
+  importTransactions
 } = documentController;
 
 // Import regular controller functions that aren't in encrypted version yet

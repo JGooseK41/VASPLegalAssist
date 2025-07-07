@@ -6,15 +6,24 @@ const path = require('path');
 // Load environment variables
 dotenv.config();
 
-// Run migrations before starting server
+// FORCE REDEPLOY - Run migrations before starting server
+console.log('🚀 VASP Legal Assistant Backend Starting...');
+console.log('Version: 1.0.1 - WITH MIGRATIONS');
+console.log('Time:', new Date().toISOString());
+
 const { execSync } = require('child_process');
-console.log('🔧 Checking database migrations...');
+console.log('\n🔧 Running database migrations...');
 try {
+  console.log('Step 1: Generating Prisma client...');
+  execSync('npx prisma generate', { stdio: 'inherit' });
+  
+  console.log('Step 2: Deploying migrations...');
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-  console.log('✅ Migrations completed');
+  
+  console.log('✅ Migrations completed successfully!');
 } catch (error) {
   console.error('❌ Migration failed:', error.message);
-  // Continue anyway - migrations might already be applied
+  console.error('Continuing anyway - migrations might already be applied');
 }
 
 // Import routes
