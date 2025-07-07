@@ -1,0 +1,3 @@
+VASP Legal Assistant Cleanup Backup
+Date: Mon Jul  7 07:41:39 EDT 2025
+Purpose: Backup of files before cleanup of redundant code outside github-deployment

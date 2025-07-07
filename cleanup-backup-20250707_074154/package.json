@@ -7,13 +7,11 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.6.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.518.0",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^6.8.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -21,8 +19,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  ,
+    "eject": "react-scripts eject",
+    "server": "node server.js",
+    "server:dev": "nodemon server.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm start\"",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
     "backup": "./scripts/backup/backup-database.sh",
     "backup:sqlite": "./scripts/backup/backup-database.sh --sqlite-only",
     "backup:postgres": "./scripts/backup/backup-database.sh --postgres-only",
@@ -30,7 +32,7 @@
     "backup:monitor": "./scripts/backup/monitor-backups.sh",
     "backup:stats": "./scripts/backup/monitor-backups.sh --stats",
     "backup:restore": "./scripts/backup/restore-database.sh --interactive"
-},
+  },
   "eslintConfig": {
     "extends": [
       "react-app",

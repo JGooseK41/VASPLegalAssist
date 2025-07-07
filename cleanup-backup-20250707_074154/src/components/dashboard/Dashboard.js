@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Database, FileText, Clock, Upload, Search, Plus, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI } from '../../services/api';
-import TopContributor from './TopContributor';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -39,7 +38,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto pt-8 pb-6 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -47,7 +46,7 @@ const Dashboard = () => {
             Welcome back, {user?.firstName}
           </h1>
           <p className="mt-1 text-sm text-gray-600">
-            {user?.agencyName}
+            {user?.agencyName} • Badge #{user?.badgeNumber}
           </p>
         </div>
 
@@ -131,13 +130,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Top Contributor Section - Centered and thin */}
-        <div className="mb-8 flex justify-center">
-          <div className="w-full max-w-2xl">
-            <TopContributor />
           </div>
         </div>
 

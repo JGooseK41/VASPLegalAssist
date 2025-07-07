@@ -3,8 +3,8 @@ services:
   - type: web
     name: vasp-legal-assistant-api
     env: node
-    buildCommand: cd github-deployment/backend && npm install && npx prisma generate
-    startCommand: cd github-deployment/backend && npx prisma migrate deploy && node server.js
+    buildCommand: cd backend && npm install && npx prisma generate
+    startCommand: cd backend && npx prisma migrate deploy && node server.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -13,7 +13,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_URL
-        value: https://www.theblockrecord.com
+        value: https://your-app.netlify.app
       - key: NODE_ENV
         value: production
 

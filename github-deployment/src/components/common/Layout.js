@@ -61,7 +61,7 @@ const Layout = () => {
                 <img
                   src="/images/logo.png"
                   alt="VASP Legal Assistant Logo"
-                  className="h-10 w-10 bg-white rounded-lg p-1 shadow-sm"
+                  className="h-12 w-12 bg-white rounded-lg p-2 shadow-md object-contain"
                 />
               </a>
               <span className="ml-3 text-xl font-semibold text-white">
@@ -70,7 +70,7 @@ const Layout = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-3">
+            <nav className="hidden md:flex items-center space-x-2">
               {[...navigation, ...adminNavigation].map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
@@ -78,10 +78,10 @@ const Layout = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center justify-center space-x-2 px-5 py-2.5 h-10 min-w-[120px] rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
+                    className={`flex items-center justify-center space-x-2 px-4 py-2.5 h-10 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
                       isActive
                         ? 'bg-white text-blue-900 shadow-md border border-white/20'
-                        : 'bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 hover:border-blue-500/90 hover:shadow-md hover:scale-[1.02]'
+                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-md hover:scale-[1.02] backdrop-blur-sm'
                     }`}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
@@ -92,11 +92,11 @@ const Layout = () => {
             </nav>
 
             {/* User Menu */}
-            <div className="hidden md:flex items-center space-x-4" ref={userMenuRef}>
+            <div className="hidden md:flex items-center space-x-2" ref={userMenuRef}>
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center justify-center space-x-2 px-5 py-2.5 h-10 min-w-[140px] rounded-lg text-sm font-medium bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 hover:border-blue-500/90 hover:shadow-md transition-all duration-200 shadow-sm"
+                  className="flex items-center justify-center space-x-2 px-4 py-2.5 h-10 rounded-lg text-sm font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-md transition-all duration-200 shadow-sm backdrop-blur-sm"
                 >
                   <User className="h-4 w-4 flex-shrink-0" />
                   <span className="whitespace-nowrap">{user?.firstName} {user?.lastName}</span>
@@ -142,7 +142,7 @@ const Layout = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg bg-blue-700/80 text-white border border-blue-600/80 hover:bg-blue-600/90 transition-all duration-200"
+              className="md:hidden p-2 rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -164,7 +164,7 @@ const Layout = () => {
                       className={`flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-white text-blue-900 shadow-md'
-                          : 'text-white bg-blue-700/80 hover:bg-blue-600/90'
+                          : 'text-white bg-white/10 hover:bg-white/20 border border-white/10'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -185,7 +185,7 @@ const Layout = () => {
                         key={item.name}
                         to={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium text-white bg-blue-700/80 hover:bg-blue-600/90 transition-all duration-200"
+                        className="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium text-white bg-white/10 hover:bg-white/20 border border-white/10 transition-all duration-200"
                       >
                         <Icon className="h-4 w-4" />
                         <span>{item.name}</span>
