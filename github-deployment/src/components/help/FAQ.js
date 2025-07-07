@@ -836,8 +836,8 @@ Badge #{{badge_number}}
         ) : (
           filteredSections.map((section, index) => (
             <div key={index} className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-6 py-4">
-                <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
+              <div className="bg-blue-600 px-6 py-4">
+                <h2 className="text-xl font-semibold text-white">{section.title}</h2>
               </div>
               <div className="divide-y divide-gray-200">
                 {section.items.map((item, itemIndex) => (
