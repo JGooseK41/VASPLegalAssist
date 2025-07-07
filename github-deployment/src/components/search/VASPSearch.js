@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
+import VaspSubmissionModal from './VaspSubmissionModal';
 
 const VASPCard = ({ vasp, onSelect }) => {
   return (
@@ -108,6 +109,7 @@ const VASPSearch = () => {
   const [filteredVASPs, setFilteredVASPs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -201,10 +203,21 @@ const VASPSearch = () => {
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">VASP Database Search</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Search and filter through {vaspData.length} Virtual Asset Service Providers for legal process
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">VASP Database Search</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Search and filter through {vaspData.length} Virtual Asset Service Providers for legal process
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSubmissionModal(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Submit New VASP
+            </button>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -309,6 +322,16 @@ const VASPSearch = () => {
           </div>
         )}
       </div>
+      
+      {/* VASP Submission Modal */}
+      <VaspSubmissionModal
+        isOpen={showSubmissionModal}
+        onClose={() => setShowSubmissionModal(false)}
+        onSuccess={() => {
+          setShowSubmissionModal(false);
+          loadVASPs(); // Reload the VASP list after successful submission
+        }}
+      />
     </div>
   );
 };

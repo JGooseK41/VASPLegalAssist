@@ -12,10 +12,9 @@ const Layout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'VASP Search', href: '/search', icon: Search },
-    { name: 'New Document', href: '/documents/new', icon: FileEdit },
+    { name: 'Generate Document', href: '/documents/new', icon: FileEdit },
     { name: 'Document History', href: '/documents/history', icon: Clock },
     { name: 'Templates', href: '/templates', icon: FileText },
-    { name: 'Submit VASP', href: '/submissions/new', icon: PlusCircle },
     { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
     { name: 'FAQ', href: '/faq', icon: HelpCircle },
   ];

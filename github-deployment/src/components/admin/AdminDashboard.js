@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { adminAPI } from '../../services/api';
 
 const StatCard = ({ icon: Icon, title, value, color = 'blue' }) => {
@@ -118,9 +119,9 @@ const AdminDashboard = () => {
                 <span className="text-sm font-medium text-yellow-900">
                   {stats.pendingUsers} users awaiting approval
                 </span>
-                <a href="/admin/users?filter=pending" className="text-sm text-yellow-700 hover:text-yellow-800">
+                <Link to="/admin/users?filter=pending" className="text-sm text-yellow-700 hover:text-yellow-800 font-medium">
                   Review →
-                </a>
+                </Link>
               </div>
             )}
             {stats.pendingSubmissions > 0 && (
@@ -128,18 +129,18 @@ const AdminDashboard = () => {
                 <span className="text-sm font-medium text-orange-900">
                   {stats.pendingSubmissions} VASP submissions pending
                 </span>
-                <a href="/admin/submissions" className="text-sm text-orange-700 hover:text-orange-800">
+                <Link to="/admin/submissions" className="text-sm text-orange-700 hover:text-orange-800 font-medium">
                   Review →
-                </a>
+                </Link>
               </div>
             )}
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <span className="text-sm font-medium text-blue-900">
                 Add new VASP
               </span>
-              <a href="/admin/vasps/new" className="text-sm text-blue-700 hover:text-blue-800">
+              <Link to="/admin/vasps/new" className="text-sm text-blue-700 hover:text-blue-800 font-medium">
                 Create →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

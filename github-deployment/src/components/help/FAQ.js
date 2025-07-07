@@ -286,7 +286,7 @@ Badge #{{badge_number}}
                 <div>
                   <h5 className="font-medium text-gray-900 mb-2">Step 4: Upload Your Template</h5>
                   <ol className="list-decimal list-inside ml-4 space-y-1 text-sm">
-                    <li>Go to "Template Manager" in the navigation</li>
+                    <li>Go to "Templates" in the navigation</li>
                     <li>Click "Upload Smart Template"</li>
                     <li>Select your .docx file</li>
                     <li>Give your template a descriptive name</li>
@@ -300,7 +300,7 @@ Badge #{{badge_number}}
                 <div>
                   <h5 className="font-medium text-gray-900 mb-2">Step 5: Using Your Template</h5>
                   <ol className="list-decimal list-inside ml-4 space-y-1 text-sm">
-                    <li>Go to "Create Document"</li>
+                    <li>Go to "Generate Document"</li>
                     <li>Select your VASP</li>
                     <li>Choose your custom template from the dropdown</li>
                     <li>Fill in the case information and transaction details</li>
@@ -332,6 +332,24 @@ Badge #{{badge_number}}
                     If you need placeholders that aren't in the standard list, you can still use them! 
                     The system will detect them as "custom fields" and allow you to map them to data 
                     or fill them in manually during document creation.
+                  </p>
+                </div>
+
+                <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                  <h5 className="font-medium text-green-900 mb-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Omitting Placeholders
+                  </h5>
+                  <p className="text-sm text-green-800">
+                    You don't have to use all available placeholders in your template. The system will:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-green-800 mt-2 space-y-1">
+                    <li>Only replace placeholders that exist in your template</li>
+                    <li>Ignore any data fields that don't have corresponding placeholders</li>
+                    <li>Leave any unmatched placeholders as-is if the data is not provided</li>
+                  </ul>
+                  <p className="text-sm text-green-800 mt-2">
+                    This allows you to create simplified templates that only include the fields you need.
                   </p>
                 </div>
               </div>
@@ -376,6 +394,98 @@ Badge #{{badge_number}}
                 <li>You can view your submission status in "My Submissions"</li>
                 <li>You can edit pending submissions until they're reviewed</li>
               </ul>
+            </div>
+          ),
+          icon: Shield
+        }
+      ]
+    },
+    {
+      title: 'Security & Privacy',
+      items: [
+        {
+          question: 'How secure is my investigation data and custom templates?',
+          answer: (
+            <div>
+              <p className="mb-3">Your data is protected with military-grade encryption:</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <h5 className="font-semibold text-gray-900 mb-2">🔐 Custom Templates</h5>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Your custom agency templates and subpoenas with logos are encrypted</li>
+                    <li>Only you can view or use your templates - they're invisible to everyone else</li>
+                    <li>Even site administrators and the site owner cannot access your templates</li>
+                    <li>Templates remain encrypted at rest in the database</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h5 className="font-semibold text-gray-900 mb-2">📄 Generated Documents</h5>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>All generated letterheads, subpoenas, and search warrants are encrypted</li>
+                    <li>Documents are encrypted at rest in the database</li>
+                    <li>Downloads are protected during transit with HTTPS encryption</li>
+                    <li>Investigation details cannot be viewed by anyone except you</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h5 className="font-semibold text-gray-900 mb-2">🛡️ Zero-Knowledge Architecture</h5>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Each user has a unique encryption key derived from their account</li>
+                    <li>Your data is encrypted with AES-256-GCM (military-grade encryption)</li>
+                    <li>Even with database access, your data remains unreadable without your key</li>
+                    <li>We cannot recover your data if you lose access to your account</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Bottom Line:</strong> Your investigations, templates, and generated documents 
+                    are completely private. No one - not administrators, not the site owner, not even someone 
+                    with direct database access - can view your sensitive data. Only you have the key.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ),
+          icon: Shield
+        },
+        {
+          question: 'What happens to my encrypted data if I forget my password?',
+          answer: (
+            <div>
+              <p>If you reset your password:</p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>You'll regain access to your account through email verification</li>
+                <li>Your encryption key is derived from your user ID (not your password)</li>
+                <li>All your encrypted templates and documents remain accessible</li>
+                <li>Your data stays secure throughout the password reset process</li>
+              </ul>
+              <p className="mt-3 text-sm text-yellow-700 bg-yellow-50 p-3 rounded">
+                Note: If your account is deleted, your encrypted data becomes permanently inaccessible 
+                as the encryption key is destroyed with your account.
+              </p>
+            </div>
+          ),
+          icon: Shield
+        },
+        {
+          question: 'Can law enforcement agencies request access to my data?',
+          answer: (
+            <div>
+              <p>Due to our encryption architecture:</p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>We cannot decrypt or access your templates and documents</li>
+                <li>Each user's data is encrypted with their unique key</li>
+                <li>We can only provide encrypted data, which is useless without your key</li>
+                <li>This protects the confidentiality of ongoing investigations</li>
+              </ul>
+              <p className="mt-3">
+                This design ensures that sensitive investigation details remain confidential 
+                and cannot be compromised, even under legal compulsion.
+              </p>
             </div>
           ),
           icon: Shield

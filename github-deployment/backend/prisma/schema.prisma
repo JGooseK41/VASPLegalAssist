@@ -55,6 +55,13 @@ model DocumentTemplate {
   markers         String?   // JSON array of detected markers
   markerMappings  String?   // JSON mapping of markers to fields
   
+  // Encryption support
+  isEncrypted     Boolean   @default(false)
+  encryptedContent String?  // Encrypted version of templateContent
+  encryptedMarkers String?  // Encrypted version of markers
+  encryptedMappings String? // Encrypted version of markerMappings
+  encryptedCustomFields String? // Encrypted version of customFields
+  
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -76,6 +83,12 @@ model Document {
   requestedData       String
   pdfUrl              String?
   createdAt           DateTime  @default(now())
+  
+  // Encryption support
+  isEncrypted         Boolean   @default(false)
+  encryptedTransactionDetails String? // Encrypted version of transactionDetails
+  encryptedRequestedData String?      // Encrypted version of requestedData
+  encryptedContent    String?         // Encrypted version of document content
   
   user                User      @relation(fields: [userId], references: [id])
   transactionImports  TransactionImport[]

@@ -1,13 +1,19 @@
 const express = require('express');
 const router = express.Router();
+
+// Use encryption middleware to get the appropriate controller
+const { documentController } = require('../middleware/encryptionMiddleware');
 const {
   createDocument,
   getDocuments,
   getDocument,
-  duplicateDocument,
   importTransactions,
-  uploadCSV
-} = require('../controllers/documentController');
+  upload
+} = documentController;
+
+// Import regular controller functions that aren't in encrypted version yet
+const { duplicateDocument, uploadCSV } = require('../controllers/documentController');
+
 const { authMiddleware, demoMiddleware } = require('../middleware/auth');
 
 // All document routes require authentication
@@ -26,6 +32,6 @@ router.post('/', demoMiddleware, createDocument);
 router.post('/:id/duplicate', demoMiddleware, duplicateDocument);
 
 // POST /api/documents/import-transactions
-router.post('/import-transactions', uploadCSV, importTransactions);
+router.post('/import-transactions', upload.single('file'), importTransactions);
 
 module.exports = router;

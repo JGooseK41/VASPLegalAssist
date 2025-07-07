@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+
+// Use encryption middleware to get the appropriate controller
+const { templateController } = require('../middleware/encryptionMiddleware');
 const {
   getTemplates,
   getTemplate,
@@ -7,7 +10,8 @@ const {
   updateTemplate,
   deleteTemplate,
   setDefaultTemplate
-} = require('../controllers/templateController');
+} = templateController;
+
 const {
   uploadTemplate,
   updateMarkerMappings,
