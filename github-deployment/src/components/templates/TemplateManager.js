@@ -47,7 +47,7 @@ const TemplateManager = () => {
         setLoading(false);
         setEncryptionTimeout(true);
       }
-    }, 2000);
+    }, 5000); // Increased from 2s to 5s for slower connections
     return () => clearTimeout(timeout);
   }, []);
 
