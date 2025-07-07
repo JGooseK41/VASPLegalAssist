@@ -27,11 +27,6 @@ const Layout = () => {
     { name: 'Document History', href: '/documents/history', icon: Clock },
     { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
   ];
-  
-  // Add admin portal link for admin users
-  const adminNavigation = user?.role === 'ADMIN' ? [
-    { name: 'Admin Portal', href: '/admin', icon: Shield }
-  ] : [];
 
   const handleLogout = () => {
     logout();
@@ -72,7 +67,7 @@ const Layout = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-2">
-              {[...navigation, ...adminNavigation].map((item) => {
+              {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
                 return (
@@ -126,6 +121,19 @@ const Layout = () => {
                       );
                     })}
                     
+                    {user?.role === 'ADMIN' && (
+                      <div className="border-t border-gray-100">
+                        <Link
+                          to="/admin"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-red-700 bg-red-50 hover:bg-red-100 font-medium"
+                        >
+                          <Shield className="h-4 w-4 mr-3" />
+                          Admin Portal
+                        </Link>
+                      </div>
+                    )}
+                    
                     <div className="border-t">
                       <button
                         onClick={handleLogout}
@@ -154,7 +162,7 @@ const Layout = () => {
             <div className="md:hidden py-4 border-t border-blue-800">
               <nav className="space-y-2">
                 {/* Main Navigation */}
-                {[...navigation, ...adminNavigation].map((item) => {
+                {navigation.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.href;
                   return (
@@ -193,6 +201,18 @@ const Layout = () => {
                       </Link>
                     );
                   })}
+                  
+                  {/* Admin Portal Button */}
+                  {user?.role === 'ADMIN' && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium bg-red-800/90 hover:bg-red-700 text-white mt-3 shadow-sm transition-all duration-200"
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>Admin Portal</span>
+                    </Link>
+                  )}
                   
                   <button
                     onClick={handleLogout}
