@@ -182,8 +182,22 @@ class TemplateParser {
     // Prepare data with mappings
     const processedData = this.prepareData(data, markerMappings);
     
-    // Compile and render template
-    const template = handlebars.compile(templateContent);
+    // Create a version that handles case-insensitive markers
+    let processedContent = templateContent;
+    
+    // Replace lowercase markers with data
+    Object.entries(processedData).forEach(([key, value]) => {
+      // Handle both uppercase and lowercase versions
+      const upperKey = key.toUpperCase();
+      const lowerKey = key.toLowerCase();
+      
+      // Replace both {{KEY}} and {{key}} formats
+      processedContent = processedContent.replace(new RegExp(`{{${upperKey}}}`, 'g'), value || '');
+      processedContent = processedContent.replace(new RegExp(`{{${lowerKey}}}`, 'g'), value || '');
+    });
+    
+    // Also compile with handlebars for complex helpers
+    const template = handlebars.compile(processedContent);
     const result = template(processedData);
     
     return result;
@@ -218,6 +232,41 @@ class TemplateParser {
       day: 'numeric'
     });
     
+    // Add new case-related placeholders
+    processedData.CRIME_UNDER_INVESTIGATION = data.crimeUnderInvestigation || data.crime_under_investigation || data.crimeDescription || '';
+    processedData.FACTS_OF_THE_CASE = data.factsOfTheCase || data.facts_of_the_case || '';
+    processedData.JURISDICTION = data.jurisdiction || data.caseJurisdiction || '';
+    
+    // Also add lowercase versions
+    processedData.crime_under_investigation = processedData.CRIME_UNDER_INVESTIGATION;
+    processedData.facts_of_the_case = processedData.FACTS_OF_THE_CASE;
+    processedData.jurisdiction = processedData.JURISDICTION;
+    
+    // Add agency/agent placeholders
+    processedData.AGENCY_NAME = data.agencyName || data.agency_name || '';
+    processedData.AGENCY_ADDRESS = data.agencyAddress || data.agency_address || '';
+    processedData.AGENCY_CONTACT = data.agencyContact || data.agency_contact || '';
+    processedData.AGENT_NAME = data.agentName || data.agent_name || '';
+    processedData.AGENT_TITLE = data.agentTitle || data.agent_title || '';
+    processedData.AGENT_PHONE = data.agentPhone || data.agent_phone || '';
+    processedData.AGENT_EMAIL = data.agentEmail || data.agent_email || '';
+    processedData.AGENT_BADGE = data.agentBadge || data.agent_badge || data.badgeNumber || '';
+    processedData.SIGNATURE_BLOCK = data.signatureBlock || data.signature_block || '';
+    
+    // Add lowercase versions
+    processedData.agency_name = processedData.AGENCY_NAME;
+    processedData.agency_address = processedData.AGENCY_ADDRESS;
+    processedData.agency_contact = processedData.AGENCY_CONTACT;
+    processedData.agent_name = processedData.AGENT_NAME;
+    processedData.agent_title = processedData.AGENT_TITLE;
+    processedData.agent_phone = processedData.AGENT_PHONE;
+    processedData.agent_email = processedData.AGENT_EMAIL;
+    processedData.agent_badge = processedData.AGENT_BADGE;
+    processedData.signature_block = processedData.SIGNATURE_BLOCK;
+    
+    // Add date_today as lowercase
+    processedData.date_today = processedData.DATE_TODAY;
+    
     processedData.TRANSACTION_COUNT = data.transactions ? data.transactions.length : 0;
     
     processedData.TRANSACTION_LIST = data.transactions ? 
@@ -231,6 +280,34 @@ class TemplateParser {
       'No information requested';
     
     processedData.REQUESTED_INFO_CHECKBOXES = handlebars.helpers.requestedInfoCheckboxes(data.requestedInfo);
+    
+    // Add lowercase versions of all placeholders for flexibility
+    processedData.vasp_name = data.vaspName || data.vasp?.name || '';
+    processedData.vasp_email = data.vaspEmail || data.vasp?.email || '';
+    processedData.vasp_address = data.vaspAddress || data.vasp?.address || '';
+    processedData.vasp_legal_name = data.vaspLegalName || data.vasp?.legal_name || processedData.vasp_name;
+    processedData.vasp_jurisdiction = data.vaspJurisdiction || data.vasp?.jurisdiction || '';
+    
+    processedData.case_number = data.caseNumber || data.case_number || '';
+    processedData.statute = data.statute || '';
+    processedData.crime_description = data.crimeDescription || data.crime_description || '';
+    
+    processedData.transaction_table = processedData.TRANSACTION_TABLE;
+    processedData.transaction_list = processedData.TRANSACTION_LIST;
+    processedData.transaction_count = processedData.TRANSACTION_COUNT;
+    processedData.requested_info_list = processedData.REQUESTED_INFO_LIST;
+    processedData.requested_info = processedData.REQUESTED_INFO_LIST;
+    
+    // Handle individual transaction fields (use first transaction if available)
+    if (data.transactions && data.transactions.length > 0) {
+      const firstTx = data.transactions[0];
+      processedData.transaction_id = firstTx.transaction_id || '';
+      processedData.transaction_date = firstTx.date || '';
+      processedData.from_address = firstTx.from_address || '';
+      processedData.to_address = firstTx.to_address || '';
+      processedData.amount = firstTx.amount || '';
+      processedData.currency = firstTx.currency || '';
+    }
     
     return processedData;
   }

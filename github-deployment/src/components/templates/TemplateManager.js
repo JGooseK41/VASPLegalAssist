@@ -462,6 +462,7 @@ const TemplateManager = () => {
                             <div>{`{{crime_description}}`} - Crime description</div>
                             <div>{`{{crime_under_investigation}}`} - Crime being investigated</div>
                             <div>{`{{facts_of_the_case}}`} - Case facts/details</div>
+                            <div>{`{{jurisdiction}}`} - Legal jurisdiction</div>
                             <div>{`{{date_today}}`} - Today's date</div>
                           </div>
                         </div>

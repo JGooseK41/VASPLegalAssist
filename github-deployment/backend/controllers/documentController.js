@@ -75,7 +75,20 @@ const createDocument = async (req, res) => {
       statute,
       crimeDescription,
       transactions: transactions || [],
-      requestedInfo: requestedInfo || []
+      requestedInfo: requestedInfo || [],
+      // Add new fields for enhanced placeholder support
+      agentName: `${user.firstName} ${user.lastName}`,
+      agentTitle: user.title || '',
+      agentPhone: user.phone || '',
+      agentEmail: user.email || '',
+      agentBadge: user.badgeNumber || '',
+      agencyAddress: template.agencyAddress || '',
+      agencyContact: template.agencyContact || '',
+      signatureBlock: template.signatureBlock || '',
+      // Support for new case fields
+      crimeUnderInvestigation: req.body.crimeUnderInvestigation || crimeDescription,
+      factsOfTheCase: req.body.factsOfTheCase || '',
+      jurisdiction: req.body.jurisdiction || vaspJurisdiction || ''
     };
 
     let generatedDoc;

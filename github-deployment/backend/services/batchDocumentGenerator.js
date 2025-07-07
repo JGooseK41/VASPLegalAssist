@@ -4,6 +4,8 @@ const archiver = require('archiver');
 const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 class BatchDocumentGenerator {
   constructor() {
@@ -64,16 +66,45 @@ class BatchDocumentGenerator {
    * Generate a single document for a VASP
    */
   async generateSingleDocument(vaspData, documentParams, user, outputDir) {
+    // Get user info for agent fields
+    const userInfo = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+    
+    // Get template info for agency fields
+    let templateInfo = documentParams.template;
+    if (!templateInfo && documentParams.template_id) {
+      templateInfo = await prisma.documentTemplate.findUnique({
+        where: { id: documentParams.template_id }
+      });
+    }
+    
     // Prepare document data with VASP-specific information
     const documentData = {
-      ...documentParams,
-      vasp: {
-        name: vaspData.name,
-        email: vaspData.email,
-        address: vaspData.address,
-        legal_name: vaspData.legal_name || vaspData.name
-      },
+      ...documentParams.case_info,
+      vaspName: vaspData.name,
+      vaspEmail: vaspData.email,
+      vaspAddress: vaspData.address,
+      vaspLegalName: vaspData.legal_name || vaspData.name,
       transactions: vaspData.transactions,
+      requestedInfo: documentParams.requested_info || [],
+      // Agent/Agency information
+      agentName: userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : '',
+      agentTitle: userInfo?.title || '',
+      agentPhone: userInfo?.phone || '',
+      agentEmail: userInfo?.email || '',
+      agentBadge: userInfo?.badgeNumber || '',
+      agencyName: userInfo?.agencyName || '',
+      agencyAddress: templateInfo?.agencyAddress || '',
+      agencyContact: templateInfo?.agencyContact || '',
+      signatureBlock: templateInfo?.signatureBlock || '',
+      // Case information
+      caseNumber: documentParams.case_info.case_number,
+      statute: documentParams.case_info.statute,
+      crimeDescription: documentParams.case_info.crime_description,
+      crimeUnderInvestigation: documentParams.case_info.crime_under_investigation || documentParams.case_info.crime_description,
+      factsOfTheCase: documentParams.case_info.facts_of_the_case || '',
+      jurisdiction: documentParams.case_info.jurisdiction || '',
       metadata: {
         vasp_name: vaspData.name,
         created_at: new Date().toISOString(),
