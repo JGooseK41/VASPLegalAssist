@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock, MessageSquare, CheckCircle } from 'lucide-react';
 import { documentAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
+import VaspResponseModal from './VaspResponseModal';
+import axios from 'axios';
 
 const DocumentHistory = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [responseModal, setResponseModal] = useState({ isOpen: false, document: null });
+  const [documentResponses, setDocumentResponses] = useState({});
   
   // Initialize encryption
   const encryption = useEncryption();
@@ -26,6 +31,13 @@ const DocumentHistory = () => {
       loadDocuments();
     }
   }, [encryptedAPI]);
+  
+  // Check which documents have responses
+  useEffect(() => {
+    if (documents.length > 0) {
+      checkDocumentResponses();
+    }
+  }, [documents]);
 
   const loadDocuments = async () => {
     try {
@@ -45,6 +57,32 @@ const DocumentHistory = () => {
       setError('Failed to load document history. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const checkDocumentResponses = async () => {
+    try {
+      const responses = {};
+      for (const doc of documents) {
+        if (!doc.decryptionError) {
+          try {
+            const response = await axios.get(
+              `/api/vasp-responses/document/${doc.id}/check`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('authToken')}`
+                }
+              }
+            );
+            responses[doc.id] = response.data.hasResponse;
+          } catch (err) {
+            console.error('Error checking document response:', err);
+          }
+        }
+      }
+      setDocumentResponses(responses);
+    } catch (err) {
+      console.error('Failed to check document responses:', err);
     }
   };
 
@@ -161,6 +199,28 @@ const DocumentHistory = () => {
             New Document
           </button>
         </div>
+        
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+            <div className="flex">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <div className="ml-3">
+                <p className="text-sm text-green-800">{success}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {documents.length === 0 ? (
           <div className="bg-white shadow rounded-lg p-12 text-center">
@@ -233,6 +293,15 @@ const DocumentHistory = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </button>
+                        {!doc.decryptionError && !documentResponses[doc.id] && (
+                          <button
+                            onClick={() => setResponseModal({ isOpen: true, document: doc })}
+                            className="bg-green-600 hover:bg-green-700 text-white p-2 rounded"
+                            title="Log VASP Response"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDownload(doc)}
                           className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded"
@@ -352,6 +421,20 @@ const DocumentHistory = () => {
             </div>
           </div>
         )}
+        
+        {/* VASP Response Modal */}
+        <VaspResponseModal
+          isOpen={responseModal.isOpen}
+          onClose={() => setResponseModal({ isOpen: false, document: null })}
+          document={responseModal.document}
+          onSuccess={() => {
+            // Refresh the document responses
+            checkDocumentResponses();
+            // Show success message
+            setSuccess('VASP response logged successfully!');
+            setTimeout(() => setSuccess(null), 3000);
+          }}
+        />
       </div>
     </div>
   );

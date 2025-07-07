@@ -4,6 +4,7 @@ import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
 import VaspSubmissionModal from './VaspSubmissionModal';
+import VaspResponseStats from './VaspResponseStats';
 
 const VASPCard = ({ vasp, onSelect }) => {
   return (
@@ -56,6 +57,9 @@ const VASPCard = ({ vasp, onSelect }) => {
           </span>
         )}
       </div>
+      
+      {/* VASP Response Statistics */}
+      <VaspResponseStats vaspId={vasp.id} displayMode="badge" />
 
       <div className="flex justify-between items-center">
         <div className="flex space-x-2">
