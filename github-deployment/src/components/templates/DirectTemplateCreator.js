@@ -65,14 +65,15 @@ Office: {{agent_phone}}`,
       const dataToSend = {
         templateName: formData.templateName,
         templateType: formData.templateType,
-        agencyHeader: formData.agencyHeader,
-        agencyAddress: formData.agencyAddress,
-        agencyContact: formData.agencyContact,
-        footerText: formData.footerText,
-        signatureBlock: formData.signatureBlock,
+        agencyHeader: formData.agencyHeader || '',
+        agencyAddress: formData.agencyAddress || '',
+        agencyContact: formData.agencyContact || '',
+        footerText: formData.footerText || '',
+        signatureBlock: formData.signatureBlock || '',
         templateContent: formData.templateContent,
         markers: formData.markers,
         markerMappings: '{}',
+        customFields: {},  // Add empty customFields
         isGlobal: user?.role === 'ADMIN' ? isGlobal : false,
         fileUrl: null,
         fileType: formData.fileType,
@@ -80,6 +81,9 @@ Office: {{agent_phone}}`,
         originalFilename: 'direct_template.html'
       };
 
+      console.log('Sending template data:', dataToSend);
+      console.log('Using encryptedAPI:', encryptedAPI);
+      
       const response = await encryptedAPI.createTemplate(dataToSend);
       
       if (onSuccess) {
@@ -87,7 +91,9 @@ Office: {{agent_phone}}`,
       }
     } catch (err) {
       console.error('Template creation error:', err);
-      setError(err.response?.data?.error || 'Failed to create template');
+      console.error('Error response:', err.response);
+      console.error('Error data:', err.response?.data);
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to create template');
     } finally {
       setLoading(false);
     }

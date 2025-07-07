@@ -144,7 +144,13 @@ const createTemplate = async (req, res) => {
     res.status(201).json(template);
   } catch (error) {
     console.error('Create template error:', error);
-    res.status(500).json({ error: 'Failed to create template' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to create template',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
