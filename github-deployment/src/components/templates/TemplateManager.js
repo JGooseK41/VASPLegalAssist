@@ -435,25 +435,72 @@ const TemplateManager = () => {
                     </p>
                     
                     <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="font-medium text-blue-900 mb-2">Available Placeholders:</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
-                        <div>{`{{vasp_name}}`}</div>
-                        <div>{`{{case_number}}`}</div>
-                        <div>{`{{vasp_legal_name}}`}</div>
-                        <div>{`{{statute}}`}</div>
-                        <div>{`{{vasp_email}}`}</div>
-                        <div>{`{{crime_description}}`}</div>
-                        <div>{`{{vasp_address}}`}</div>
-                        <div>{`{{date_today}}`}</div>
-                        <div className="col-span-2 font-bold text-blue-900 mt-2">Transaction Placeholders:</div>
-                        <div>{`{{transaction_table}}`}</div>
-                        <div>{`{{transaction_list}}`}</div>
-                        <div>{`{{transaction_count}}`}</div>
-                        <div>{`{{transaction_id}}`}</div>
-                        <div>{`{{from_address}}`}</div>
-                        <div>{`{{to_address}}`}</div>
-                        <div>{`{{amount}}`}</div>
-                        <div>{`{{currency}}`}</div>
+                      <h4 className="font-medium text-blue-900 mb-2">Complete List of Available Placeholders:</h4>
+                      <div className="space-y-4">
+                        {/* Agency & Agent Information */}
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">Agency & Agent Information:</h5>
+                          <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
+                            <div>{`{{agency_name}}`} - Your agency name</div>
+                            <div>{`{{agency_address}}`} - Agency address</div>
+                            <div>{`{{agency_contact}}`} - Agency contact info</div>
+                            <div>{`{{agent_name}}`} - Agent's full name</div>
+                            <div>{`{{agent_title}}`} - Agent's title/position</div>
+                            <div>{`{{agent_phone}}`} - Agent's phone</div>
+                            <div>{`{{agent_email}}`} - Agent's email</div>
+                            <div>{`{{agent_badge}}`} - Badge number</div>
+                            <div>{`{{signature_block}}`} - Full signature block</div>
+                          </div>
+                        </div>
+                        
+                        {/* Case Information */}
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">Case Information:</h5>
+                          <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
+                            <div>{`{{case_number}}`} - Case number</div>
+                            <div>{`{{statute}}`} - Legal statute/code</div>
+                            <div>{`{{crime_description}}`} - Crime description</div>
+                            <div>{`{{current_date}}`} - Today's date</div>
+                            <div>{`{{date_today}}`} - Today's date (alt)</div>
+                          </div>
+                        </div>
+                        
+                        {/* VASP Information */}
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">VASP Information:</h5>
+                          <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
+                            <div>{`{{vasp_name}}`} - VASP name</div>
+                            <div>{`{{vasp_legal_name}}`} - VASP legal name</div>
+                            <div>{`{{vasp_email}}`} - VASP email</div>
+                            <div>{`{{vasp_address}}`} - VASP address</div>
+                            <div>{`{{vasp_jurisdiction}}`} - VASP jurisdiction</div>
+                          </div>
+                        </div>
+                        
+                        {/* Transaction Information */}
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">Transaction Information:</h5>
+                          <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
+                            <div>{`{{transaction_table}}`} - All transactions in table</div>
+                            <div>{`{{transaction_list}}`} - Transaction list</div>
+                            <div>{`{{transaction_count}}`} - Number of transactions</div>
+                            <div>{`{{transaction_id}}`} - Transaction ID/hash</div>
+                            <div>{`{{transaction_date}}`} - Transaction date</div>
+                            <div>{`{{from_address}}`} - Sender address</div>
+                            <div>{`{{to_address}}`} - Receiver address</div>
+                            <div>{`{{amount}}`} - Transaction amount</div>
+                            <div>{`{{currency}}`} - Currency type</div>
+                          </div>
+                        </div>
+                        
+                        {/* Requested Information */}
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">Requested Information:</h5>
+                          <div className="grid grid-cols-1 gap-2 text-sm font-mono text-blue-800">
+                            <div>{`{{requested_info_list}}`} - Bulleted list of requested items</div>
+                            <div>{`{{requested_info}}`} - Comma-separated requested items</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
