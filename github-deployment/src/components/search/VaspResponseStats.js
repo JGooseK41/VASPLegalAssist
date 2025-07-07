@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, FileText, Shield, Info } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, Shield, Info, X } from 'lucide-react';
 import axios from 'axios';
 
 const VaspResponseStats = ({ vaspId, displayMode = 'badge' }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, ChevronRight } from 'lucide-react';
+import { Trophy, ChevronRight, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 function TopContributor() {
@@ -8,6 +8,7 @@ function TopContributor() {
   const [topContributor, setTopContributor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   useEffect(() => {
     const fetchTopContributor = async () => {
@@ -73,31 +74,42 @@ function TopContributor() {
   const isCurrentUser = user && user.id === topContributor.userId;
 
   return (
-    <div className={`bg-gradient-to-r ${isCurrentUser ? 'from-yellow-400 to-orange-500' : 'from-indigo-500 to-purple-600'} rounded-lg shadow-lg p-3 text-white`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Trophy className="w-5 h-5 mr-2" />
-          <span className="font-medium">Top Contributor</span>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="text-center">
-            <div className="font-semibold">{topContributor.firstName} {topContributor.lastName}</div>
-            <div className="text-xs opacity-90">{topContributor.agencyName}</div>
+    <>
+      <div className={`bg-gradient-to-r ${isCurrentUser ? 'from-yellow-400 to-orange-500' : 'from-indigo-500 to-purple-600'} rounded-lg shadow-lg p-3 text-white`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Trophy className="w-5 h-5 mr-2" />
+            <span className="font-medium">Top Contributor</span>
+            <button
+              onClick={() => setShowInfoModal(true)}
+              className="ml-2 text-white/80 hover:text-white"
+              title="Learn about the leaderboard"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
           </div>
           
-          <div className="text-center">
-            <div className="text-xl font-bold">{topContributor.score}</div>
-            <div className="text-xs opacity-90">points</div>
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <div className="font-semibold">{topContributor.firstName} {topContributor.lastName}</div>
+              <div className="text-xs opacity-90">{topContributor.agencyName}</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-xl font-bold">{topContributor.score}</div>
+              <div className="text-xs opacity-90">points</div>
+            </div>
+            
+            <Link
+              to="/leaderboard"
+              className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
+            >
+              View Leaderboard
+              <ChevronRight className="w-3 h-3 ml-1" />
+            </Link>
           </div>
-          
-          <Link
-            to="/leaderboard"
-            className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
-          >
-            View Leaderboard
-            <ChevronRight className="w-3 h-3 ml-1" />
-          </Link>
         </div>
       </div>
       
@@ -164,7 +176,7 @@ function TopContributor() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
