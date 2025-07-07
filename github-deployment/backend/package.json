@@ -27,7 +27,7 @@
     "mammoth": "^1.8.0",
     "handlebars": "^4.7.8",
     "pdf-parse": "^1.1.1",
-    "puppeteer": "^25.0.0",
+    "puppeteer": "^22.0.0",
     "docxtemplater": "^3.50.0",
     "pizzip": "^3.1.7"
   },
