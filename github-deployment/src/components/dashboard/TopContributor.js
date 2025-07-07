@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, ChevronRight, X } from 'lucide-react';
+import { Trophy, ChevronRight, X, Info } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 function TopContributor() {
@@ -50,24 +50,96 @@ function TopContributor() {
 
   if (error || !topContributor) {
     return (
-      <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg shadow-lg p-3 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Trophy className="w-5 h-5 mr-2" />
-            <span className="font-medium">Top Contributor</span>
-          </div>
-          <div className="flex items-center text-sm">
-            <span className="mr-4">No contributions yet - be the first!</span>
-            <Link
-              to="/leaderboard"
-              className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
-            >
-              View Leaderboard
-              <ChevronRight className="w-3 h-3 ml-1" />
-            </Link>
+      <>
+        <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg shadow-lg p-3 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Trophy className="w-5 h-5 mr-2" />
+              <span className="font-medium">Top Contributor</span>
+              <button
+                onClick={() => setShowInfoModal(true)}
+                className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                title="Learn about the leaderboard"
+              >
+                <Info className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <div className="flex items-center text-sm">
+              <span className="mr-4">No contributions yet - be the first!</span>
+              <Link
+                to="/leaderboard"
+                className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
+              >
+                View Leaderboard
+                <ChevronRight className="w-3 h-3 ml-1" />
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+        
+        {/* Info Modal */}
+        {showInfoModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+                Leaderboard System
+              </h3>
+              
+              <div className="space-y-4 text-sm text-gray-600">
+                <p>
+                  The VASP Legal Assistant leaderboard rewards active contributors who help improve our database and community.
+                </p>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">How to Earn Points:</h4>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li><strong>+10 points</strong> - Submit a new VASP that gets approved</li>
+                    <li><strong>+5 points</strong> - Log VASP response (compliance & turnaround)</li>
+                    <li><strong>+5 points</strong> - Each upvote received on your comments</li>
+                    <li><strong>+1 point</strong> - Leave helpful comments on VASPs</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Benefits:</h4>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Recognition as a top contributor</li>
+                    <li>Build reputation in the law enforcement community</li>
+                    <li>Help improve data quality for everyone</li>
+                  </ul>
+                </div>
+                
+                <p className="text-xs text-gray-500 italic">
+                  You can opt out of the leaderboard in your profile settings if you prefer to contribute anonymously.
+                </p>
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <Link
+                  to="/profile"
+                  className="text-sm text-gray-600 hover:text-gray-800 px-4 py-2"
+                >
+                  Manage Settings
+                </Link>
+                <button
+                  onClick={() => setShowInfoModal(false)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                >
+                  Got it!
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -85,9 +157,7 @@ function TopContributor() {
               className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
               title="Learn about the leaderboard"
             >
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Info className="w-4 h-4 text-white" />
             </button>
           </div>
           
