@@ -134,15 +134,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Top Contributor Section - Now in grid */}
-          <div className="lg:col-span-1">
+        {/* Top Contributor Section - Centered and thin */}
+        <div className="mb-8 flex justify-center">
+          <div className="w-full max-w-2xl">
             <TopContributor />
-          </div>
-          
-          {/* Placeholder for balance - can add more widgets here */}
-          <div className="lg:col-span-2">
-            {/* Space for future widgets or leave empty for now */}
           </div>
         </div>
 

@@ -57,13 +57,13 @@ const Layout = () => {
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
             <div className="flex items-center">
-    <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
-      <img
-        src="/images/logo.png"
-        alt="VASP Legal Assistant Logo"
-        className="h-8 w-8"
-      />
-    </a>
+              <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
+                <img
+                  src="/images/logo.png"
+                  alt="VASP Legal Assistant Logo"
+                  className="h-8 w-8"
+                />
+              </a>
               <span className="ml-3 text-xl font-semibold text-white">
                 VASP Legal Assistant
               </span>

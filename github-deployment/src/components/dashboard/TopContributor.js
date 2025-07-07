@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Star, MessageSquare, CheckCircle, ThumbsUp, ChevronRight, TrendingUp } from 'lucide-react';
+import { Trophy, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 function TopContributor() {
@@ -9,85 +9,62 @@ function TopContributor() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchTopContributor = async () => {
-    try {
-      const response = await fetch('/api/contributors/top', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch top contributor');
-      }
-
-      const data = await response.json();
-      setTopContributor(data.topContributor);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchTopContributor = async () => {
+      try {
+        const response = await fetch('/api/contributors/top', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTopContributor(data);
+        } else {
+          setError('Failed to fetch top contributor');
+        }
+      } catch (err) {
+        setError('Network error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTopContributor();
-    
-    // Refresh every 5 minutes for real-time updates
+
+    // Auto-refresh every 5 minutes
     const interval = setInterval(fetchTopContributor, 5 * 60 * 1000);
-    
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-1/3 mb-3"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      <div className="bg-white rounded-lg shadow-md p-3 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
       </div>
     );
   }
 
   if (error || !topContributor) {
     return (
-      <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg shadow-lg p-4 text-white">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold flex items-center">
-            <Trophy className="w-6 h-6 mr-2" />
-            Top Contributor
-          </h2>
-        </div>
-        
-        <div className="text-center py-3">
-          <p className="text-base mb-2">No contributions yet!</p>
-          <p className="text-sm opacity-90 mb-3">
-            Be the first to earn points by:
-          </p>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              <span>Submitting VASPs (10 points each)</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <ThumbsUp className="w-4 h-4 mr-2" />
-              <span>Getting upvotes (5 points each)</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              <span>Adding comments (1 point each)</span>
-            </div>
+      <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg shadow-lg p-3 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Trophy className="w-5 h-5 mr-2" />
+            <span className="font-medium">Top Contributor</span>
           </div>
-        </div>
-        
-        <div className="mt-3 text-center">
-          <Link
-            to="/leaderboard"
-            className="inline-flex items-center bg-white text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors text-sm"
-          >
-            View Full Leaderboard
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Link>
+          <div className="flex items-center text-sm">
+            <span className="mr-4">No contributions yet - be the first!</span>
+            <Link
+              to="/leaderboard"
+              className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
+            >
+              View Leaderboard
+              <ChevronRight className="w-3 h-3 ml-1" />
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -96,63 +73,32 @@ function TopContributor() {
   const isCurrentUser = user && user.id === topContributor.userId;
 
   return (
-    <div className={`bg-gradient-to-r ${isCurrentUser ? 'from-yellow-400 to-orange-500' : 'from-indigo-500 to-purple-600'} rounded-lg shadow-lg p-4 text-white`}>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold flex items-center">
-          <Trophy className="w-6 h-6 mr-2" />
-          Top Contributor
-        </h2>
+    <div className={`bg-gradient-to-r ${isCurrentUser ? 'from-yellow-400 to-orange-500' : 'from-indigo-500 to-purple-600'} rounded-lg shadow-lg p-3 text-white`}>
+      <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <Star className="w-5 h-5 fill-current" />
-          <span className="text-2xl font-bold ml-1">{topContributor.score}</span>
-          <span className="text-xs ml-1">points</span>
-        </div>
-      </div>
-      
-      <div className="mb-3">
-        <p className="text-base font-semibold">
-          {topContributor.name}
-          {isCurrentUser && <span className="ml-2 text-xs">(That's you!)</span>}
-        </p>
-        <p className="text-xs opacity-90">{topContributor.agencyName}</p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 text-center">
-        <div className="bg-white bg-opacity-20 rounded-lg p-2">
-          <CheckCircle className="w-5 h-5 mx-auto mb-1" />
-          <p className="text-lg font-bold">{topContributor.breakdown.acceptedVasps}</p>
-          <p className="text-xs">VASPs</p>
-          <p className="text-xs opacity-75">{topContributor.breakdown.vaspPoints} pts</p>
+          <Trophy className="w-5 h-5 mr-2" />
+          <span className="font-medium">Top Contributor</span>
         </div>
         
-        <div className="bg-white bg-opacity-20 rounded-lg p-2">
-          <Star className="w-5 h-5 mx-auto mb-1" />
-          <p className="text-lg font-bold">{topContributor.breakdown.upvotesReceived}</p>
-          <p className="text-xs">Upvotes</p>
-          <p className="text-xs opacity-75">{topContributor.breakdown.upvotePoints} pts</p>
+        <div className="flex items-center space-x-4">
+          <div className="text-center">
+            <div className="font-semibold">{topContributor.firstName} {topContributor.lastName}</div>
+            <div className="text-xs opacity-90">{topContributor.agencyName}</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-xl font-bold">{topContributor.score}</div>
+            <div className="text-xs opacity-90">points</div>
+          </div>
+          
+          <Link
+            to="/leaderboard"
+            className="inline-flex items-center bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors text-xs"
+          >
+            View Leaderboard
+            <ChevronRight className="w-3 h-3 ml-1" />
+          </Link>
         </div>
-        
-        <div className="bg-white bg-opacity-20 rounded-lg p-2">
-          <MessageSquare className="w-5 h-5 mx-auto mb-1" />
-          <p className="text-lg font-bold">{topContributor.breakdown.commentsCount}</p>
-          <p className="text-xs">Comments</p>
-          <p className="text-xs opacity-75">{topContributor.breakdown.commentPoints} pts</p>
-        </div>
-      </div>
-
-      {!isCurrentUser && (
-        <div className="mt-3 text-xs text-center opacity-90">
-          <p>Can you beat {topContributor.name.split(' ')[0]}? Add VASPs, comment, and get upvotes!</p>
-        </div>
-      )}
-      
-      <div className="mt-3 text-center">
-        <Link 
-          to="/leaderboard" 
-          className="inline-flex items-center px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-xs font-medium transition-all"
-        >
-          View Full Leaderboard →
-        </Link>
       </div>
     </div>
   );
