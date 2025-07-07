@@ -25,8 +25,6 @@ class ClientEncryptionService {
       throw new Error('User ID and email are required for key derivation');
     }
 
-    console.log('Deriving key for:', { userId, email });
-
     // Combine userId and email for unique key material
     const keyMaterial = `${userId}_${email}_${this.SALT}`;
     
@@ -36,7 +34,6 @@ class ClientEncryptionService {
       iterations: this.ITERATIONS
     });
 
-    console.log('Key derived successfully');
     return key.toString();
   }
 

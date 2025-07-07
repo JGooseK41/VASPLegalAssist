@@ -13,20 +13,16 @@ export function useEncryption() {
 
   // Derive encryption key when user changes
   useEffect(() => {
-    console.log('useEncryption - User object:', user);
     if (user && user.id && user.email) {
       try {
-        console.log('Deriving encryption key for user:', user.id, user.email);
         const key = clientEncryption.deriveUserKey(user.id, user.email);
         setEncryptionKey(key);
         setIsKeyReady(true);
-        console.log('Encryption key ready');
       } catch (error) {
         console.error('Failed to derive encryption key:', error);
         setIsKeyReady(false);
       }
     } else {
-      console.log('User data incomplete:', { hasUser: !!user, hasId: !!(user?.id), hasEmail: !!(user?.email) });
       setEncryptionKey(null);
       setIsKeyReady(false);
     }

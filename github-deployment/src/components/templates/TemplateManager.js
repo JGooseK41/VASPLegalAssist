@@ -22,7 +22,6 @@ const TemplateManager = () => {
   // Initialize encryption
   const encryption = useEncryption();
   const encryptedAPI = useMemo(() => {
-    console.log('Encryption status:', { isKeyReady: encryption.isKeyReady });
     if (encryption.isKeyReady) {
       return createEncryptedTemplateAPI(encryption);
     }
@@ -43,7 +42,6 @@ const TemplateManager = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading && !encryptedAPI) {
-        console.log('Timeout reached, showing UI without templates');
         setLoading(false);
         setEncryptionTimeout(true);
       }
@@ -66,7 +64,9 @@ const TemplateManager = () => {
       setTemplates(data);
     } catch (err) {
       console.error('Failed to load templates:', err);
-      setError('Failed to load templates. Please try again.');
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Failed to load templates. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -98,12 +98,14 @@ const TemplateManager = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Failed to save template:', err);
+      console.error('Error response:', err.response?.data);
       
       // Check if this is a demo restriction error
       if (err.response?.data?.isDemo) {
         setError(err.response.data.message || 'Demo users cannot save or modify templates.');
       } else {
-        setError('Failed to save template. Please try again.');
+        const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Failed to save template. Please try again.';
+        setError(errorMessage);
       }
     }
   };
