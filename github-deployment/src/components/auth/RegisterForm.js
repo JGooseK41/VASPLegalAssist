@@ -92,6 +92,7 @@ const RegisterForm = () => {
                     type="text"
                     name="firstName"
                     required
+                    autoComplete="given-name"
                     value={formData.firstName}
                     onChange={handleChange}
                     className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -109,6 +110,7 @@ const RegisterForm = () => {
                     type="text"
                     name="lastName"
                     required
+                    autoComplete="family-name"
                     value={formData.lastName}
                     onChange={handleChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -126,6 +128,7 @@ const RegisterForm = () => {
                   type="email"
                   name="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -143,6 +146,7 @@ const RegisterForm = () => {
                   type="text"
                   name="agencyName"
                   required
+                  autoComplete="organization"
                   value={formData.agencyName}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -194,6 +198,7 @@ const RegisterForm = () => {
                 <input
                   type="tel"
                   name="phone"
+                  autoComplete="tel"
                   value={formData.phone}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -212,6 +217,7 @@ const RegisterForm = () => {
                   type="password"
                   name="password"
                   required
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -230,6 +236,7 @@ const RegisterForm = () => {
                   type="password"
                   name="confirmPassword"
                   required
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -257,12 +264,12 @@ const RegisterForm = () => {
               </Link>
             </div>
 
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <Link
                 to="/faq"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                className="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <HelpCircle className="h-4 w-4 mr-1" />
+                <HelpCircle className="h-5 w-5 mr-2" />
                 Need help? View FAQ
               </Link>
             </div>

@@ -123,6 +123,7 @@ const VaspComments = ({ vaspId, vaspName }) => {
   const [newComment, setNewComment] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isRestricted, setIsRestricted] = useState(false);
   
   useEffect(() => {
     if (isExpanded) {
@@ -133,8 +134,21 @@ const VaspComments = ({ vaspId, vaspName }) => {
   const loadComments = async () => {
     try {
       setLoading(true);
-      const data = await commentAPI.getVaspComments(vaspId);
-      setComments(data);
+      const response = await commentAPI.getVaspComments(vaspId);
+      
+      // Check if the response indicates restricted access
+      if (response.restricted) {
+        setIsRestricted(true);
+        setComments([]);
+      } else if (Array.isArray(response)) {
+        // Normal response - array of comments
+        setComments(response);
+        setIsRestricted(false);
+      } else if (response.comments) {
+        // Response with comments array
+        setComments(response.comments);
+        setIsRestricted(response.restricted || false);
+      }
     } catch (error) {
       console.error('Failed to load comments:', error);
     } finally {
@@ -215,37 +229,49 @@ const VaspComments = ({ vaspId, vaspName }) => {
       
       {isExpanded && (
         <div className="mt-4 space-y-4">
-          {/* New Comment Form */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={isUpdate}
-                  onChange={(e) => setIsUpdate(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">This is an update notification</span>
-              </label>
+          {/* Check if user is restricted (demo user) */}
+          {isRestricted || user?.role === 'DEMO' ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <p className="text-sm text-yellow-800">
+                  Comments are not available for demo accounts. Please upgrade to a full account to view and participate in discussions.
+                </p>
+              </div>
             </div>
-            
-            <div className="flex gap-2">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={`Share your experience or updates about ${vaspName}...`}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                rows={3}
-              />
-              <button
-                onClick={handleSubmitComment}
-                disabled={!newComment.trim() || submitting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* New Comment Form */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isUpdate}
+                      onChange={(e) => setIsUpdate(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-gray-700">This is an update notification</span>
+                  </label>
+                </div>
+                
+                <div className="flex gap-2">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder={`Share your experience or updates about ${vaspName}...`}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    rows={3}
+                  />
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={!newComment.trim() || submitting}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
           
           {/* Comments List */}
           {loading ? (
@@ -269,6 +295,8 @@ const VaspComments = ({ vaspId, vaspName }) => {
             <p className="text-center text-gray-500 py-4">
               No comments yet. Be the first to share your experience!
             </p>
+          )}
+            </>
           )}
         </div>
       )}

@@ -4,6 +4,15 @@ const prisma = new PrismaClient();
 // Get comments for a specific VASP
 const getVaspComments = async (req, res) => {
   try {
+    // Check if user is a demo user
+    if (req.userRole === 'DEMO') {
+      return res.json({
+        message: 'Comments are not available for demo accounts',
+        restricted: true,
+        comments: []
+      });
+    }
+    
     const { vaspId } = req.params;
     
     const comments = await prisma.vaspComment.findMany({

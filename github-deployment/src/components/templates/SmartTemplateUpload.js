@@ -71,7 +71,13 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
       
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err.response?.data?.error || 'Failed to upload template');
+      
+      // Check if this is a demo restriction error
+      if (err.response?.data?.isDemo) {
+        setError(err.response.data.message || 'Demo users cannot upload templates.');
+      } else {
+        setError(err.response?.data?.error || 'Failed to upload template');
+      }
     } finally {
       setUploading(false);
     }

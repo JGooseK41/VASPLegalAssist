@@ -95,6 +95,7 @@ const LoginForm = () => {
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -121,6 +122,7 @@ const LoginForm = () => {
                 <input
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -163,9 +165,9 @@ const LoginForm = () => {
             <div className="mt-4 text-center">
               <Link
                 to="/faq"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                className="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <HelpCircle className="h-4 w-4 mr-1" />
+                <HelpCircle className="h-5 w-5 mr-2" />
                 Need help? View FAQ
               </Link>
             </div>

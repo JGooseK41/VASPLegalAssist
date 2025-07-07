@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Database, FileText, Clock, Upload, Search, Plus, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI } from '../../services/api';
+import TopContributor from './TopContributor';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -131,6 +132,11 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Top Contributor Section */}
+        <div className="mb-8">
+          <TopContributor />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

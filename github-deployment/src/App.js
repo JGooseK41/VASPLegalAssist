@@ -17,6 +17,7 @@ import AdminPortal from './components/admin/AdminPortal';
 import FAQ from './components/help/FAQ';
 import VaspSubmissionForm from './components/submissions/VaspSubmissionForm';
 import MySubmissions from './components/submissions/MySubmissions';
+import Leaderboard from './components/dashboard/Leaderboard';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/submissions/new" element={<VaspSubmissionForm />} />
               <Route path="/submissions/my" element={<MySubmissions />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Route>
             {/* Admin Portal - outside of main layout */}
             <Route path="/admin/*" element={<AdminPortal />} />

@@ -151,9 +151,9 @@ const ForgotPassword = () => {
           <div className="mt-6 text-center">
             <Link
               to="/faq"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+              className="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <HelpCircle className="h-4 w-4 mr-1" />
+              <HelpCircle className="h-5 w-5 mr-2" />
               Need help? View FAQ
             </Link>
           </div>

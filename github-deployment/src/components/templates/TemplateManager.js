@@ -53,7 +53,13 @@ const TemplateManager = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Failed to save template:', err);
-      setError('Failed to save template. Please try again.');
+      
+      // Check if this is a demo restriction error
+      if (err.response?.data?.isDemo) {
+        setError(err.response.data.message || 'Demo users cannot save or modify templates.');
+      } else {
+        setError('Failed to save template. Please try again.');
+      }
     }
   };
 
@@ -70,7 +76,13 @@ const TemplateManager = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Failed to delete template:', err);
-      setError('Failed to delete template. Please try again.');
+      
+      // Check if this is a demo restriction error
+      if (err.response?.data?.isDemo) {
+        setError(err.response.data.message || 'Demo users cannot delete templates.');
+      } else {
+        setError('Failed to delete template. Please try again.');
+      }
     }
   };
 

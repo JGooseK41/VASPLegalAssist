@@ -15,6 +15,7 @@ const vaspRoutes = require('./routes/vasps');
 const commentRoutes = require('./routes/comments');
 const adminRoutes = require('./routes/admin');
 const submissionRoutes = require('./routes/submissions');
+const contributorRoutes = require('./routes/contributors');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/vasps', vaspRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/contributors', contributorRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -152,6 +152,11 @@ const DocumentBuilder = () => {
 
       const response = await documentAPI.createDocument(documentData);
       
+      // Check if this is a demo response
+      if (response.isDemo) {
+        setSuccess('Document generated successfully! Note: Demo accounts cannot save documents permanently.');
+      }
+      
       if (response.documentUrl || response.pdf_url) {
         // Download the document
         const link = document.createElement('a');
@@ -162,16 +167,24 @@ const DocumentBuilder = () => {
         link.click();
         document.body.removeChild(link);
         
-        setSuccess(`Document created successfully as ${fileExtension.toUpperCase()}!`);
-        
-        // Navigate to history after a short delay
-        setTimeout(() => {
-          navigate('/documents/history');
-        }, 2000);
+        if (!response.isDemo) {
+          setSuccess(`Document created successfully as ${fileExtension.toUpperCase()}!`);
+          
+          // Navigate to history after a short delay (only for non-demo users)
+          setTimeout(() => {
+            navigate('/documents/history');
+          }, 2000);
+        }
       }
     } catch (err) {
       console.error('Failed to create document:', err);
-      setError('Failed to create document. Please try again.');
+      
+      // Check if this is a demo restriction error
+      if (err.response?.data?.isDemo) {
+        setError(err.response.data.message || 'Demo users cannot save documents permanently.');
+      } else {
+        setError('Failed to create document. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

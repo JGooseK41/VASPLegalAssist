@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { authMiddleware, demoMiddleware } = require('../middleware/auth');
 const {
   getVaspComments,
   createComment,
@@ -10,21 +10,21 @@ const {
 } = require('../controllers/commentController');
 
 // All routes require authentication
-router.use(auth);
+router.use(authMiddleware);
 
 // Get comments for a specific VASP
 router.get('/vasp/:vaspId', getVaspComments);
 
-// Create a new comment
-router.post('/vasp/:vaspId', createComment);
+// Create a new comment (demo users cannot create comments)
+router.post('/vasp/:vaspId', demoMiddleware, createComment);
 
-// Update a comment
-router.put('/:commentId', updateComment);
+// Update a comment (demo users cannot update comments)
+router.put('/:commentId', demoMiddleware, updateComment);
 
-// Delete a comment
-router.delete('/:commentId', deleteComment);
+// Delete a comment (demo users cannot delete comments)
+router.delete('/:commentId', demoMiddleware, deleteComment);
 
-// Vote on a comment
-router.post('/:commentId/vote', voteComment);
+// Vote on a comment (demo users cannot vote)
+router.post('/:commentId/vote', demoMiddleware, voteComment);
 
 module.exports = router;

@@ -22,9 +22,13 @@ const demoMiddleware = (req, res, next) => {
   // Allow demo users limited functionality
   if (req.userRole === 'DEMO') {
     // Prevent certain actions for demo users
-    const restrictedActions = ['DELETE', 'PUT'];
+    const restrictedActions = ['DELETE', 'PUT', 'POST'];
     if (restrictedActions.includes(req.method)) {
-      return res.status(403).json({ error: 'Demo users cannot perform this action' });
+      return res.status(403).json({ 
+        error: 'Demo users cannot save or modify data',
+        message: 'This feature is restricted for demo accounts. Please upgrade to a full account to save documents and templates.',
+        isDemo: true
+      });
     }
   }
   next();

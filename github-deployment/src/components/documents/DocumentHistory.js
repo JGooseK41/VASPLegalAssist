@@ -33,22 +33,22 @@ const DocumentHistory = () => {
     try {
       // If we have a stored PDF URL, use it
       if (document.pdf_url) {
-        const link = document.createElement('a');
+        const link = window.document.createElement('a');
         link.href = document.pdf_url;
         link.download = `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`;
-        document.body.appendChild(link);
+        window.document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+        window.document.body.removeChild(link);
       } else {
         // Otherwise, regenerate the PDF
         const response = await documentAPI.regenerateDocument(document.id);
         if (response.pdf_url) {
-          const link = document.createElement('a');
+          const link = window.document.createElement('a');
           link.href = response.pdf_url;
           link.download = `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`;
-          document.body.appendChild(link);
+          window.document.body.appendChild(link);
           link.click();
-          document.body.removeChild(link);
+          window.document.body.removeChild(link);
         }
       }
     } catch (err) {

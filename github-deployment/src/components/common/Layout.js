@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings } from 'lucide-react';
+import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings, Trophy } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import DemoBanner from './DemoBanner';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -15,6 +16,7 @@ const Layout = () => {
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'VASP Search', href: '/search', icon: Search },
     { name: 'Generate Document', href: '/documents/new', icon: FileEdit },
+    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'FAQ', href: '/faq', icon: HelpCircle },
   ];
   
@@ -202,6 +204,7 @@ const Layout = () => {
       </header>
 
       {/* Main Content */}
+      <DemoBanner />
       <main>
         <Outlet />
       </main>
