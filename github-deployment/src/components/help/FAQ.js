@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle } from 'lucide-react';
 
 const FAQItem = ({ question, answer, icon: Icon }) => {
   const [isOpen, setIsOpen] = useState(false);
