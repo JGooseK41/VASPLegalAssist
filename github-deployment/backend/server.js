@@ -82,6 +82,7 @@ app.use(trackVisitor);
 app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs')));
 app.use('/docs', express.static(path.join(__dirname, 'generated-docs')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/documents', express.static(path.join(__dirname, 'public/documents')));
 
 // Routes
 app.use('/api/auth', authRoutes);

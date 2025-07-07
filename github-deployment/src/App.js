@@ -10,6 +10,7 @@ import ResetPassword from './components/auth/ResetPassword';
 import Dashboard from './components/dashboard/Dashboard';
 import VASPSearch from './components/search/VASPSearch';
 import DocumentBuilder from './components/documents/DocumentBuilder';
+import BatchDocumentBuilder from './components/documents/BatchDocumentBuilder';
 import DocumentHistory from './components/documents/DocumentHistory';
 import TemplateManager from './components/templates/TemplateManager';
 import Profile from './components/auth/Profile';
@@ -37,6 +38,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/search" element={<VASPSearch />} />
               <Route path="/documents/new" element={<DocumentBuilder />} />
+              <Route path="/documents/batch" element={<BatchDocumentBuilder />} />
               <Route path="/documents/history" element={<DocumentHistory />} />
               <Route path="/templates" element={<TemplateManager />} />
               <Route path="/profile" element={<Profile />} />

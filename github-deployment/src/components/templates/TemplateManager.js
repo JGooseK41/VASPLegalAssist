@@ -441,12 +441,17 @@ const TemplateManager = () => {
                         <div>{`{{statute}}`}</div>
                         <div>{`{{vasp_email}}`}</div>
                         <div>{`{{crime_description}}`}</div>
+                        <div>{`{{vasp_address}}`}</div>
+                        <div>{`{{date_today}}`}</div>
+                        <div className="col-span-2 font-bold text-blue-900 mt-2">Transaction Placeholders:</div>
+                        <div>{`{{transaction_table}}`}</div>
+                        <div>{`{{transaction_list}}`}</div>
+                        <div>{`{{transaction_count}}`}</div>
                         <div>{`{{transaction_id}}`}</div>
-                        <div>{`{{amount}}`}</div>
                         <div>{`{{from_address}}`}</div>
-                        <div>{`{{currency}}`}</div>
                         <div>{`{{to_address}}`}</div>
-                        <div>{`{{date}}`}</div>
+                        <div>{`{{amount}}`}</div>
+                        <div>{`{{currency}}`}</div>
                       </div>
                     </div>
 
@@ -470,6 +475,21 @@ const TemplateManager = () => {
                         create different sections for different types of requests, and only include the 
                         placeholders you need in each section.
                       </p>
+                    </div>
+
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                      <h4 className="font-medium text-green-900 mb-2">Transaction Table Feature</h4>
+                      <p className="text-sm text-green-800 mb-2">
+                        Use {`{{transaction_table}}`} to automatically generate a formatted table of all transactions 
+                        from your CSV import. This is perfect when your template has space for only one transaction 
+                        but you need to document multiple transactions.
+                      </p>
+                      <ul className="text-sm text-green-800 list-disc list-inside">
+                        <li>{`{{transaction_table}}`} - Creates a table with all transactions</li>
+                        <li>{`{{transaction_list}}`} - Simple text list of transaction IDs and dates</li>
+                        <li>{`{{transaction_count}}`} - Total number of transactions</li>
+                        <li>Single placeholders ({`{{transaction_id}}`}, etc.) - Uses the first transaction</li>
+                      </ul>
                     </div>
                   </div>
                 </section>

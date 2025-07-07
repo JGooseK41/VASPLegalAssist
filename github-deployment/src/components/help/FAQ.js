@@ -426,6 +426,47 @@ const FAQ = () => {
             </div>
           ),
           icon: FileText
+        },
+        {
+          question: 'How do I handle multiple transactions in a single-transaction template?',
+          answer: (
+            <div>
+              <p>If your template only has placeholders for one transaction but you import multiple transactions via CSV, use these special placeholders:</p>
+              
+              <div className="bg-blue-50 p-3 rounded-md mt-3 space-y-2">
+                <div className="font-semibold text-blue-900 mb-2">Transaction Table Placeholders:</div>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <code className="bg-white px-1 py-0.5 rounded text-blue-700">{`{{transaction_table}}`}</code> - 
+                    Generates a formatted table with all transactions including ID, Date, From, To, Amount, and Currency
+                  </li>
+                  <li>
+                    <code className="bg-white px-1 py-0.5 rounded text-blue-700">{`{{transaction_list}}`}</code> - 
+                    Creates a simple text list of all transaction IDs and dates
+                  </li>
+                  <li>
+                    <code className="bg-white px-1 py-0.5 rounded text-blue-700">{`{{transaction_count}}`}</code> - 
+                    Shows the total number of transactions
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-yellow-50 p-3 rounded-md mt-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Single transaction placeholders like {`{{transaction_id}}`} will use data from the first transaction when multiple are imported.
+                </p>
+              </div>
+              
+              <div className="mt-3">
+                <p className="font-medium mb-2">Example usage in your template:</p>
+                <div className="bg-gray-100 p-3 rounded text-sm font-mono">
+                  The following {`{{transaction_count}}`} transactions are under investigation:<br/>
+                  {`{{transaction_table}}`}
+                </div>
+              </div>
+            </div>
+          ),
+          icon: FileText
         }
       ]
     },
@@ -488,6 +529,7 @@ const FAQ = () => {
                     <div><span className="text-blue-600">{`{{vasp_name}}`}</span> - VASP's display name</div>
                     <div><span className="text-blue-600">{`{{vasp_legal_name}}`}</span> - VASP's legal entity name</div>
                     <div><span className="text-blue-600">{`{{vasp_email}}`}</span> - VASP compliance email</div>
+                    <div><span className="text-blue-600">{`{{vasp_address}}`}</span> - VASP's physical address</div>
                     <div><span className="text-blue-600">{`{{case_number}}`}</span> - Your case number</div>
                     <div><span className="text-blue-600">{`{{statute}}`}</span> - Legal statute/code</div>
                     <div><span className="text-blue-600">{`{{crime_description}}`}</span> - Description of criminal activity</div>
@@ -502,6 +544,10 @@ const FAQ = () => {
                     <div><span className="text-blue-600">{`{{agent_name}}`}</span> - Your name</div>
                     <div><span className="text-blue-600">{`{{agent_title}}`}</span> - Your title</div>
                     <div><span className="text-blue-600">{`{{badge_number}}`}</span> - Your badge number</div>
+                    <div className="mt-2 font-semibold">For Multiple Transactions:</div>
+                    <div><span className="text-blue-600">{`{{transaction_table}}`}</span> - Formatted table of all transactions</div>
+                    <div><span className="text-blue-600">{`{{transaction_list}}`}</span> - Simple list of transaction IDs</div>
+                    <div><span className="text-blue-600">{`{{transaction_count}}`}</span> - Total number of transactions</div>
                   </div>
                 </div>
 

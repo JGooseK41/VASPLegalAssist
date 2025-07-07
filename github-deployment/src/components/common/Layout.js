@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings, Trophy } from 'lucide-react';
+import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings, Trophy, FileStack } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import DemoBanner from './DemoBanner';
 
@@ -24,6 +24,7 @@ const Layout = () => {
     { name: 'My Profile', href: '/profile', icon: User },
     { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'My Templates', href: '/templates', icon: FileText },
+    { name: 'Batch Documents', href: '/documents/batch', icon: FileStack },
     { name: 'Document History', href: '/documents/history', icon: Clock },
     { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
   ];

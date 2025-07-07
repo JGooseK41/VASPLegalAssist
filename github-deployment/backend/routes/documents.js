@@ -23,6 +23,9 @@ const { duplicateDocument, uploadCSV } = require('../controllers/documentControl
 // Import demo document controller
 const { generateDemoDocument } = require('../controllers/demoDocumentController');
 
+// Import batch document controller
+const batchDocumentController = require('../controllers/batchDocumentController');
+
 const { authMiddleware, demoMiddleware } = require('../middleware/auth');
 
 // All document routes require authentication
@@ -49,5 +52,15 @@ router.post('/:id/duplicate', demoMiddleware, duplicateDocument);
 
 // POST /api/documents/import-transactions - Allow demo users to import transactions (just parsing, no saving)
 router.post('/import-transactions', upload.single('file'), importTransactions);
+
+// Batch document generation routes
+// POST /api/documents/batch/generate
+router.post('/batch/generate', batchDocumentController.generateBatchDocuments.bind(batchDocumentController));
+
+// GET /api/documents/batch/sample-csv
+router.get('/batch/sample-csv', batchDocumentController.getSampleCSV.bind(batchDocumentController));
+
+// GET /api/documents/batch/download/:batchId/:filename
+router.get('/batch/download/:batchId/:filename', batchDocumentController.downloadBatchZip.bind(batchDocumentController));
 
 module.exports = router;
