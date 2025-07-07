@@ -26,6 +26,26 @@ try {
   console.error('Continuing anyway - migrations might already be applied');
 }
 
+// Check if VASPs need to be migrated
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function checkAndMigrateVasps() {
+  try {
+    const vaspCount = await prisma.vasp.count();
+    console.log(`\n📊 Found ${vaspCount} VASPs in database`);
+    
+    if (vaspCount === 0) {
+      console.log('🚀 No VASPs found, running migration from CSV...');
+      execSync('node scripts/migrate-vasps-to-db-fixed.js', { stdio: 'inherit' });
+    }
+  } catch (error) {
+    console.error('Error checking VASPs:', error.message);
+  }
+}
+
+checkAndMigrateVasps();
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
@@ -66,8 +86,24 @@ app.use('/api/contributors', contributorRoutes);
 app.use('/api/vasp-responses', vaspResponseRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  try {
+    const vaspCount = await prisma.vasp.count();
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      vaspCount: vaspCount,
+      databaseConnected: true
+    });
+  } catch (error) {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      vaspCount: 0,
+      databaseConnected: false,
+      error: error.message
+    });
+  }
 });
 
 // Error handling middleware

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -130,6 +130,241 @@ const FAQ = () => {
             </div>
           ),
           icon: Users
+        }
+      ]
+    },
+    {
+      title: 'VASP Response Tracking - Community Intelligence',
+      items: [
+        {
+          question: 'What is VASP Response Tracking and why should I participate?',
+          answer: (
+            <div>
+              <h4 className="font-semibold mb-3 text-blue-900">🚀 Building Real-Time Compliance Intelligence Together</h4>
+              
+              <p className="mb-4">
+                VASP Response Tracking is a <strong>groundbreaking community-driven feature</strong> that transforms how law enforcement 
+                understands VASP compliance and responsiveness. By sharing your experiences, you're contributing to a 
+                powerful collective intelligence system that benefits every crypto crime fighter in our network.
+              </p>
+
+              <div className="space-y-4">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
+                  <h5 className="font-semibold text-blue-900 mb-2">Why This Matters:</h5>
+                  <ul className="list-disc list-inside space-y-2 text-sm">
+                    <li><strong>Real Intelligence, Not Theory:</strong> See actual compliance rates based on real law enforcement experiences, not marketing claims</li>
+                    <li><strong>Time is Critical:</strong> Know which VASPs respond in hours vs. weeks before you serve them</li>
+                    <li><strong>Method Requirements:</strong> Learn if a VASP honors letterheads or demands MLATs - before wasting time</li>
+                    <li><strong>Community Power:</strong> Every response you log helps thousands of investigators worldwide</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                  <h5 className="font-semibold text-green-900 mb-2">What You'll See on VASP Cards:</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
+                        85% US Compliant
+                      </span>
+                      <span>- Instant visibility into actual compliance rates</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                        47 responses
+                      </span>
+                      <span>- Confidence in the data from peer experiences</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-2">
+                        &lt;24 hours
+                      </span>
+                      <span>- Typical response time to set expectations</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                  <h5 className="font-semibold text-yellow-900 mb-2 flex items-center">
+                    <Award className="h-5 w-5 mr-2" />
+                    Be a Community Hero
+                  </h5>
+                  <p className="text-sm">
+                    This tool is <strong>YOUR tool</strong>. The more responses logged, the more powerful it becomes. 
+                    You're not just using a database - you're building the most comprehensive VASP intelligence 
+                    resource in law enforcement. Your contributions directly help solve crimes faster and more efficiently.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ),
+          icon: TrendingUp
+        },
+        {
+          question: 'How do I log a VASP response after serving documents?',
+          answer: (
+            <div>
+              <p className="mb-3">Logging responses is quick and easy - it takes less than 30 seconds:</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Go to "Document History" after serving your document</li>
+                <li>Find the document you served</li>
+                <li>Click the green <MessageSquare className="inline h-4 w-4 mx-1" /> "Log Response" button</li>
+                <li>Answer a few quick questions:
+                  <ul className="list-disc list-inside ml-6 mt-1 text-sm">
+                    <li>Was the VASP US compliant? (Yes/No)</li>
+                    <li>What did they require? (Letterhead, Subpoena, Search Warrant, MLAT)</li>
+                    <li>How long did they take to respond?</li>
+                  </ul>
+                </li>
+                <li>Click "Submit Response" - you're done!</li>
+              </ol>
+              
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Pro Tip:</strong> Log responses while they're fresh! Set a reminder to log the response 
+                  as soon as you receive it from the VASP. Your fresh insights are most valuable to the community.
+                </p>
+              </div>
+            </div>
+          ),
+          icon: MessageSquare
+        },
+        {
+          question: 'What information is collected and how is it displayed?',
+          answer: (
+            <div>
+              <h5 className="font-semibold mb-3">Information Collected:</h5>
+              <ul className="list-disc list-inside space-y-2 mb-4">
+                <li><strong>US Compliance:</strong> Whether they honored your US legal process</li>
+                <li><strong>Method Requirements:</strong> What level of legal process they demanded
+                  <ul className="list-disc list-inside ml-6 text-sm mt-1">
+                    <li>Letterhead (fastest)</li>
+                    <li>Subpoena</li>
+                    <li>Search Warrant</li>
+                    <li>MLAT (slowest)</li>
+                  </ul>
+                </li>
+                <li><strong>Response Time:</strong> How quickly they provided the requested data</li>
+                <li><strong>Additional Notes:</strong> Optional field for special circumstances</li>
+              </ul>
+
+              <h5 className="font-semibold mb-3">How It's Displayed:</h5>
+              <div className="space-y-3">
+                <div className="bg-gray-50 p-3 rounded">
+                  <p className="font-medium mb-2">On VASP Cards:</p>
+                  <p className="text-sm">Smart badges show key metrics at a glance. Click any badge to see detailed statistics including method breakdowns and response time distributions.</p>
+                </div>
+                
+                <div className="bg-gray-50 p-3 rounded">
+                  <p className="font-medium mb-2">Privacy Protected:</p>
+                  <p className="text-sm">All data is aggregated and anonymized. Individual responses are never shown - only community averages and totals.</p>
+                </div>
+              </div>
+            </div>
+          ),
+          icon: Shield
+        },
+        {
+          question: 'How does this help me with my investigations?',
+          answer: (
+            <div>
+              <h5 className="font-semibold mb-3">Real-World Benefits for Your Cases:</h5>
+              
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">⚡</span>
+                  <div>
+                    <h6 className="font-medium">Faster Case Resolution</h6>
+                    <p className="text-sm text-gray-600">Know which VASPs respond in hours vs. weeks. Prioritize fast responders for time-sensitive cases.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">📋</span>
+                  <div>
+                    <h6 className="font-medium">Proper Documentation</h6>
+                    <p className="text-sm text-gray-600">Don't waste time sending letterheads to VASPs that require search warrants. Get it right the first time.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">🎯</span>
+                  <div>
+                    <h6 className="font-medium">Strategic Planning</h6>
+                    <p className="text-sm text-gray-600">If a VASP shows 20% compliance or typically requires MLATs, you can plan accordingly and set realistic timelines.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">🤝</span>
+                  <div>
+                    <h6 className="font-medium">Negotiation Power</h6>
+                    <p className="text-sm text-gray-600">When a VASP claims they "always require MLATs," you can see if other agencies succeeded with subpoenas.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-4">
+                <p className="text-sm text-green-800">
+                  <strong>Example:</strong> You see Exchange X has 95% US compliance, typically honors letterheads, 
+                  and responds within 24 hours based on 50+ law enforcement responses. You can confidently proceed 
+                  knowing you'll likely get quick results with minimal documentation.
+                </p>
+              </div>
+            </div>
+          ),
+          icon: TrendingUp
+        },
+        {
+          question: 'Why should I take time to log responses?',
+          answer: (
+            <div>
+              <h5 className="font-semibold mb-3 text-blue-900">You're Building Something Revolutionary</h5>
+              
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                  <h6 className="font-semibold text-blue-900 mb-2">This is YOUR Database</h6>
+                  <p className="text-sm">
+                    Traditional databases show what VASPs claim they'll do. This shows what they ACTUALLY do when 
+                    served by real law enforcement. You're creating the first-ever crowdsourced VASP compliance 
+                    intelligence platform built by and for crypto crime fighters.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <p className="font-medium">Every response you log:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Saves hours for another investigator who won't chase dead ends</li>
+                    <li>Builds pressure on non-compliant VASPs when data shows poor performance</li>
+                    <li>Rewards good VASPs with positive statistics that encourage cooperation</li>
+                    <li>Creates an undeniable record of VASP behavior patterns</li>
+                    <li>Strengthens our entire community's effectiveness</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                  <p className="text-sm font-medium text-yellow-900 mb-2">
+                    🏆 Join the Elite Crypto Crime Fighters
+                  </p>
+                  <p className="text-sm text-yellow-800">
+                    Agencies that actively log responses are the backbone of this community. They don't just 
+                    solve their own cases - they lift up every investigator in the network. Be part of the 
+                    solution. Be a leader in the fight against crypto crime.
+                  </p>
+                </div>
+                
+                <div className="text-center p-4 bg-gray-900 text-white rounded-lg">
+                  <p className="font-bold">
+                    "If every investigator logs just one response per month, we'll have the most powerful 
+                    VASP intelligence tool in existence within 90 days."
+                  </p>
+                  <p className="text-sm mt-2 text-gray-300">
+                    - The power is in your hands
+                  </p>
+                </div>
+              </div>
+            </div>
+          ),
+          icon: Award
         }
       ]
     },
