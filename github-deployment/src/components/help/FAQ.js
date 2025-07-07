@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const FAQItem = ({ question, answer, icon: Icon }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +33,8 @@ const FAQItem = ({ question, answer, icon: Icon }) => {
 
 const FAQ = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
   const faqSections = [
     {
@@ -545,6 +549,27 @@ Badge #{{badge_number}}
   
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      {/* Navigation buttons */}
+      <div className="mb-6 flex justify-between items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Go Back
+        </button>
+        
+        {!user && (
+          <Link
+            to="/register"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Register for Access
+          </Link>
+        )}
+      </div>
+
       <div className="text-center mb-8">
         <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h1>

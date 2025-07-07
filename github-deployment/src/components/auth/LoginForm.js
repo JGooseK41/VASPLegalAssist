@@ -28,11 +28,13 @@ const LoginForm = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <img
-            src="/images/logo.png"
-            alt="VASP Legal Assistant Logo"
-            className="mx-auto h-12 w-auto"
-          />
+          <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
+            <img
+              src="/images/logo.png"
+              alt="VASP Legal Assistant Logo"
+              className="mx-auto h-12 w-auto"
+            />
+          </a>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           VASP Legal Process Assistant
