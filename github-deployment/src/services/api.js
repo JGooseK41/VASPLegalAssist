@@ -142,7 +142,6 @@ export const documentAPI = {
       crimeDescription: documentData.case_info?.crime_description || '',
       statute: documentData.case_info?.statute || '',
       transactions: documentData.transactions || [],
-      requestedInfo: documentData.requested_info || [],
       outputFormat: documentData.outputFormat || 'pdf'
     };
     
