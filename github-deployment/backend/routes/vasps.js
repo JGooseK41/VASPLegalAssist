@@ -25,27 +25,55 @@ router.get('/', async (req, res) => {
     });
 
     // Transform database format to match frontend expectations
-    const formattedVasps = vasps.map((vasp, index) => ({
-      id: vasp.id,
-      name: vasp.name || "Unknown",
-      legal_name: vasp.legalName || vasp.name || "Unknown",
-      service_name: vasp.name || "Unknown",
-      jurisdiction: extractJurisdiction(vasp),
-      service_address: formatAddress(vasp),
-      legal_contact_email: vasp.complianceEmail || vasp.supportEmail || "",
-      compliance_email: vasp.complianceEmail || vasp.supportEmail || "",
-      phone: vasp.phone || "",
-      preferred_method: vasp.serviceMethod || "email",
-      processing_time: vasp.processingTime || "5-10 business days",
-      accepts_international: vasp.acceptsInternational !== false,
-      accepts_us_service: vasp.jurisdiction === "United States" || vasp.country === "United States",
-      has_own_portal: vasp.serviceMethod === "portal" || vasp.serviceMethod === "kodex" || !!vasp.serviceUrl,
-      law_enforcement_url: vasp.serviceUrl || "",
-      info_types: vasp.informationAvailable ? vasp.informationAvailable.split(',').map(s => s.trim()) : ["KYC", "Transaction History", "Account Balance", "Login Records"],
-      last_updated: vasp.updatedAt ? new Date(vasp.updatedAt).toISOString().split('T')[0] : "2024-01-01",
-      required_document: vasp.requiredDocuments || "Letterhead",
-      notes: vasp.additionalInfo || ""
-    }));
+    const formattedVasps = vasps.map((vasp, index) => {
+      try {
+        return {
+          id: vasp.id,
+          name: vasp.name || "Unknown",
+          legal_name: vasp.legalName || vasp.name || "Unknown",
+          service_name: vasp.name || "Unknown",
+          jurisdiction: extractJurisdiction(vasp),
+          service_address: formatAddress(vasp),
+          legal_contact_email: vasp.complianceEmail || vasp.supportEmail || "",
+          compliance_email: vasp.complianceEmail || vasp.supportEmail || "",
+          phone: vasp.phone || "",
+          preferred_method: vasp.serviceMethod || "email",
+          processing_time: vasp.processingTime || "5-10 business days",
+          accepts_international: vasp.acceptsInternational !== false,
+          accepts_us_service: vasp.jurisdiction === "United States" || vasp.country === "United States",
+          has_own_portal: vasp.serviceMethod === "portal" || vasp.serviceMethod === "kodex" || !!vasp.serviceUrl,
+          law_enforcement_url: vasp.serviceUrl || "",
+          info_types: vasp.informationAvailable ? vasp.informationAvailable.split(',').map(s => s.trim()) : ["KYC", "Transaction History", "Account Balance", "Login Records"],
+          last_updated: vasp.updatedAt ? new Date(vasp.updatedAt).toISOString().split('T')[0] : "2024-01-01",
+          required_document: vasp.requiredDocuments || "Letterhead",
+          notes: vasp.additionalInfo || ""
+        };
+      } catch (err) {
+        console.error('Error transforming VASP:', vasp.id, err);
+        // Return a minimal valid object if transformation fails
+        return {
+          id: vasp.id,
+          name: vasp.name || "Unknown",
+          legal_name: vasp.name || "Unknown",
+          service_name: vasp.name || "Unknown",
+          jurisdiction: "Unknown",
+          service_address: "Unknown",
+          legal_contact_email: "",
+          compliance_email: "",
+          phone: "",
+          preferred_method: "email",
+          processing_time: "5-10 business days",
+          accepts_international: false,
+          accepts_us_service: false,
+          has_own_portal: false,
+          law_enforcement_url: "",
+          info_types: ["KYC"],
+          last_updated: "2024-01-01",
+          required_document: "Letterhead",
+          notes: ""
+        };
+      }
+    });
 
     res.json(formattedVasps);
   } catch (error) {
@@ -97,12 +125,13 @@ router.get('/:id', async (req, res) => {
 
 // Helper functions
 function extractJurisdiction(vasp) {
-  // First check explicit jurisdiction/country fields
-  if (vasp.jurisdiction) return vasp.jurisdiction;
-  if (vasp.country) return vasp.country;
-  
-  // Otherwise extract from address
-  const address = formatAddress(vasp).toUpperCase();
+  try {
+    // First check explicit jurisdiction/country fields
+    if (vasp.jurisdiction) return vasp.jurisdiction;
+    if (vasp.country) return vasp.country;
+    
+    // Otherwise extract from address
+    const address = formatAddress(vasp).toUpperCase();
   
   if (address.includes(" GA ") || address.includes(" CA ") || address.includes(" NY ") || 
       address.includes(" FL ") || address.includes(" TX ") || address.includes("USA") ||
@@ -127,17 +156,26 @@ function extractJurisdiction(vasp) {
   }
   
   return "Unknown";
+  } catch (error) {
+    console.error('Error extracting jurisdiction:', error);
+    return "Unknown";
+  }
 }
 
 function formatAddress(vasp) {
-  const parts = [];
-  if (vasp.street) parts.push(vasp.street);
-  if (vasp.city) parts.push(vasp.city);
-  if (vasp.state) parts.push(vasp.state);
-  if (vasp.zipCode) parts.push(vasp.zipCode);
-  if (vasp.country) parts.push(vasp.country);
-  
-  return parts.length > 0 ? parts.join(', ') : "Unknown";
+  try {
+    const parts = [];
+    if (vasp && vasp.street) parts.push(vasp.street);
+    if (vasp && vasp.city) parts.push(vasp.city);
+    if (vasp && vasp.state) parts.push(vasp.state);
+    if (vasp && vasp.zipCode) parts.push(vasp.zipCode);
+    if (vasp && vasp.country) parts.push(vasp.country);
+    
+    return parts.length > 0 ? parts.join(', ') : "Unknown";
+  } catch (error) {
+    console.error('Error formatting address:', error);
+    return "Unknown";
+  }
 }
 
 module.exports = router;

@@ -58,6 +58,7 @@ const submissionRoutes = require('./routes/submissions');
 const contributorRoutes = require('./routes/contributors');
 const vaspResponseRoutes = require('./routes/vaspResponses');
 const migrateRoutes = require('./routes/migrate');
+const debugRoutes = require('./routes/debug');
 
 const app = express();
 
@@ -86,6 +87,7 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/contributors', contributorRoutes);
 app.use('/api/vasp-responses', vaspResponseRoutes);
 app.use('/api/migrate', migrateRoutes);
+app.use('/api/debug', debugRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
