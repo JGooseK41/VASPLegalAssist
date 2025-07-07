@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import clientEncryption from '../services/clientEncryption';
 
@@ -82,7 +82,7 @@ export function useEncryption() {
     return clientEncryption.canDecrypt(encryptedData, encryptionKey);
   }, [encryptionKey, isKeyReady]);
 
-  return {
+  return useMemo(() => ({
     isKeyReady,
     encrypt,
     decrypt,
@@ -91,5 +91,5 @@ export function useEncryption() {
     canDecrypt,
     // Expose the service for advanced use cases
     clientEncryption
-  };
+  }), [isKeyReady, encrypt, decrypt, encryptFields, decryptFields, canDecrypt]);
 }

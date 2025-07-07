@@ -27,7 +27,7 @@ const TemplateManager = () => {
       return createEncryptedTemplateAPI(encryption);
     }
     return null;
-  }, [encryption]);
+  }, [encryption.isKeyReady, encryption.encrypt, encryption.decrypt]);
 
   useEffect(() => {
     if (encryptedAPI) {
