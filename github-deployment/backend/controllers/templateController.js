@@ -62,7 +62,16 @@ const createTemplate = async (req, res) => {
       name,
       header_info,
       footer_text,
-      custom_fields
+      custom_fields,
+      // Smart template fields
+      templateContent,
+      markers,
+      markerMappings,
+      fileUrl,
+      fileType,
+      fileSize,
+      originalFilename,
+      isGlobal
     } = req.body;
 
     // Handle both old format and new format
@@ -71,13 +80,20 @@ const createTemplate = async (req, res) => {
     const actualFooterText = footerText || footer_text;
     const actualCustomFields = customFields || custom_fields;
     
+    // Check if user is admin for global templates
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { role: true }
+    });
+    
     // For client-encrypted data, store the encrypted values as-is
     const templateData = {
       userId: req.userId,
       templateType: actualTemplateType,
       templateName: actualTemplateName,
       isClientEncrypted: isClientEncrypted || false,
-      encryptionVersion: encryptionVersion || null
+      encryptionVersion: encryptionVersion || null,
+      isGlobal: user?.role === 'ADMIN' && isGlobal === true
     };
     
     if (isClientEncrypted) {
@@ -96,6 +112,29 @@ const createTemplate = async (req, res) => {
       templateData.footerText = actualFooterText;
       templateData.signatureBlock = signatureBlock;
       templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
+    }
+    
+    // Add smart template fields if provided
+    if (templateContent) {
+      templateData.templateContent = templateContent;
+    }
+    if (markers) {
+      templateData.markers = typeof markers === 'string' ? markers : JSON.stringify(markers);
+    }
+    if (markerMappings) {
+      templateData.markerMappings = typeof markerMappings === 'string' ? markerMappings : JSON.stringify(markerMappings);
+    }
+    if (fileUrl) {
+      templateData.fileUrl = fileUrl;
+    }
+    if (fileType) {
+      templateData.fileType = fileType;
+    }
+    if (fileSize) {
+      templateData.fileSize = fileSize;
+    }
+    if (originalFilename) {
+      templateData.originalFilename = originalFilename;
     }
 
     const template = await prisma.documentTemplate.create({

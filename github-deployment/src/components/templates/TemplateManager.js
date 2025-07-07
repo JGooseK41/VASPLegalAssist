@@ -6,6 +6,7 @@ import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 import SmartTemplateUpload from './SmartTemplateUpload';
 import MarkerMappingEditor from './MarkerMappingEditor';
+import DirectTemplateCreator from './DirectTemplateCreator';
 
 const TemplateManager = () => {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ const TemplateManager = () => {
   const [showEncryptionStatus, setShowEncryptionStatus] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [encryptionTimeout, setEncryptionTimeout] = useState(false);
+  const [showDirectCreator, setShowDirectCreator] = useState(false);
   
   // Initialize encryption
   const encryption = useEncryption();
@@ -186,6 +188,13 @@ const TemplateManager = () => {
               Upload Smart Template
             </button>
             <button
+              onClick={() => setShowDirectCreator(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center"
+            >
+              <FileCode className="h-4 w-4 mr-2" />
+              Create Template Directly
+            </button>
+            <button
               onClick={() => setShowNewTemplate(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
             >
@@ -250,6 +259,18 @@ const TemplateManager = () => {
               loadTemplates();
             }}
             onCancel={() => setShowSmartUpload(false)}
+          />
+        )}
+
+        {showDirectCreator && (
+          <DirectTemplateCreator
+            encryptedAPI={encryptedAPI}
+            onSuccess={(template) => {
+              setShowDirectCreator(false);
+              loadTemplates();
+              setSuccess('Template created successfully!');
+            }}
+            onCancel={() => setShowDirectCreator(false)}
           />
         )}
 
