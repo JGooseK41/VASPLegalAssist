@@ -460,8 +460,9 @@ const TemplateManager = () => {
                             <div>{`{{case_number}}`} - Case number</div>
                             <div>{`{{statute}}`} - Legal statute/code</div>
                             <div>{`{{crime_description}}`} - Crime description</div>
-                            <div>{`{{current_date}}`} - Today's date</div>
-                            <div>{`{{date_today}}`} - Today's date (alt)</div>
+                            <div>{`{{crime_under_investigation}}`} - Crime being investigated</div>
+                            <div>{`{{facts_of_the_case}}`} - Case facts/details</div>
+                            <div>{`{{date_today}}`} - Today's date</div>
                           </div>
                         </div>
                         
