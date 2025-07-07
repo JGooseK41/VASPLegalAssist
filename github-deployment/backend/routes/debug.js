@@ -17,7 +17,8 @@ router.get('/vasps', async (req, res) => {
         id: true,
         name: true,
         jurisdiction: true,
-        status: true
+        isActive: true,
+        compliance_email: true
       }
     });
     

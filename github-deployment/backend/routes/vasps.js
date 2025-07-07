@@ -14,10 +14,7 @@ router.get('/', async (req, res) => {
     // Get all active VASPs from database
     const vasps = await prisma.vasp.findMany({
       where: {
-        OR: [
-          { status: 'ACTIVE' },
-          { status: null } // For backwards compatibility
-        ]
+        isActive: true
       },
       orderBy: {
         name: 'asc'
@@ -30,23 +27,23 @@ router.get('/', async (req, res) => {
         return {
           id: vasp.id,
           name: vasp.name || "Unknown",
-          legal_name: vasp.legalName || vasp.name || "Unknown",
+          legal_name: vasp.legal_name || vasp.name || "Unknown",
           service_name: vasp.name || "Unknown",
-          jurisdiction: extractJurisdiction(vasp),
-          service_address: formatAddress(vasp),
-          legal_contact_email: vasp.complianceEmail || vasp.supportEmail || "",
-          compliance_email: vasp.complianceEmail || vasp.supportEmail || "",
+          jurisdiction: vasp.jurisdiction || "Unknown",
+          service_address: vasp.service_address || "Unknown",
+          legal_contact_email: vasp.compliance_email || "",
+          compliance_email: vasp.compliance_email || "",
           phone: vasp.phone || "",
-          preferred_method: vasp.serviceMethod || "email",
-          processing_time: vasp.processingTime || "5-10 business days",
-          accepts_international: vasp.acceptsInternational !== false,
-          accepts_us_service: vasp.jurisdiction === "United States" || vasp.country === "United States",
-          has_own_portal: vasp.serviceMethod === "portal" || vasp.serviceMethod === "kodex" || !!vasp.serviceUrl,
-          law_enforcement_url: vasp.serviceUrl || "",
-          info_types: vasp.informationAvailable ? vasp.informationAvailable.split(',').map(s => s.trim()) : ["KYC", "Transaction History", "Account Balance", "Login Records"],
+          preferred_method: vasp.preferred_method || "email",
+          processing_time: vasp.processing_time || "5-10 business days",
+          accepts_international: true, // Default to true as field doesn't exist
+          accepts_us_service: vasp.accepts_us_service || false,
+          has_own_portal: vasp.has_own_portal || false,
+          law_enforcement_url: vasp.law_enforcement_url || "",
+          info_types: Array.isArray(vasp.info_types) ? vasp.info_types : ["KYC", "Transaction History"],
           last_updated: vasp.updatedAt ? new Date(vasp.updatedAt).toISOString().split('T')[0] : "2024-01-01",
-          required_document: vasp.requiredDocuments || "Letterhead",
-          notes: vasp.additionalInfo || ""
+          required_document: vasp.required_document || "Letterhead",
+          notes: vasp.notes || ""
         };
       } catch (err) {
         console.error('Error transforming VASP:', vasp.id, err);
