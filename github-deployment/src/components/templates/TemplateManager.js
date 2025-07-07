@@ -414,18 +414,18 @@ const TemplateManager = () => {
                     <div className="bg-blue-50 rounded-lg p-4">
                       <h4 className="font-medium text-blue-900 mb-2">Available Placeholders:</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm font-mono text-blue-800">
-                        <div>{{`{{vasp_name}}`}}</div>
-                        <div>{{`{{case_number}}`}}</div>
-                        <div>{{`{{vasp_legal_name}}`}}</div>
-                        <div>{{`{{statute}}`}}</div>
-                        <div>{{`{{vasp_email}}`}}</div>
-                        <div>{{`{{crime_description}}`}}</div>
-                        <div>{{`{{transaction_id}}`}}</div>
-                        <div>{{`{{amount}}`}}</div>
-                        <div>{{`{{from_address}}`}}</div>
-                        <div>{{`{{currency}}`}}</div>
-                        <div>{{`{{to_address}}`}}</div>
-                        <div>{{`{{date}}`}}</div>
+                        <div>{`{{vasp_name}}`}</div>
+                        <div>{`{{case_number}}`}</div>
+                        <div>{`{{vasp_legal_name}}`}</div>
+                        <div>{`{{statute}}`}</div>
+                        <div>{`{{vasp_email}}`}</div>
+                        <div>{`{{crime_description}}`}</div>
+                        <div>{`{{transaction_id}}`}</div>
+                        <div>{`{{amount}}`}</div>
+                        <div>{`{{from_address}}`}</div>
+                        <div>{`{{currency}}`}</div>
+                        <div>{`{{to_address}}`}</div>
+                        <div>{`{{date}}`}</div>
                       </div>
                     </div>
 
@@ -433,7 +433,7 @@ const TemplateManager = () => {
                       <h4 className="font-medium text-gray-900 mb-2">Steps:</h4>
                       <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                         <li>Create your template in Microsoft Word</li>
-                        <li>Add placeholders where you want data inserted (e.g., {{`{{case_number}}`}})</li>
+                        <li>Add placeholders where you want data inserted (e.g., {`{{case_number}}`})</li>
                         <li>Include your agency letterhead, logos, and formatting</li>
                         <li>Save as .docx format (not .doc or PDF)</li>
                         <li>Click "Upload Smart Template"</li>
@@ -487,7 +487,7 @@ const TemplateManager = () => {
                     <div className="border border-gray-200 rounded-lg p-4">
                       <h4 className="font-medium text-gray-900 mb-2">Placeholders not detected?</h4>
                       <p className="text-sm text-gray-600">
-                        Ensure you're using double curly braces {{`{{like_this}}`}} and that your document is 
+                        Ensure you're using double curly braces {`{{like_this}}`} and that your document is 
                         saved as .docx format.
                       </p>
                     </div>
