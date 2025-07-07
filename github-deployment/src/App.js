@@ -29,6 +29,7 @@ function App() {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/faq" element={<FAQ />} />
           
           {/* Protected routes */}
           <Route element={<PrivateRoute />}>
@@ -39,7 +40,6 @@ function App() {
               <Route path="/documents/history" element={<DocumentHistory />} />
               <Route path="/templates" element={<TemplateManager />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/faq" element={<FAQ />} />
               <Route path="/submissions/new" element={<VaspSubmissionForm />} />
               <Route path="/submissions/my" element={<MySubmissions />} />
               <Route path="/leaderboard" element={<Leaderboard />} />

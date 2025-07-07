@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Star, MessageSquare, CheckCircle } from 'lucide-react';
+import { Trophy, Star, MessageSquare, CheckCircle, ThumbsUp, ChevronRight, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 function TopContributor() {
@@ -50,7 +50,47 @@ function TopContributor() {
   }
 
   if (error || !topContributor) {
-    return null;
+    return (
+      <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg shadow-lg p-6 text-white">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold flex items-center">
+            <Trophy className="w-8 h-8 mr-2" />
+            Top Contributor
+          </h2>
+        </div>
+        
+        <div className="text-center py-4">
+          <p className="text-lg mb-2">No contributions yet!</p>
+          <p className="text-sm opacity-90 mb-4">
+            Be the first to earn points by:
+          </p>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              <span>Submitting VASPs (10 points each)</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <ThumbsUp className="w-4 h-4 mr-2" />
+              <span>Getting upvotes (5 points each)</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              <span>Adding comments (1 point each)</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-4 text-center">
+          <Link
+            to="/leaderboard"
+            className="inline-flex items-center bg-white text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            View Full Leaderboard
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const isCurrentUser = user && user.id === topContributor.userId;

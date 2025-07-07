@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle } from 'lucide-react';
+import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -70,6 +70,20 @@ const RegisterForm = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Law Enforcement Disclaimer */}
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex">
+              <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-900">Important Notice</h3>
+                <p className="text-sm text-blue-800 mt-1">
+                  This site is intended for use by law enforcement, legal professionals, and banking/financial institution professionals only. 
+                  Registration requires a valid professional email address from a recognized law enforcement agency, legal firm, or financial institution.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {(error || validationError) && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">

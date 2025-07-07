@@ -75,10 +75,10 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Check for demo account
-    if (email === process.env.DEMO_EMAIL && password === process.env.DEMO_PASSWORD) {
+    if (email === 'demo@theblockaudit.com' && password === 'Crypto') {
       const demoUser = {
         id: 'demo-user-id',
-        email: process.env.DEMO_EMAIL,
+        email: 'demo@theblockaudit.com',
         firstName: 'Demo',
         lastName: 'User',
         agencyName: 'Demo Law Enforcement Agency',
