@@ -17,10 +17,12 @@ const TemplateManager = () => {
   const [mappingTemplate, setMappingTemplate] = useState(null);
   const [showEncryptionStatus, setShowEncryptionStatus] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [encryptionTimeout, setEncryptionTimeout] = useState(false);
   
   // Initialize encryption
   const encryption = useEncryption();
   const encryptedAPI = useMemo(() => {
+    console.log('Encryption status:', { isKeyReady: encryption.isKeyReady });
     if (encryption.isKeyReady) {
       return createEncryptedTemplateAPI(encryption);
     }
@@ -36,6 +38,18 @@ const TemplateManager = () => {
       setError('Encryption initialization failed. Templates may not be available.');
     }
   }, [encryptedAPI, encryption.isKeyReady]);
+
+  // Separate timeout effect to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading && !encryptedAPI) {
+        console.log('Timeout reached, showing UI without templates');
+        setLoading(false);
+        setEncryptionTimeout(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const loadTemplates = async () => {
     try {
@@ -177,15 +191,20 @@ const TemplateManager = () => {
           </div>
         </div>
 
-        {error && (
+        {(error || encryptionTimeout) && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <div className="flex">
               <AlertCircle className="h-5 w-5 text-red-400" />
               <div className="ml-3">
-                <p className="text-sm text-red-800">{error}</p>
+                <p className="text-sm text-red-800">
+                  {error || 'Encryption is taking longer than expected. You can still create templates, but they may not be encrypted until you refresh the page.'}
+                </p>
               </div>
               <button
-                onClick={() => setError(null)}
+                onClick={() => {
+                  setError(null);
+                  setEncryptionTimeout(false);
+                }}
                 className="ml-auto -mx-1.5 -my-1.5 bg-red-50 p-1.5 hover:bg-red-100 rounded"
               >
                 <X className="h-5 w-5 text-red-500" />
