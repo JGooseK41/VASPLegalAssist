@@ -149,8 +149,18 @@ function TopContributor() {
 
   return (
     <>
-      <div className={`bg-gradient-to-r ${isCurrentUser ? 'from-yellow-400 to-orange-500' : 'from-indigo-500 to-purple-600'} rounded-lg shadow-lg p-3 text-white`}>
-        <div className="flex items-center justify-between">
+      <div className={`relative overflow-hidden rounded-lg shadow-lg p-3 text-white ${isCurrentUser ? 'bg-gradient-to-r from-yellow-600 to-orange-600' : 'bg-gradient-to-r from-blue-800 to-indigo-900'}`}>
+        {/* Background image overlay */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: 'url(/images/blockchain_edited.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center">
             <Trophy className="w-5 h-5 mr-2" />
             <span className="font-medium">Top Contributor</span>
@@ -164,13 +174,13 @@ function TopContributor() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <div className="font-semibold">{topContributor.firstName} {topContributor.lastName}</div>
-              <div className="text-xs opacity-90">{topContributor.agencyName}</div>
+            <div className="text-right flex-1">
+              <div className="font-semibold text-lg">{topContributor.firstName} {topContributor.lastName}</div>
+              <div className="text-sm opacity-90">{topContributor.agencyName}</div>
             </div>
             
-            <div className="text-center">
-              <div className="text-xl font-bold">{topContributor.score}</div>
+            <div className="text-center border-l border-white/30 pl-4">
+              <div className="text-2xl font-bold">{topContributor.score}</div>
               <div className="text-xs opacity-90">points</div>
             </div>
             
