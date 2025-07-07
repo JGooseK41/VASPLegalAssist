@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb } from 'lucide-react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 import SmartTemplateUpload from './SmartTemplateUpload';
 import MarkerMappingEditor from './MarkerMappingEditor';
 
 const TemplateManager = () => {
+  const { user } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -567,6 +569,7 @@ const TemplateManager = () => {
 };
 
 const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
+  const { user } = useAuth();
   const isEncrypted = template.isClientEncrypted || false;
   const hasDecryptionError = template.decryptionError || false;
   const getDocumentTypeLabel = (type) => {
@@ -607,6 +610,12 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <Upload className="h-3 w-3 mr-1" />
                 Smart Template
+              </span>
+            )}
+            {template.isGlobal && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <Globe className="h-3 w-3 mr-1" />
+                Global
               </span>
             )}
           </div>
@@ -672,20 +681,25 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
               <Map className="h-4 w-4" />
             </button>
           )}
-          <button
-            onClick={onEdit}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded"
-            title="Edit template"
-          >
-            <Edit2 className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded"
-            title="Delete template"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {/* Only allow editing/deleting if user owns the template or is admin for global templates */}
+          {(!template.isGlobal || user?.role === 'ADMIN') && (
+            <>
+              <button
+                onClick={onEdit}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded"
+                title="Edit template"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={onDelete}
+                className="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded"
+                title="Delete template"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

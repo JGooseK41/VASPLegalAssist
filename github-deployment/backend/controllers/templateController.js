@@ -4,8 +4,14 @@ const prisma = new PrismaClient();
 
 const getTemplates = async (req, res) => {
   try {
+    // Get user's own templates and all global templates
     const templates = await prisma.documentTemplate.findMany({
-      where: { userId: req.userId },
+      where: {
+        OR: [
+          { userId: req.userId },
+          { isGlobal: true }
+        ]
+      },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -21,7 +27,10 @@ const getTemplate = async (req, res) => {
     const template = await prisma.documentTemplate.findFirst({
       where: {
         id: req.params.id,
-        userId: req.userId
+        OR: [
+          { userId: req.userId },
+          { isGlobal: true }
+        ]
       }
     });
 

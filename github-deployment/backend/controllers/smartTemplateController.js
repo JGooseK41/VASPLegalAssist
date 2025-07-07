@@ -90,6 +90,12 @@ const uploadTemplate = async (req, res) => {
       const validation = templateParser.validateTemplate(content, markers);
       
       // Create template record
+      // Check if user is admin to set global templates
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { role: true }
+      });
+      
       const templateData = {
         userId: req.userId,
         templateName: templateName || req.file.originalname,
@@ -102,7 +108,8 @@ const uploadTemplate = async (req, res) => {
         markers: JSON.stringify(markers),
         markerMappings: JSON.stringify({}),
         isClientEncrypted: isClientEncrypted || false,
-        encryptionVersion: encryptionVersion || null
+        encryptionVersion: encryptionVersion || null,
+        isGlobal: user?.role === 'ADMIN' && req.body.isGlobal === 'true'
       };
       
       // Store encrypted or unencrypted data based on flag

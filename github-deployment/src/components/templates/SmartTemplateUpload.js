@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info, Lock } from 'lucide-react';
+import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info, Lock, Globe } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadResponse, setUploadResponse] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [isGlobal, setIsGlobal] = useState(false);
   const [templateData, setTemplateData] = useState({
     templateName: '',
     templateType: 'letterhead',
@@ -71,6 +74,11 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
       Object.entries(templateData).forEach(([key, value]) => {
         formData.append(key, value);
       });
+      
+      // Add isGlobal flag if user is admin
+      if (user?.role === 'ADMIN') {
+        formData.append('isGlobal', isGlobal.toString());
+      }
 
       if (!encryptedAPI) {
         setError('Encryption not ready. Please refresh the page.');
@@ -257,6 +265,27 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
                 </select>
               </div>
             </div>
+
+            {/* Admin-only option to make template global */}
+            {user?.role === 'ADMIN' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={isGlobal}
+                    onChange={(e) => setIsGlobal(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 flex items-center">
+                    <Globe className="h-4 w-4 mr-1 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">Make this template available to all users</span>
+                  </span>
+                </label>
+                <p className="mt-1 ml-6 text-xs text-gray-600">
+                  Global templates can be used by all users but only edited by administrators
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

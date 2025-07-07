@@ -47,6 +47,7 @@ model DocumentTemplate {
   signatureBlock  String
   customFields    String?
   isDefault       Boolean   @default(false)
+  isGlobal        Boolean   @default(false) // Global templates visible to all users
   
   // Smart template support
   fileUrl         String?   // URL to uploaded template file
