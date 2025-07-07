@@ -33,8 +33,19 @@ const FAQItem = ({ question, answer, icon: Icon }) => {
 
 const FAQ = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedSections, setExpandedSections] = useState(new Set([0, 1])); // First two sections expanded by default
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  const toggleSection = (index) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedSections(newExpanded);
+  };
   
   const faqSections = [
     {
@@ -217,6 +228,13 @@ const FAQ = () => {
                 </li>
                 <li>Click "Submit Response" - you're done!</li>
               </ol>
+              
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3">
+                <p className="text-sm text-green-800">
+                  <strong>🏆 Earn 5 Points!</strong> Each VASP response you log earns you 5 points on the leaderboard. 
+                  Help the community and climb the rankings!
+                </p>
+              </div>
               
               <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-3">
                 <p className="text-sm text-blue-800">
@@ -834,18 +852,36 @@ Badge #{{badge_number}}
             <p className="text-gray-500">No FAQs found matching your search.</p>
           </div>
         ) : (
-          filteredSections.map((section, index) => (
-            <div key={index} className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="bg-blue-600 px-6 py-4">
-                <h2 className="text-xl font-semibold text-white">{section.title}</h2>
+          filteredSections.map((section, index) => {
+            const originalIndex = faqSections.findIndex(s => s.title === section.title);
+            const isExpanded = expandedSections.has(originalIndex);
+            
+            return (
+              <div key={index} className="bg-white shadow rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleSection(originalIndex)}
+                  className="w-full bg-blue-600 px-6 py-4 flex items-center justify-between hover:bg-blue-700 transition-colors"
+                >
+                  <h2 className="text-xl font-semibold text-white">{section.title}</h2>
+                  <div className="flex items-center text-white">
+                    <span className="text-sm mr-2">{section.items.length} questions</span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </div>
+                </button>
+                {isExpanded && (
+                  <div className="divide-y divide-gray-200">
+                    {section.items.map((item, itemIndex) => (
+                      <FAQItem key={itemIndex} {...item} />
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="divide-y divide-gray-200">
-                {section.items.map((item, itemIndex) => (
-                  <FAQItem key={itemIndex} {...item} />
-                ))}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
       

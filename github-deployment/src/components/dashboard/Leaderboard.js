@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle } from 'lucide-react';
+import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Leaderboard() {
@@ -138,6 +138,12 @@ function Leaderboard() {
                   <MessageSquare className="w-4 h-4 mr-1" />
                   <span>{contributor.breakdown.commentsCount} comments</span>
                 </div>
+                {contributor.breakdown.vaspResponses > 0 && (
+                  <div className="flex items-center">
+                    <Shield className="w-4 h-4 mr-1" />
+                    <span>{contributor.breakdown.vaspResponses} responses</span>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -154,6 +160,10 @@ function Leaderboard() {
           <li className="flex items-start">
             <Star className="w-4 h-4 mr-2 mt-0.5 text-yellow-600 flex-shrink-0" />
             <span><strong>5 points</strong> for each upvote received on your comments</span>
+          </li>
+          <li className="flex items-start">
+            <Shield className="w-4 h-4 mr-2 mt-0.5 text-purple-600 flex-shrink-0" />
+            <span><strong>5 points</strong> for each VASP response you log (compliance & turnaround time)</span>
           </li>
           <li className="flex items-start">
             <MessageSquare className="w-4 h-4 mr-2 mt-0.5 text-blue-600 flex-shrink-0" />

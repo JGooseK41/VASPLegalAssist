@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { adminAPI } from '../../services/api';
 
@@ -140,6 +140,14 @@ const AdminDashboard = () => {
               </span>
               <Link to="/admin/vasps/new" className="text-sm text-blue-700 hover:text-blue-800 font-medium">
                 Create →
+              </Link>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+              <span className="text-sm font-medium text-purple-900">
+                View analytics
+              </span>
+              <Link to="/admin/analytics" className="text-sm text-purple-700 hover:text-purple-800 font-medium">
+                View →
               </Link>
             </div>
           </div>

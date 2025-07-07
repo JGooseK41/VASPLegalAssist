@@ -60,7 +60,10 @@ const VaspResponseModal = ({ isOpen, onClose, document, onSuccess }) => {
       });
       
       if (onSuccess) {
-        onSuccess(response.data);
+        onSuccess({
+          ...response.data,
+          message: 'Response logged successfully! You earned 5 points for contributing to the community intelligence.'
+        });
       }
       
       onClose();

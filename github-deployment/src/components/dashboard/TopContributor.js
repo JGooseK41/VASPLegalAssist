@@ -137,11 +137,10 @@ function TopContributor() {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">How to Earn Points:</h4>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><strong>+50 points</strong> - Submit a new VASP that gets approved</li>
-                  <li><strong>+20 points</strong> - Update existing VASP information</li>
-                  <li><strong>+10 points</strong> - Leave helpful comments on VASPs</li>
-                  <li><strong>+5 points</strong> - Generate legal documents</li>
-                  <li><strong>+2 points</strong> - Upvote helpful comments</li>
+                  <li><strong>+10 points</strong> - Submit a new VASP that gets approved</li>
+                  <li><strong>+5 points</strong> - Log VASP response (compliance & turnaround)</li>
+                  <li><strong>+5 points</strong> - Each upvote received on your comments</li>
+                  <li><strong>+1 point</strong> - Leave helpful comments on VASPs</li>
                 </ul>
               </div>
               

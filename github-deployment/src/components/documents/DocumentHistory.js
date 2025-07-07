@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock, MessageSquare, CheckCircle } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock, MessageSquare, CheckCircle, Trophy } from 'lucide-react';
 import { documentAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
@@ -214,7 +214,11 @@ const DocumentHistory = () => {
         {success && (
           <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
             <div className="flex">
-              <CheckCircle className="h-5 w-5 text-green-400" />
+              {success.includes('points') ? (
+                <Trophy className="h-5 w-5 text-green-400" />
+              ) : (
+                <CheckCircle className="h-5 w-5 text-green-400" />
+              )}
               <div className="ml-3">
                 <p className="text-sm text-green-800">{success}</p>
               </div>
@@ -427,12 +431,12 @@ const DocumentHistory = () => {
           isOpen={responseModal.isOpen}
           onClose={() => setResponseModal({ isOpen: false, document: null })}
           document={responseModal.document}
-          onSuccess={() => {
+          onSuccess={(result) => {
             // Refresh the document responses
             checkDocumentResponses();
-            // Show success message
-            setSuccess('VASP response logged successfully!');
-            setTimeout(() => setSuccess(null), 3000);
+            // Show success message with points info
+            setSuccess(result.message || 'VASP response logged successfully! You earned 5 points!');
+            setTimeout(() => setSuccess(null), 5000);
           }}
         />
       </div>
