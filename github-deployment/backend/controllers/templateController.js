@@ -47,6 +47,10 @@ const getTemplate = async (req, res) => {
 
 const createTemplate = async (req, res) => {
   try {
+    console.log('Create template request received');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User ID:', req.userId);
+    
     const {
       templateType,
       templateName,
@@ -146,9 +150,21 @@ const createTemplate = async (req, res) => {
     console.error('Create template error:', error);
     console.error('Error details:', error.message);
     console.error('Error stack:', error.stack);
+    
+    // More detailed error for debugging
+    let errorMessage = 'Failed to create template';
+    if (error.code === 'P2002') {
+      errorMessage = 'A template with this name already exists';
+    } else if (error.code === 'P2003') {
+      errorMessage = 'Invalid reference in template data';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
     res.status(500).json({ 
-      error: 'Failed to create template',
+      error: errorMessage,
       message: error.message,
+      code: error.code,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
