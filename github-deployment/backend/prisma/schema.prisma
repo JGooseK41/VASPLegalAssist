@@ -62,6 +62,10 @@ model DocumentTemplate {
   encryptedMappings String? // Encrypted version of markerMappings
   encryptedCustomFields String? // Encrypted version of customFields
   
+  // Client-side encryption support
+  isClientEncrypted Boolean  @default(false)
+  encryptionVersion String?
+  
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -89,6 +93,13 @@ model Document {
   encryptedTransactionDetails String? // Encrypted version of transactionDetails
   encryptedRequestedData String?      // Encrypted version of requestedData
   encryptedContent    String?         // Encrypted version of document content
+  
+  // Client-side encryption support
+  isClientEncrypted   Boolean   @default(false)
+  encryptionVersion   String?
+  outputFormat        String?   @default("pdf")
+  filePath            String?
+  metadata            String?   // Additional encrypted metadata
   
   user                User      @relation(fields: [userId], references: [id])
   transactionImports  TransactionImport[]

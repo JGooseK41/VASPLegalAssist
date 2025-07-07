@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info, Lock } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import { useEncryption } from '../../hooks/useEncryption';
+import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 
 const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const [file, setFile] = useState(null);
@@ -17,6 +19,15 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
     footerText: '',
     signatureBlock: ''
   });
+  
+  // Initialize encryption
+  const encryption = useEncryption();
+  const encryptedAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedTemplateAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -61,7 +72,12 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
         formData.append(key, value);
       });
 
-      const response = await templateAPI.uploadTemplate(formData);
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      const response = await encryptedAPI.uploadTemplate(formData);
       
       setUploadResponse(response);
       
@@ -98,6 +114,12 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
             <p className="text-sm text-gray-600">
               Upload your personalized document template with smart placeholders for automatic data filling.
             </p>
+            {encryption.isKeyReady && (
+              <div className="mt-2 flex items-center text-xs text-green-600">
+                <Lock className="h-3 w-3 mr-1" />
+                Your template will be encrypted before upload
+              </div>
+            )}
           </div>
           <button
             onClick={() => setShowHelp(!showHelp)}

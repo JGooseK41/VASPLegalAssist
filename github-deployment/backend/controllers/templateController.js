@@ -46,21 +46,51 @@ const createTemplate = async (req, res) => {
       agencyContact,
       footerText,
       signatureBlock,
-      customFields
+      customFields,
+      isClientEncrypted,
+      encryptionVersion,
+      document_type,
+      name,
+      header_info,
+      footer_text,
+      custom_fields
     } = req.body;
 
+    // Handle both old format and new format
+    const actualTemplateType = templateType || document_type;
+    const actualTemplateName = templateName || name;
+    const actualFooterText = footerText || footer_text;
+    const actualCustomFields = customFields || custom_fields;
+    
+    // For client-encrypted data, store the encrypted values as-is
+    const templateData = {
+      userId: req.userId,
+      templateType: actualTemplateType,
+      templateName: actualTemplateName,
+      isClientEncrypted: isClientEncrypted || false,
+      encryptionVersion: encryptionVersion || null
+    };
+    
+    if (isClientEncrypted) {
+      // Store encrypted data as-is
+      templateData.agencyHeader = agencyHeader;
+      templateData.agencyAddress = agencyAddress;
+      templateData.agencyContact = agencyContact;
+      templateData.footerText = actualFooterText;
+      templateData.signatureBlock = signatureBlock;
+      templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
+    } else {
+      // Store unencrypted data (legacy support)
+      templateData.agencyHeader = agencyHeader || header_info?.agency_name;
+      templateData.agencyAddress = agencyAddress || header_info?.address;
+      templateData.agencyContact = agencyContact || header_info?.email;
+      templateData.footerText = actualFooterText;
+      templateData.signatureBlock = signatureBlock;
+      templateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
+    }
+
     const template = await prisma.documentTemplate.create({
-      data: {
-        userId: req.userId,
-        templateType,
-        templateName,
-        agencyHeader,
-        agencyAddress,
-        agencyContact,
-        footerText,
-        signatureBlock,
-        customFields: customFields ? JSON.stringify(customFields) : null
-      }
+      data: templateData
     });
 
     res.status(201).json(template);
@@ -79,24 +109,51 @@ const updateTemplate = async (req, res) => {
       agencyContact,
       footerText,
       signatureBlock,
-      customFields
+      customFields,
+      isClientEncrypted,
+      encryptionVersion,
+      name,
+      header_info,
+      footer_text,
+      custom_fields
     } = req.body;
+
+    // Handle both old format and new format
+    const actualTemplateName = templateName || name;
+    const actualFooterText = footerText || footer_text;
+    const actualCustomFields = customFields || custom_fields;
+    
+    const updateData = {
+      templateName: actualTemplateName,
+      isClientEncrypted: isClientEncrypted || false,
+      encryptionVersion: encryptionVersion || null,
+      updatedAt: new Date()
+    };
+    
+    if (isClientEncrypted) {
+      // Store encrypted data as-is
+      updateData.agencyHeader = agencyHeader;
+      updateData.agencyAddress = agencyAddress;
+      updateData.agencyContact = agencyContact;
+      updateData.footerText = actualFooterText;
+      updateData.signatureBlock = signatureBlock;
+      updateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
+    } else {
+      // Store unencrypted data (legacy support)
+      updateData.agencyHeader = agencyHeader || header_info?.agency_name;
+      updateData.agencyAddress = agencyAddress || header_info?.address;
+      updateData.agencyContact = agencyContact || header_info?.email;
+      updateData.footerText = actualFooterText;
+      updateData.signatureBlock = signatureBlock;
+      updateData.customFields = actualCustomFields ? JSON.stringify(actualCustomFields) : null;
+    }
 
     const template = await prisma.documentTemplate.updateMany({
       where: {
         id: req.params.id,
         userId: req.userId
       },
-      data: {
-        templateName,
-        agencyHeader,
-        agencyAddress,
-        agencyContact,
-        footerText,
-        signatureBlock,
-        customFields: customFields ? JSON.stringify(customFields) : null,
-        updatedAt: new Date()
-      }
+      data: updateData
     });
 
     if (template.count === 0) {

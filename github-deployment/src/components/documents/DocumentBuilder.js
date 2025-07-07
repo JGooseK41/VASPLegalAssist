@@ -1,13 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Plus, Trash2, Download, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Upload, Plus, Trash2, Download, AlertCircle, CheckCircle, X, Lock } from 'lucide-react';
 import { documentAPI, templateAPI } from '../../services/api';
+import { useEncryption } from '../../hooks/useEncryption';
+import { createEncryptedDocumentAPI, createEncryptedTemplateAPI } from '../../services/encryptedApi';
 
 const DocumentBuilder = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  
+  // Initialize encryption
+  const encryption = useEncryption();
+  const encryptedDocumentAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedDocumentAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
+  const encryptedTemplateAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedTemplateAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
   
   // VASP Data
   const [selectedVASP, setSelectedVASP] = useState(null);
@@ -44,13 +61,20 @@ const DocumentBuilder = () => {
       sessionStorage.removeItem('selectedVASP');
     }
     
-    // Load templates
-    loadTemplates();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Load templates when encryption is ready
+    if (encryptedTemplateAPI) {
+      loadTemplates();
+    }
+  }, [encryptedTemplateAPI]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadTemplates = async () => {
     try {
-      const data = await templateAPI.getTemplates();
+      if (!encryptedTemplateAPI) {
+        console.error('Encryption not ready for templates');
+        return;
+      }
+      
+      const data = await encryptedTemplateAPI.getTemplates();
       setTemplates(data);
       // Select first template by default
       if (data.length > 0 && !selectedTemplate) {
@@ -150,7 +174,12 @@ const DocumentBuilder = () => {
         outputFormat: outputFormat
       };
 
-      const response = await documentAPI.createDocument(documentData);
+      if (!encryptedDocumentAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      const response = await encryptedDocumentAPI.createDocument(documentData);
       
       // Check if this is a demo response
       if (response.isDemo) {
@@ -202,6 +231,12 @@ const DocumentBuilder = () => {
           <p className="mt-1 text-sm text-gray-600">
             Generate subpoenas and letterheads for cryptocurrency investigations
           </p>
+          {encryption.isKeyReady && (
+            <div className="mt-2 flex items-center text-xs text-green-600">
+              <Lock className="h-3 w-3 mr-1" />
+              Client-side encryption active - your data is encrypted before transmission
+            </div>
+          )}
         </div>
 
         {error && (
@@ -269,6 +304,14 @@ const DocumentBuilder = () => {
         {/* Document Type and Template */}
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Document Settings</h2>
+          {!encryption.isKeyReady && (
+            <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 text-yellow-400 mr-2" />
+                <p className="text-sm text-yellow-800">Waiting for encryption to initialize...</p>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -297,7 +340,7 @@ const DocumentBuilder = () => {
               >
                 {templates.map(template => (
                   <option key={template.id} value={template.id}>
-                    {template.name}
+                    {template.decryptionError ? `Encrypted Template (ID: ${template.id})` : template.name}
                   </option>
                 ))}
               </select>
@@ -505,7 +548,7 @@ const DocumentBuilder = () => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !selectedVASP}
+            disabled={loading || !selectedVASP || !encryption.isKeyReady}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (

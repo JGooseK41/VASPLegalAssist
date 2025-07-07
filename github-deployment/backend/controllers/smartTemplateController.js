@@ -73,7 +73,9 @@ const uploadTemplate = async (req, res) => {
         agencyAddress,
         agencyContact,
         footerText,
-        signatureBlock
+        signatureBlock,
+        isClientEncrypted,
+        encryptionVersion
       } = req.body;
 
       const fileType = path.extname(req.file.originalname).slice(1).toLowerCase();
@@ -88,24 +90,40 @@ const uploadTemplate = async (req, res) => {
       const validation = templateParser.validateTemplate(content, markers);
       
       // Create template record
+      const templateData = {
+        userId: req.userId,
+        templateName: templateName || req.file.originalname,
+        templateType: templateType || 'letterhead',
+        fileUrl: `/uploads/templates/${req.file.filename}`,
+        fileType,
+        fileSize: req.file.size,
+        originalFilename: req.file.originalname,
+        templateContent: content,
+        markers: JSON.stringify(markers),
+        markerMappings: JSON.stringify({}),
+        isClientEncrypted: isClientEncrypted || false,
+        encryptionVersion: encryptionVersion || null
+      };
+      
+      // Store encrypted or unencrypted data based on flag
+      if (isClientEncrypted) {
+        // Client has already encrypted these fields
+        templateData.agencyHeader = agencyHeader || '';
+        templateData.agencyAddress = agencyAddress || '';
+        templateData.agencyContact = agencyContact || '';
+        templateData.footerText = footerText || '';
+        templateData.signatureBlock = signatureBlock || '';
+      } else {
+        // Store as plain text (legacy support)
+        templateData.agencyHeader = agencyHeader || '';
+        templateData.agencyAddress = agencyAddress || '';
+        templateData.agencyContact = agencyContact || '';
+        templateData.footerText = footerText || '';
+        templateData.signatureBlock = signatureBlock || '';
+      }
+      
       const template = await prisma.documentTemplate.create({
-        data: {
-          userId: req.userId,
-          templateName: templateName || req.file.originalname,
-          templateType: templateType || 'letterhead',
-          agencyHeader: agencyHeader || '',
-          agencyAddress: agencyAddress || '',
-          agencyContact: agencyContact || '',
-          footerText: footerText || '',
-          signatureBlock: signatureBlock || '',
-          fileUrl: `/uploads/templates/${req.file.filename}`,
-          fileType,
-          fileSize: req.file.size,
-          originalFilename: req.file.originalname,
-          templateContent: content,
-          markers: JSON.stringify(markers),
-          markerMappings: JSON.stringify({})
-        }
+        data: templateData
       });
 
       res.status(201).json({
@@ -125,7 +143,7 @@ const uploadTemplate = async (req, res) => {
 // Update marker mappings
 const updateMarkerMappings = async (req, res) => {
   try {
-    const { mappings } = req.body;
+    const { mappings, encryptedMappings, isClientEncrypted } = req.body;
     
     const template = await prisma.documentTemplate.findFirst({
       where: {
@@ -138,11 +156,20 @@ const updateMarkerMappings = async (req, res) => {
       return res.status(404).json({ error: 'Template not found' });
     }
 
+    const updateData = {};
+    
+    if (isClientEncrypted && encryptedMappings) {
+      // Store encrypted mappings as-is
+      updateData.markerMappings = JSON.stringify(encryptedMappings);
+      updateData.isClientEncrypted = true;
+    } else {
+      // Store unencrypted mappings (legacy support)
+      updateData.markerMappings = JSON.stringify(mappings);
+    }
+    
     await prisma.documentTemplate.update({
       where: { id: req.params.id },
-      data: {
-        markerMappings: JSON.stringify(mappings)
-      }
+      data: updateData
     });
 
     res.json({ message: 'Marker mappings updated successfully' });
@@ -169,6 +196,9 @@ const previewTemplate = async (req, res) => {
     if (!template.templateContent) {
       return res.status(400).json({ error: 'Template has no content' });
     }
+    
+    // Check if request contains encrypted data
+    const isRequestEncrypted = req.body.isClientEncrypted || false;
 
     // Sample data for preview
     const sampleData = {

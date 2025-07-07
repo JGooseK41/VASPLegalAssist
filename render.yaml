@@ -4,7 +4,7 @@ services:
     name: vasp-legal-assistant-api
     env: node
     buildCommand: cd github-deployment/backend && npm install && npx prisma generate
-    startCommand: cd github-deployment/backend && npx prisma generate && npx prisma migrate deploy && node server.js
+    startCommand: cd github-deployment/backend && node server.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:

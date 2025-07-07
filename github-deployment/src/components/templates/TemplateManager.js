@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import { useEncryption } from '../../hooks/useEncryption';
+import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 import SmartTemplateUpload from './SmartTemplateUpload';
 import MarkerMappingEditor from './MarkerMappingEditor';
 
@@ -13,16 +15,34 @@ const TemplateManager = () => {
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showSmartUpload, setShowSmartUpload] = useState(false);
   const [mappingTemplate, setMappingTemplate] = useState(null);
+  const [showEncryptionStatus, setShowEncryptionStatus] = useState(false);
+  
+  // Initialize encryption
+  const encryption = useEncryption();
+  const encryptedAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedTemplateAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
 
   useEffect(() => {
-    loadTemplates();
-  }, []);
+    if (encryptedAPI) {
+      loadTemplates();
+    }
+  }, [encryptedAPI]);
 
   const loadTemplates = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await templateAPI.getTemplates();
+      
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      const data = await encryptedAPI.getTemplates();
       setTemplates(data);
     } catch (err) {
       console.error('Failed to load templates:', err);
@@ -36,14 +56,19 @@ const TemplateManager = () => {
     try {
       setError(null);
       
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
       if (templateData.id) {
         // Update existing template
-        await templateAPI.updateTemplate(templateData.id, templateData);
-        setSuccess('Template updated successfully!');
+        await encryptedAPI.updateTemplate(templateData.id, templateData);
+        setSuccess('Template updated successfully! (Encrypted)');
       } else {
         // Create new template
-        await templateAPI.createTemplate(templateData);
-        setSuccess('Template created successfully!');
+        await encryptedAPI.createTemplate(templateData);
+        setSuccess('Template created successfully! (Encrypted)');
       }
       
       await loadTemplates();
@@ -70,7 +95,13 @@ const TemplateManager = () => {
     
     try {
       setError(null);
-      await templateAPI.deleteTemplate(templateId);
+      
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      await encryptedAPI.deleteTemplate(templateId);
       setSuccess('Template deleted successfully!');
       await loadTemplates();
       setTimeout(() => setSuccess(null), 3000);
@@ -108,6 +139,12 @@ const TemplateManager = () => {
             <p className="mt-1 text-sm text-gray-600">
               Customize your subpoena and letterhead templates or upload smart templates
             </p>
+            {encryption.isKeyReady && (
+              <div className="mt-2 flex items-center text-xs text-green-600">
+                <Lock className="h-3 w-3 mr-1" />
+                Client-side encryption active
+              </div>
+            )}
           </div>
           <div className="flex space-x-2">
             <button
@@ -235,6 +272,8 @@ const TemplateManager = () => {
 };
 
 const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
+  const isEncrypted = template.isClientEncrypted || false;
+  const hasDecryptionError = template.decryptionError || false;
   const getDocumentTypeLabel = (type) => {
     switch (type) {
       case 'subpoena':
@@ -260,7 +299,15 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-medium text-gray-900">{template.templateName || template.name}</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              {hasDecryptionError ? 'Encrypted Template (Unable to Decrypt)' : (template.templateName || template.name)}
+            </h3>
+            {isEncrypted && !hasDecryptionError && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <Lock className="h-3 w-3 mr-1" />
+                Encrypted
+              </span>
+            )}
             {isSmartTemplate && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <Upload className="h-3 w-3 mr-1" />
@@ -285,7 +332,14 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
             </div>
           )}
           
-          {template.header_info && Object.keys(template.header_info).length > 0 && (
+          {hasDecryptionError && (
+            <div className="mt-3 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 inline mr-1" />
+              {template.errorMessage || 'Unable to decrypt template data'}
+            </div>
+          )}
+          
+          {!hasDecryptionError && template.header_info && Object.keys(template.header_info).length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-700">Header Information:</h4>
               <div className="mt-2 text-sm text-gray-600 space-y-1">

@@ -37,7 +37,11 @@ const createDocument = async (req, res) => {
       statute,
       transactions,
       requestedInfo,
-      outputFormat = 'pdf' // Default to PDF for backward compatibility
+      outputFormat = 'pdf', // Default to PDF for backward compatibility
+      isClientEncrypted,
+      encryptionVersion,
+      // Support for client-encrypted fields
+      metadata
     } = req.body;
 
     // Get user info
@@ -99,31 +103,56 @@ const createDocument = async (req, res) => {
       documentPath = generatedDoc.filepath;
     }
 
+    // Prepare document data for storage
+    const documentStoreData = {
+      userId: req.userId,
+      vaspId: parseInt(vaspId),
+      documentType,
+      pdfUrl: documentUrl, // This field name is kept for backward compatibility
+      outputFormat: outputFormat,
+      filePath: documentPath,
+      isClientEncrypted: isClientEncrypted || false,
+      encryptionVersion: encryptionVersion || null
+    };
+    
+    // Handle encrypted vs unencrypted data
+    if (isClientEncrypted) {
+      // Store encrypted data as-is
+      documentStoreData.vaspName = vaspName;
+      documentStoreData.vaspJurisdiction = vaspJurisdiction;
+      documentStoreData.vaspEmail = vaspEmail;
+      documentStoreData.caseNumber = caseNumber;
+      documentStoreData.crimeDescription = crimeDescription;
+      documentStoreData.statute = statute;
+      documentStoreData.transactionDetails = JSON.stringify(transactions || []);
+      documentStoreData.requestedData = JSON.stringify(requestedInfo || []);
+      // Store encrypted metadata if provided
+      if (metadata) {
+        documentStoreData.metadata = JSON.stringify(metadata);
+      }
+    } else {
+      // Store unencrypted data (legacy support)
+      documentStoreData.vaspName = vaspName;
+      documentStoreData.vaspJurisdiction = vaspJurisdiction;
+      documentStoreData.vaspEmail = vaspEmail;
+      documentStoreData.caseNumber = caseNumber;
+      documentStoreData.crimeDescription = crimeDescription;
+      documentStoreData.statute = statute;
+      documentStoreData.transactionDetails = JSON.stringify(transactions || []);
+      documentStoreData.requestedData = JSON.stringify(requestedInfo || []);
+    }
+    
     // Save document record
     const document = await prisma.document.create({
-      data: {
-        userId: req.userId,
-        vaspId: parseInt(vaspId),
-        vaspName,
-        vaspJurisdiction,
-        vaspEmail,
-        documentType,
-        caseNumber,
-        crimeDescription,
-        statute,
-        transactionDetails: JSON.stringify(transactions || []),
-        requestedData: JSON.stringify(requestedInfo || []),
-        pdfUrl: documentUrl, // This field name is kept for backward compatibility
-        outputFormat: outputFormat,
-        filePath: documentPath
-      }
+      data: documentStoreData
     });
 
     res.status(201).json({
       document,
       documentUrl,
       outputFormat,
-      filename: generatedDoc.filename
+      filename: generatedDoc.filename,
+      isClientEncrypted: isClientEncrypted || false
     });
   } catch (error) {
     console.error('Create document error:', error);
@@ -150,9 +179,27 @@ const getDocuments = async (req, res) => {
     const total = await prisma.document.count({
       where: { userId: req.userId }
     });
+    
+    // Parse JSON fields for non-encrypted documents
+    const processedDocuments = documents.map(doc => {
+      if (!doc.isClientEncrypted) {
+        // For non-encrypted documents, parse JSON fields
+        try {
+          if (doc.transactionDetails) {
+            doc.transactions = JSON.parse(doc.transactionDetails);
+          }
+          if (doc.requestedData) {
+            doc.requested_info = JSON.parse(doc.requestedData);
+          }
+        } catch (e) {
+          console.error('Error parsing document fields:', e);
+        }
+      }
+      return doc;
+    });
 
     res.json({
-      documents,
+      documents: processedDocuments,
       total,
       hasMore: total > parseInt(offset) + documents.length
     });
@@ -178,9 +225,15 @@ const getDocument = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    // Parse JSON fields
-    document.transactionDetails = JSON.parse(document.transactionDetails);
-    document.requestedData = JSON.parse(document.requestedData);
+    // Parse JSON fields only for non-encrypted documents
+    if (!document.isClientEncrypted) {
+      try {
+        document.transactionDetails = JSON.parse(document.transactionDetails);
+        document.requestedData = JSON.parse(document.requestedData);
+      } catch (e) {
+        console.error('Error parsing document fields:', e);
+      }
+    }
 
     res.json(document);
   } catch (error) {

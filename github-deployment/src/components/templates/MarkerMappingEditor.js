@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Eye, AlertCircle, CheckCircle, HelpCircle, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Save, Eye, AlertCircle, CheckCircle, HelpCircle, X, Lock } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import { useEncryption } from '../../hooks/useEncryption';
+import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 
 const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
   const [mappings, setMappings] = useState({});
@@ -10,6 +12,15 @@ const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  
+  // Initialize encryption
+  const encryption = useEncryption();
+  const encryptedAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedTemplateAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
 
   useEffect(() => {
     loadAvailableMarkers();
@@ -24,6 +35,7 @@ const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
 
   const loadAvailableMarkers = async () => {
     try {
+      // Available markers don't need encryption
       const markers = await templateAPI.getAvailableMarkers();
       setAvailableMarkers(markers);
     } catch (err) {
@@ -43,7 +55,12 @@ const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
       setLoading(true);
       setError(null);
       
-      const response = await templateAPI.previewTemplate(template.id, {
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      const response = await encryptedAPI.previewTemplate(template.id, {
         // You can customize these preview values
         agencyName: 'U.S. Department of Justice',
         investigatorName: 'John Doe',
@@ -65,8 +82,13 @@ const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
       setLoading(true);
       setError(null);
       
-      await templateAPI.updateMarkerMappings(template.id, mappings);
-      setSuccess('Marker mappings saved successfully!');
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      await encryptedAPI.updateMarkerMappings(template.id, mappings);
+      setSuccess('Marker mappings saved and encrypted successfully!');
       
       if (onSave) {
         onSave({ ...template, markerMappings: JSON.stringify(mappings) });
@@ -90,6 +112,12 @@ const MarkerMappingEditor = ({ template, onSave, onCancel }) => {
         <p className="text-sm text-gray-600">
           Map template markers to data fields for automatic filling
         </p>
+        {encryption.isKeyReady && (
+          <div className="mt-2 flex items-center text-xs text-green-600">
+            <Lock className="h-3 w-3 mr-1" />
+            Mappings will be encrypted
+          </div>
+        )}
       </div>
 
       {error && (

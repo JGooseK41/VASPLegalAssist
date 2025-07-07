@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock } from 'lucide-react';
 import { documentAPI } from '../../services/api';
+import { useEncryption } from '../../hooks/useEncryption';
+import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
 
 const DocumentHistory = () => {
   const navigate = useNavigate();
@@ -9,16 +11,33 @@ const DocumentHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  // Initialize encryption
+  const encryption = useEncryption();
+  const encryptedAPI = useMemo(() => {
+    if (encryption.isKeyReady) {
+      return createEncryptedDocumentAPI(encryption);
+    }
+    return null;
+  }, [encryption]);
 
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (encryptedAPI) {
+      loadDocuments();
+    }
+  }, [encryptedAPI]);
 
   const loadDocuments = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await documentAPI.getDocuments();
+      
+      if (!encryptedAPI) {
+        setError('Encryption not ready. Please refresh the page.');
+        return;
+      }
+      
+      const response = await encryptedAPI.getDocuments();
       // API returns { documents, total, hasMore }
       setDocuments(response.documents || []);
     } catch (err) {
@@ -127,6 +146,12 @@ const DocumentHistory = () => {
             <p className="mt-1 text-sm text-gray-600">
               Your last {documents.length} generated documents
             </p>
+            {encryption.isKeyReady && (
+              <div className="mt-2 flex items-center text-xs text-green-600">
+                <Lock className="h-3 w-3 mr-1" />
+                Documents are encrypted with your personal key
+              </div>
+            )}
           </div>
           <button
             onClick={() => navigate('/documents/new')}
@@ -165,10 +190,10 @@ const DocumentHistory = () => {
                           <FileText className="h-5 w-5 text-gray-400 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {getDocumentTypeLabel(doc.documentType || doc.document_type)}
+                              {doc.decryptionError ? 'Encrypted Document' : getDocumentTypeLabel(doc.documentType || doc.document_type)}
                             </p>
                             <p className="text-sm text-gray-500">
-                              Case #{doc.caseNumber || doc.case_info?.case_number || 'N/A'}
+                              {doc.decryptionError ? 'Unable to decrypt' : `Case #${doc.caseNumber || doc.case_info?.case_number || 'N/A'}`}
                             </p>
                           </div>
                         </div>
@@ -176,11 +201,11 @@ const DocumentHistory = () => {
                         <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Building className="h-4 w-4 mr-1" />
-                            {doc.vaspName || doc.metadata?.vasp_name || 'Unknown VASP'}
+                            {doc.decryptionError ? 'Encrypted' : (doc.vaspName || doc.metadata?.vasp_name || 'Unknown VASP')}
                           </div>
                           <div className="flex items-center">
                             <Hash className="h-4 w-4 mr-1" />
-                            {doc.transactionDetails ? JSON.parse(doc.transactionDetails).length : 0} transactions
+                            {doc.decryptionError ? '?' : (doc.transactionDetails ? JSON.parse(doc.transactionDetails).length : 0)} transactions
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
@@ -188,7 +213,7 @@ const DocumentHistory = () => {
                           </div>
                         </div>
                         
-                        {(doc.crimeDescription || doc.case_info?.crime_description) && (
+                        {!doc.decryptionError && (doc.crimeDescription || doc.case_info?.crime_description) && (
                           <p className="mt-1 text-sm text-gray-600 line-clamp-1">
                             {doc.crimeDescription || doc.case_info.crime_description}
                           </p>
@@ -196,6 +221,11 @@ const DocumentHistory = () => {
                       </div>
                       
                       <div className="ml-6 flex items-center space-x-2">
+                        {doc.isClientEncrypted && (
+                          <span className="text-xs text-blue-600" title="Client-side encrypted">
+                            <Lock className="h-4 w-4" />
+                          </span>
+                        )}
                         <button
                           onClick={() => setSelectedDocument(doc)}
                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded"
