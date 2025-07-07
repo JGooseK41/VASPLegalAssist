@@ -17,7 +17,7 @@ model User {
   firstName       String
   lastName        String
   agencyName      String
-  badgeNumber     String
+  badgeNumber     String?
   title           String?
   phone           String?
   role            String    @default("USER")
