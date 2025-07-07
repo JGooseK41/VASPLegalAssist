@@ -5,10 +5,11 @@
   "scripts": {
     "start": "cd github-deployment && npm start",
     "dev": "cd github-deployment && npm run dev",
-    "build": "cd github-deployment && npm run build",
+    "build": "cd github-deployment && npm install && npm run build",
     "install:all": "cd github-deployment && npm install && cd backend && npm install",
     "backup": "cd github-deployment && npm run backup",
-    "backup:setup": "cd github-deployment && npm run backup:setup"
+    "backup:setup": "cd github-deployment && npm run backup:setup",
+    "postinstall": "cd github-deployment && npm install"
   },
   "private": true
 }
