@@ -51,7 +51,8 @@ const Analytics = () => {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/analytics/summary', {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await axios.get(`${API_BASE_URL}/analytics/summary`, {
         params: dateRange,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`
@@ -68,7 +69,8 @@ const Analytics = () => {
 
   const loadRealtimeData = async () => {
     try {
-      const response = await axios.get('/api/analytics/realtime', {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await axios.get(`${API_BASE_URL}/analytics/realtime`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`
         }
