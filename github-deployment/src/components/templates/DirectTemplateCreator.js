@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Globe } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { templateAPI } from '../../services/api';
 
 const DirectTemplateCreator = ({ onSuccess, onCancel, encryptedAPI }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isGlobal, setIsGlobal] = useState(false);
+  
+  const [useEncryption, setUseEncryption] = useState(true);
   
   const [formData, setFormData] = useState({
     templateName: 'Standard VASP Data Request',
@@ -57,11 +60,6 @@ Office: {{agent_phone}}`,
     setError(null);
 
     try {
-      if (!encryptedAPI) {
-        setError('Encryption not ready. Please refresh the page.');
-        return;
-      }
-
       const dataToSend = {
         templateName: formData.templateName,
         templateType: formData.templateType,
@@ -78,13 +76,21 @@ Office: {{agent_phone}}`,
         fileUrl: null,
         fileType: formData.fileType,
         fileSize: formData.templateContent.length,
-        originalFilename: 'direct_template.html'
+        originalFilename: 'direct_template.html',
+        isClientEncrypted: useEncryption
       };
 
       console.log('Sending template data:', dataToSend);
-      console.log('Using encryptedAPI:', encryptedAPI);
+      console.log('Using encryption:', useEncryption);
       
-      const response = await encryptedAPI.createTemplate(dataToSend);
+      let response;
+      if (useEncryption && encryptedAPI) {
+        console.log('Using encryptedAPI');
+        response = await encryptedAPI.createTemplate(dataToSend);
+      } else {
+        console.log('Using standard API (no encryption)');
+        response = await templateAPI.createTemplate(dataToSend);
+      }
       
       if (onSuccess) {
         onSuccess(response);
@@ -93,6 +99,8 @@ Office: {{agent_phone}}`,
       console.error('Template creation error:', err);
       console.error('Error response:', err.response);
       console.error('Error data:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      console.error('Error details:', JSON.stringify(err.response?.data, null, 2));
       setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to create template');
     } finally {
       setLoading(false);
@@ -156,6 +164,20 @@ Office: {{agent_phone}}`,
             </label>
           </div>
         )}
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={useEncryption}
+              onChange={(e) => setUseEncryption(e.target.checked)}
+              className="h-4 w-4 text-yellow-600 rounded mr-2"
+            />
+            <span className="text-sm">
+              <span className="font-medium">Use encryption</span> (uncheck if having issues)
+            </span>
+          </label>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
