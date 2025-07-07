@@ -2,7 +2,7 @@
 [build]
   base = "github-deployment"
   command = "CI= npm install && CI= npm run build"
-  publish = "github-deployment/build"
+  publish = "build"
 
 [build.environment]
   REACT_APP_API_URL = "https://vasplegalassist.onrender.com/api"
