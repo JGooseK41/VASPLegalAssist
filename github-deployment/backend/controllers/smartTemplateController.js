@@ -66,6 +66,11 @@ const uploadTemplate = async (req, res) => {
     }
 
     try {
+      console.log('Upload request received:', {
+        file: req.file ? req.file.originalname : 'No file',
+        body: req.body
+      });
+      
       const {
         templateName,
         templateType,
@@ -140,9 +145,15 @@ const uploadTemplate = async (req, res) => {
       });
     } catch (error) {
       console.error('Upload template error:', error);
+      console.error('Error stack:', error.stack);
       // Clean up uploaded file on error
-      await fs.unlink(req.file.path).catch(() => {});
-      res.status(500).json({ error: 'Failed to process template' });
+      if (req.file && req.file.path) {
+        await fs.unlink(req.file.path).catch(() => {});
+      }
+      res.status(500).json({ 
+        error: 'Failed to process template',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 };
