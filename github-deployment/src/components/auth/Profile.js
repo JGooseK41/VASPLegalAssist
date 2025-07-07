@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Save, Key, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { User, Mail, Save, Key, AlertCircle, CheckCircle, X, Trophy, Eye, EyeOff } from 'lucide-react';
 import { profileAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -13,7 +13,8 @@ const Profile = () => {
     email: '',
     agency: '',
     title: '',
-    phone: ''
+    phone: '',
+    leaderboardOptOut: false
   });
   const [passwordData, setPasswordData] = useState({
     current_password: '',
@@ -32,11 +33,12 @@ const Profile = () => {
       setError(null);
       const data = await profileAPI.getProfile();
       setProfileData({
-        name: data.name || '',
+        name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
         email: data.email || '',
-        agency: data.agency || '',
+        agency: data.agencyName || '',
         title: data.title || '',
-        phone: data.phone || ''
+        phone: data.phone || '',
+        leaderboardOptOut: data.leaderboardOptOut || false
       });
     } catch (err) {
       console.error('Failed to load profile:', err);
@@ -51,7 +53,20 @@ const Profile = () => {
     try {
       setError(null);
       setSuccess(null);
-      const updatedProfile = await profileAPI.updateProfile(profileData);
+      // Split name into first and last name
+      const nameParts = profileData.name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const updatedProfile = await profileAPI.updateProfile({
+        firstName,
+        lastName,
+        agencyName: profileData.agency,
+        title: profileData.title,
+        phone: profileData.phone,
+        badgeNumber: user?.badgeNumber || '',
+        leaderboardOptOut: profileData.leaderboardOptOut
+      });
       updateUser(updatedProfile);
       setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(null), 3000);
@@ -260,6 +275,48 @@ const Profile = () => {
             </button>
           </div>
         </form>
+
+        {/* Privacy Settings */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Trophy className="h-5 w-5 text-gray-400 mr-2" />
+            <h2 className="text-lg font-medium text-gray-900">Privacy & Preferences</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="leaderboard-opt-out"
+                checked={profileData.leaderboardOptOut}
+                onChange={(e) => setProfileData({...profileData, leaderboardOptOut: e.target.checked})}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="leaderboard-opt-out" className="ml-3">
+                <div className="text-sm font-medium text-gray-700">Opt out of leaderboard</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  <div className="flex items-center">
+                    {profileData.leaderboardOptOut ? (
+                      <>
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        Your contributions will be anonymous and you won't appear on the leaderboard
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-3 w-3 mr-1" />
+                        Your name will be visible on the leaderboard when you earn points
+                      </>
+                    )}
+                  </div>
+                </div>
+              </label>
+            </div>
+            
+            <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+              <strong>Note:</strong> You'll still earn points for your contributions, but your name won't be displayed publicly if you opt out.
+            </div>
+          </div>
+        </div>
 
         {/* Password Change */}
         <div className="bg-white shadow rounded-lg p-6">

@@ -7,7 +7,8 @@ const getTopContributor = async (req, res) => {
     // Get all users except admins with their contribution data
     const users = await prisma.user.findMany({
       where: {
-        role: { not: 'ADMIN' }
+        role: { not: 'ADMIN' },
+        leaderboardOptOut: false
       },
       include: {
         // Get accepted VASP submissions
@@ -74,10 +75,7 @@ const getTopContributor = async (req, res) => {
     userScores.sort((a, b) => b.score - a.score);
     const topContributor = userScores[0] || null;
 
-    res.json({
-      topContributor,
-      lastUpdated: new Date().toISOString()
-    });
+    res.json(topContributor);
   } catch (error) {
     console.error('Error getting top contributor:', error);
     res.status(500).json({ error: 'Failed to fetch top contributor' });
@@ -90,7 +88,8 @@ const getLeaderboard = async (req, res) => {
     // Get all users except admins with their contribution data
     const users = await prisma.user.findMany({
       where: {
-        role: { not: 'ADMIN' }
+        role: { not: 'ADMIN' },
+        leaderboardOptOut: false
       },
       include: {
         // Get accepted VASP submissions

@@ -17,6 +17,7 @@ const getProfile = async (req, res) => {
         title: true,
         phone: true,
         role: true,
+        leaderboardOptOut: true,
         createdAt: true
       }
     });
@@ -34,7 +35,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, agencyName, badgeNumber, title, phone } = req.body;
+    const { firstName, lastName, agencyName, badgeNumber, title, phone, leaderboardOptOut } = req.body;
 
     const updatedUser = await prisma.user.update({
       where: { id: req.userId },
@@ -44,7 +45,8 @@ const updateProfile = async (req, res) => {
         agencyName,
         badgeNumber,
         title,
-        phone
+        phone,
+        leaderboardOptOut
       },
       select: {
         id: true,
@@ -55,7 +57,8 @@ const updateProfile = async (req, res) => {
         badgeNumber: true,
         title: true,
         phone: true,
-        role: true
+        role: true,
+        leaderboardOptOut: true
       }
     });
 

@@ -16,13 +16,13 @@ const Layout = () => {
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'VASP Search', href: '/search', icon: Search },
     { name: 'Generate Document', href: '/documents/new', icon: FileEdit },
-    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'FAQ', href: '/faq', icon: HelpCircle },
   ];
   
   // User dropdown menu items
   const userNavigation = [
     { name: 'My Profile', href: '/profile', icon: User },
+    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'My Templates', href: '/templates', icon: FileText },
     { name: 'Document History', href: '/documents/history', icon: Clock },
     { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
@@ -61,7 +61,8 @@ const Layout = () => {
                 <img
                   src="/images/logo.png"
                   alt="VASP Legal Assistant Logo"
-                  className="h-12 w-12 bg-white rounded-lg p-2 shadow-md object-contain"
+                  className="h-12 w-auto bg-white rounded-md px-3 py-1 shadow-md object-contain"
+                  style={{ minWidth: '180px', maxWidth: '240px' }}
                 />
               </a>
               <span className="ml-3 text-xl font-semibold text-white">

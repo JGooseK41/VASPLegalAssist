@@ -100,6 +100,70 @@ function TopContributor() {
           </Link>
         </div>
       </div>
+      
+      {/* Info Modal */}
+      {showInfoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowInfoModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+              Leaderboard System
+            </h3>
+            
+            <div className="space-y-4 text-sm text-gray-600">
+              <p>
+                The VASP Legal Assistant leaderboard rewards active contributors who help improve our database and community.
+              </p>
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">How to Earn Points:</h4>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li><strong>+50 points</strong> - Submit a new VASP that gets approved</li>
+                  <li><strong>+20 points</strong> - Update existing VASP information</li>
+                  <li><strong>+10 points</strong> - Leave helpful comments on VASPs</li>
+                  <li><strong>+5 points</strong> - Generate legal documents</li>
+                  <li><strong>+2 points</strong> - Upvote helpful comments</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Benefits:</h4>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Recognition as a top contributor</li>
+                  <li>Build reputation in the law enforcement community</li>
+                  <li>Help improve data quality for everyone</li>
+                </ul>
+              </div>
+              
+              <p className="text-xs text-gray-500 italic">
+                You can opt out of the leaderboard in your profile settings if you prefer to contribute anonymously.
+              </p>
+            </div>
+            
+            <div className="mt-6 flex justify-end space-x-3">
+              <Link
+                to="/profile"
+                className="text-sm text-gray-600 hover:text-gray-800 px-4 py-2"
+              >
+                Manage Settings
+              </Link>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
