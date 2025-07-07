@@ -120,22 +120,40 @@ export const createEncryptedTemplateAPI = (encryption) => {
 
     // Smart template methods
     uploadTemplate: async (formData) => {
-      // For file uploads, we need to encrypt the file content
-      // This requires reading the file and encrypting before upload
-      const file = formData.get('file');
-      const templateData = JSON.parse(formData.get('templateData') || '{}');
+      // For smart template uploads, we need to handle the file and encrypt metadata
+      const file = formData.get('template');
       
-      // Encrypt template metadata
-      const encryptedTemplateData = encryption.encryptFields(
-        templateData,
-        TEMPLATE_ENCRYPTED_FIELDS
-      );
+      if (!file) {
+        throw new Error('No file provided');
+      }
       
-      // Create new FormData with encrypted data
+      // Extract template data from FormData
+      const templateData = {};
+      for (let [key, value] of formData.entries()) {
+        if (key !== 'template') {
+          templateData[key] = value;
+        }
+      }
+      
+      // Encrypt sensitive template metadata
+      const fieldsToEncrypt = TEMPLATE_ENCRYPTED_FIELDS.filter(field => templateData[field]);
+      const encryptedData = encryption.encryptFields(templateData, fieldsToEncrypt);
+      
+      // Create new FormData with the file and encrypted metadata
       const encryptedFormData = new FormData();
-      encryptedFormData.append('file', file); // File encryption handled separately
-      encryptedFormData.append('templateData', JSON.stringify(encryptedTemplateData));
+      encryptedFormData.append('template', file); // Keep file with same key name
+      
+      // Append all data (encrypted and non-encrypted)
+      Object.entries(encryptedData).forEach(([key, value]) => {
+        encryptedFormData.append(key, value);
+      });
+      
+      // Also append non-sensitive fields
+      if (templateData.templateType) encryptedFormData.append('templateType', templateData.templateType);
+      if (templateData.isGlobal) encryptedFormData.append('isGlobal', templateData.isGlobal);
+      
       encryptedFormData.append('isClientEncrypted', 'true');
+      encryptedFormData.append('encryptionVersion', encryption.version || '1.0');
       
       return templateAPI.uploadTemplate(encryptedFormData);
     },
