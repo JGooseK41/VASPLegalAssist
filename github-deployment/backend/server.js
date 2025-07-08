@@ -62,6 +62,7 @@ const vaspResponseRoutes = require('./routes/vaspResponses');
 const migrateRoutes = require('./routes/migrate');
 const debugRoutes = require('./routes/debug');
 const analyticsRoutes = require('./routes/analytics');
+const encryptedDocumentRoutes = require('./routes/encryptedDocuments');
 const { trackVisitor } = require('./middleware/analytics');
 const { startFileCleanup } = require('./utils/fileCleanup');
 
@@ -118,6 +119,7 @@ app.use('/api/vasp-responses', vaspResponseRoutes);
 app.use('/api/migrate', migrateRoutes);
 app.use('/api/debug', debugRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/encrypted-documents', encryptedDocumentRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

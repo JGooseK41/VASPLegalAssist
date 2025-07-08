@@ -335,11 +335,23 @@ const importTransactions = async (req, res) => {
   }
 };
 
+// Get total document count across all users (for platform stats)
+const getTotalDocumentCount = async (req, res) => {
+  try {
+    const totalCount = await prisma.document.count();
+    res.json({ count: totalCount });
+  } catch (error) {
+    console.error('Get total document count error:', error);
+    res.status(500).json({ error: 'Failed to get total document count' });
+  }
+};
+
 module.exports = {
   createDocument,
   getDocuments,
   getDocument,
   duplicateDocument,
   importTransactions,
+  getTotalDocumentCount,
   uploadCSV: upload.single('file')
 };

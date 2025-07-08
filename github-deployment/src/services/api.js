@@ -221,6 +221,33 @@ export const documentAPI = {
       }
     });
     return response.data;
+  },
+  
+  getTotalDocumentCount: async () => {
+    const response = await api.get('/documents/total-count');
+    return response.data;
+  },
+  
+  downloadEncryptedPackage: async (documentId) => {
+    const response = await api.get(`/encrypted-documents/download/${documentId}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  decryptPackage: async (formData) => {
+    const response = await api.post('/encrypted-documents/decrypt', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  migrateToUserEncryption: async () => {
+    const response = await api.post('/encrypted-documents/migrate');
+    return response.data;
   }
 };
 

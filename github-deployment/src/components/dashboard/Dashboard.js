@@ -26,8 +26,17 @@ const Dashboard = () => {
       // Load VASPs
       const vasps = await vaspAPI.getVASPs();
       
-      // Load recent documents
-      const { documents, total } = await documentAPI.getDocuments(5, 0);
+      // Load recent documents for current user
+      const { documents } = await documentAPI.getDocuments(5, 0);
+      
+      // Load total document count across all users
+      let totalDocumentCount = 0;
+      try {
+        const response = await documentAPI.getTotalDocumentCount();
+        totalDocumentCount = response.count || 0;
+      } catch (error) {
+        console.error('Failed to load total document count:', error);
+      }
       
       // Load member count
       let memberCount = 0;
@@ -40,7 +49,7 @@ const Dashboard = () => {
       
       setStats({
         totalVASPs: vasps.length,
-        documentsCreated: total,
+        documentsCreated: totalDocumentCount,
         totalMembers: memberCount,
         recentDocuments: documents,
         loading: false
@@ -76,14 +85,19 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.firstName}
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            {user?.agencyName} • Records Service Hub
-          </p>
+        {/* Welcome Section with Top Contributor */}
+        <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Welcome back, {user?.firstName}
+            </h1>
+            <p className="mt-2 text-lg text-gray-600">
+              {user?.agencyName} • Records Service Hub
+            </p>
+          </div>
+          <div className="lg:flex lg:justify-end">
+            <TopContributor />
+          </div>
         </div>
 
         {/* Primary Actions - MAIN FOCUS */}
@@ -135,12 +149,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Top Contributor - Horizontal and Centered */}
-        <div className="mb-8">
-          <div className="max-w-3xl mx-auto">
-            <TopContributor />
-          </div>
-        </div>
 
         {/* Recent Documents - Full Width */}
         <div className="bg-blue-50 rounded-lg shadow-sm p-6 mb-8 border border-blue-100">
@@ -198,7 +206,7 @@ const Dashboard = () => {
         {/* Quick Stats and Links Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Stats */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-sm p-6 border border-purple-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Stats</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
@@ -217,33 +225,33 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm p-6 border border-green-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Links</h3>
             <div className="grid grid-cols-2 gap-3">
               <Link
                 to="/templates"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+                className="flex items-center text-sm text-gray-700 hover:text-green-700 p-2 rounded hover:bg-green-50 transition-colors"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 My Templates
               </Link>
               <Link
                 to="/documents/batch"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+                className="flex items-center text-sm text-gray-700 hover:text-green-700 p-2 rounded hover:bg-green-50 transition-colors"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Batch Process
               </Link>
               <Link
                 to="/leaderboard"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+                className="flex items-center text-sm text-gray-700 hover:text-green-700 p-2 rounded hover:bg-green-50 transition-colors"
               >
                 <Users className="h-4 w-4 mr-2" />
                 Leaderboard
               </Link>
               <Link
                 to="/submissions/new"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+                className="flex items-center text-sm text-gray-700 hover:text-green-700 p-2 rounded hover:bg-green-50 transition-colors"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Submit VASP

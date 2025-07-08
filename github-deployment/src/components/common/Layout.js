@@ -28,6 +28,7 @@ const Layout = () => {
     { name: 'My Templates', href: '/templates', icon: FileText },
     { name: 'Batch Documents', href: '/documents/batch', icon: FileStack },
     { name: 'Document History', href: '/documents/history', icon: Clock },
+    { name: 'Decrypt Document', href: '/documents/decrypt', icon: Shield },
     { name: 'My Submissions', href: '/submissions/my', icon: MessageSquare },
   ];
 

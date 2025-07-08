@@ -18,7 +18,7 @@ const {
 } = documentController;
 
 // Import regular controller functions that aren't in encrypted version yet
-const { duplicateDocument, uploadCSV } = require('../controllers/documentController');
+const { duplicateDocument, uploadCSV, getTotalDocumentCount } = require('../controllers/documentController');
 
 // Import demo document controller
 const { generateDemoDocument } = require('../controllers/demoDocumentController');
@@ -34,7 +34,11 @@ const { createCustomBatch } = require('../controllers/customBatchController');
 
 const { authMiddleware, demoMiddleware } = require('../middleware/auth');
 
-// All document routes require authentication
+// Public routes (no authentication required)
+// GET /api/documents/total-count - Get total document count across all users (public endpoint for stats)
+router.get('/total-count', getTotalDocumentCount);
+
+// All other document routes require authentication
 router.use(authMiddleware);
 
 // GET /api/documents

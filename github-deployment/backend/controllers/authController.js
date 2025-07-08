@@ -305,10 +305,9 @@ const getMemberCount = async (req, res) => {
   try {
     const count = await prisma.user.count({
       where: {
-        OR: [
-          { role: { not: 'DEMO' } },
-          { role: null }
-        ]
+        NOT: {
+          role: 'DEMO'
+        }
       }
     });
 

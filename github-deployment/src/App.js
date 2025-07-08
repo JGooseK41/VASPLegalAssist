@@ -14,6 +14,7 @@ import SimpleDocumentBuilder from './components/documents/SimpleDocumentBuilder'
 import CustomDocumentBuilder from './components/documents/CustomDocumentBuilder';
 import UnifiedBatchBuilder from './components/documents/UnifiedBatchBuilder';
 import DocumentHistory from './components/documents/DocumentHistory';
+import DocumentDecryptor from './components/documents/DocumentDecryptor';
 import TemplateManager from './components/templates/TemplateManager';
 import Profile from './components/auth/Profile';
 import AdminPortal from './components/admin/AdminPortal';
@@ -44,6 +45,7 @@ function App() {
               <Route path="/documents/custom" element={<CustomDocumentBuilder />} />
               <Route path="/documents/batch" element={<UnifiedBatchBuilder />} />
               <Route path="/documents/history" element={<DocumentHistory />} />
+              <Route path="/documents/decrypt" element={<DocumentDecryptor />} />
               <Route path="/templates" element={<TemplateManager />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/submissions/new" element={<VaspSubmissionForm />} />
