@@ -148,6 +148,119 @@ const emailService = {
       // Don't throw error for welcome emails - they're not critical
       return false;
     }
+  },
+
+  sendAdminNotification: async (newUser) => {
+    try {
+      // Get admin emails from environment or use a default
+      const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['admin@vasplegalassist.com'];
+      
+      const msg = {
+        to: adminEmails,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com',
+        subject: 'New User Registration - Approval Required',
+        text: `
+          A new user has registered and requires approval:
+          
+          Name: ${newUser.firstName} ${newUser.lastName}
+          Email: ${newUser.email}
+          Agency: ${newUser.agencyName}
+          Agency Address: ${newUser.agencyAddress || 'Not provided'}
+          Badge Number: ${newUser.badgeNumber || 'Not provided'}
+          Title: ${newUser.title || 'Not provided'}
+          Phone: ${newUser.phone || 'Not provided'}
+          
+          Please log in to the admin panel to approve or reject this registration.
+          
+          Best regards,
+          VASP Legal Assistant System
+        `,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; }
+              .content { background-color: #f9f9f9; padding: 30px; }
+              .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              .info-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+              .info-table td:first-child { font-weight: bold; width: 150px; }
+              .button { 
+                display: inline-block; 
+                padding: 12px 24px; 
+                background-color: #2563eb; 
+                color: white; 
+                text-decoration: none; 
+                border-radius: 4px; 
+                margin: 20px 0;
+              }
+              .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>New User Registration</h1>
+              </div>
+              <div class="content">
+                <p>A new user has registered and requires your approval:</p>
+                
+                <table class="info-table">
+                  <tr>
+                    <td>Name:</td>
+                    <td>${newUser.firstName} ${newUser.lastName}</td>
+                  </tr>
+                  <tr>
+                    <td>Email:</td>
+                    <td>${newUser.email}</td>
+                  </tr>
+                  <tr>
+                    <td>Agency:</td>
+                    <td>${newUser.agencyName}</td>
+                  </tr>
+                  <tr>
+                    <td>Agency Address:</td>
+                    <td>${newUser.agencyAddress || 'Not provided'}</td>
+                  </tr>
+                  <tr>
+                    <td>Badge Number:</td>
+                    <td>${newUser.badgeNumber || 'Not provided'}</td>
+                  </tr>
+                  <tr>
+                    <td>Title:</td>
+                    <td>${newUser.title || 'Not provided'}</td>
+                  </tr>
+                  <tr>
+                    <td>Phone:</td>
+                    <td>${newUser.phone || 'Not provided'}</td>
+                  </tr>
+                </table>
+                
+                <p>Please log in to the admin panel to approve or reject this registration.</p>
+                
+                <center>
+                  <a href="${process.env.FRONTEND_URL || 'https://vasplegalassist.com'}/admin/users" class="button">
+                    Go to Admin Panel
+                  </a>
+                </center>
+              </div>
+              <div class="footer">
+                <p>This is an automated notification from VASP Legal Assistant</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      };
+
+      await sgMail.send(msg);
+      console.log('Admin notification email sent');
+    } catch (error) {
+      console.error('SendGrid error (admin notification):', error);
+      // Don't throw - this is not critical for registration
+    }
   }
 };
 

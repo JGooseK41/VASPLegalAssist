@@ -4,6 +4,8 @@ import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 const OnboardingTour = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [tooltipPosition, setTooltipPosition] = useState({});
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const steps = [
     {
@@ -52,6 +54,42 @@ const OnboardingTour = ({ onComplete }) => {
 
   const currentStepData = steps[currentStep];
 
+  // Calculate position when step changes or window resizes
+  useEffect(() => {
+    const calculatePosition = () => {
+      setIsMobile(window.innerWidth < 768);
+      
+      // On mobile, always center the tooltip
+      if (window.innerWidth < 768) {
+        setTooltipPosition({
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)'
+        });
+      } else if (currentStepData.target) {
+        const position = getPositionStyles(currentStepData);
+        setTooltipPosition(position);
+      } else {
+        setTooltipPosition({});
+      }
+    };
+
+    calculatePosition();
+
+    // Small delay to ensure DOM elements are rendered
+    const timer = setTimeout(calculatePosition, 100);
+
+    // Recalculate on window resize
+    window.addEventListener('resize', calculatePosition);
+    window.addEventListener('scroll', calculatePosition);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition);
+    };
+  }, [currentStep, currentStepData]);
+
   useEffect(() => {
     // Auto-advance for welcome and completion steps
     if (currentStep === 0 || currentStep === steps.length - 1) {
@@ -90,6 +128,20 @@ const OnboardingTour = ({ onComplete }) => {
     if (onComplete) onComplete();
   };
 
+  // Hide tour if user navigates away
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleComplete();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   if (!isVisible) return null;
 
   const isOverlay = !currentStepData.target;
@@ -100,9 +152,9 @@ const OnboardingTour = ({ onComplete }) => {
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleSkip} />
       
       {/* Tour content */}
-      <div className={`fixed ${isOverlay ? 'inset-0 flex items-center justify-center' : ''} z-50`}>
-        <div className={`bg-white rounded-lg shadow-2xl p-6 max-w-md mx-4 ${!isOverlay ? 'absolute' : ''}`}
-             style={!isOverlay ? getPositionStyles(currentStepData) : {}}>
+      <div className={`fixed ${isOverlay || isMobile ? 'inset-0 flex items-center justify-center' : ''} z-50 pointer-events-none`}>
+        <div className={`bg-white rounded-lg shadow-2xl p-6 ${isMobile ? 'max-w-sm' : 'max-w-md'} mx-4 ${!isOverlay && !isMobile ? 'absolute' : ''} pointer-events-auto`}
+             style={!isOverlay && !isMobile ? tooltipPosition : {}}>
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
@@ -208,16 +260,89 @@ const HighlightElement = ({ target }) => {
 };
 
 const getPositionStyles = (step) => {
-  // This would be more sophisticated in production
-  // For now, return some default positioning
+  if (!step.target) return {};
+  
+  const element = document.querySelector(step.target);
+  if (!element) {
+    // Fallback to center if element not found
+    return { 
+      top: '50%', 
+      left: '50%', 
+      transform: 'translate(-50%, -50%)' 
+    };
+  }
+  
+  const rect = element.getBoundingClientRect();
+  const tourWidth = 400; // Approximate width of tour tooltip
+  const padding = 20;
+  
+  let styles = {};
+  
   switch (step.position) {
     case 'bottom':
-      return { top: '200px', left: '50%', transform: 'translateX(-50%)' };
+      styles = {
+        top: `${rect.bottom + padding}px`,
+        left: `${rect.left + rect.width / 2}px`,
+        transform: 'translateX(-50%)'
+      };
+      break;
     case 'top':
-      return { bottom: '200px', left: '50%', transform: 'translateX(-50%)' };
+      styles = {
+        bottom: `${window.innerHeight - rect.top + padding}px`,
+        left: `${rect.left + rect.width / 2}px`,
+        transform: 'translateX(-50%)'
+      };
+      break;
+    case 'left':
+      styles = {
+        top: `${rect.top + rect.height / 2}px`,
+        right: `${window.innerWidth - rect.left + padding}px`,
+        transform: 'translateY(-50%)'
+      };
+      break;
+    case 'right':
+      styles = {
+        top: `${rect.top + rect.height / 2}px`,
+        left: `${rect.right + padding}px`,
+        transform: 'translateY(-50%)'
+      };
+      break;
     default:
-      return {};
+      styles = {
+        top: `${rect.bottom + padding}px`,
+        left: `${rect.left + rect.width / 2}px`,
+        transform: 'translateX(-50%)'
+      };
   }
+  
+  // Ensure tooltip stays within viewport
+  const maxLeft = window.innerWidth - tourWidth - padding;
+  const minLeft = padding;
+  
+  if (styles.left) {
+    const leftValue = parseInt(styles.left);
+    if (leftValue > maxLeft) {
+      styles.left = `${maxLeft}px`;
+      styles.transform = 'translateX(0)';
+    } else if (leftValue < minLeft + tourWidth / 2) {
+      styles.left = `${minLeft}px`;
+      styles.transform = 'translateX(0)';
+    }
+  }
+  
+  // Ensure tooltip doesn't go off the top or bottom
+  if (styles.top) {
+    const topValue = parseInt(styles.top);
+    if (topValue < padding) {
+      styles.top = `${padding}px`;
+    } else if (topValue > window.innerHeight - 200) {
+      // Position above instead
+      styles.bottom = `${window.innerHeight - rect.top + padding}px`;
+      delete styles.top;
+    }
+  }
+  
+  return styles;
 };
 
 export default OnboardingTour;

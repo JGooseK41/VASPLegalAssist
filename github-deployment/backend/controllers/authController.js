@@ -51,10 +51,34 @@ const register = async (req, res) => {
       console.error('Failed to send welcome email:', err);
     });
 
-    // Generate token
-    const token = generateToken(user.id, user.role);
+    // Send admin notification email
+    emailService.sendAdminNotification(user).catch(err => {
+      console.error('Failed to send admin notification:', err);
+    });
 
+    // For admin users, generate token immediately
+    if (user.role === 'ADMIN') {
+      const token = generateToken(user.id, user.role);
+      
+      return res.status(201).json({
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          agencyName: user.agencyName,
+          agencyAddress: user.agencyAddress,
+          role: user.role,
+          isApproved: user.isApproved
+        },
+        token
+      });
+    }
+
+    // For regular users, don't generate token - they need approval first
     res.status(201).json({
+      message: 'Registration successful! Your account is pending approval. You will receive an email once your account has been approved by an administrator.',
+      requiresApproval: true,
       user: {
         id: user.id,
         email: user.email,
@@ -62,9 +86,10 @@ const register = async (req, res) => {
         lastName: user.lastName,
         agencyName: user.agencyName,
         agencyAddress: user.agencyAddress,
-        role: user.role
-      },
-      token
+        role: user.role,
+        isApproved: user.isApproved
+      }
+      // No token provided - user must wait for approval
     });
   } catch (error) {
     console.error('Registration error:', error);

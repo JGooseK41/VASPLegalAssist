@@ -86,6 +86,13 @@ export const profileAPI = {
   changePassword: async (currentPassword, newPassword) => {
     const response = await api.put('/profile/password', { currentPassword, newPassword });
     return response.data;
+  },
+  
+  deleteAccount: async (password, confirmText) => {
+    const response = await api.delete('/profile', { 
+      data: { password, confirmText }
+    });
+    return response.data;
   }
 };
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Save, Key, AlertCircle, CheckCircle, X, Trophy, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Mail, Save, Key, AlertCircle, CheckCircle, X, Trophy, Eye, EyeOff, ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { profileAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +25,13 @@ const Profile = () => {
     confirm_password: ''
   });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteData, setDeleteData] = useState({
+    password: '',
+    confirmText: '',
+    acknowledgeEncryption: false
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -120,6 +127,30 @@ const Profile = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    
+    if (deleteData.confirmText !== 'DELETE MY ACCOUNT') {
+      setError('Please type "DELETE MY ACCOUNT" exactly as shown');
+      return;
+    }
+    
+    try {
+      setError(null);
+      setIsDeleting(true);
+      
+      await profileAPI.deleteAccount(deleteData.password, deleteData.confirmText);
+      
+      // Log out and redirect to home
+      logout();
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+      setError(err.response?.data?.error || 'Failed to delete account. Please try again.');
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -346,7 +377,7 @@ const Profile = () => {
         </div>
 
         {/* Password Change */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <Key className="h-5 w-5 text-gray-400 mr-2" />
@@ -434,6 +465,160 @@ const Profile = () => {
             </p>
           )}
         </div>
+
+        {/* Delete Account - Only show for non-demo users */}
+        {user?.role !== 'DEMO' && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Trash2 className="h-5 w-5 text-red-500 mr-2" />
+                <h2 className="text-lg font-medium text-gray-900">Delete Account</h2>
+              </div>
+            </div>
+            
+            {!showDeleteConfirm ? (
+              <div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Once you delete your account, there is no going back. All your data will be permanently removed.
+                </p>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm flex items-center"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete My Account
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleDeleteAccount} className="space-y-4">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <div className="flex">
+                    <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Critical Warning: This action cannot be undone</h3>
+                      <div className="text-sm text-red-700 mt-2 space-y-2">
+                        <p className="font-semibold">When you delete your account:</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>All your documents, templates, and files will be permanently deleted from our servers</li>
+                          <li>Your comments, votes, and VASP submissions will be removed</li>
+                          <li>Your account information will be erased completely</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+                  <div className="flex">
+                    <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-amber-800">Important: Encrypted Documents Warning</h3>
+                      <div className="text-sm text-amber-700 mt-2 space-y-2">
+                        <p className="font-semibold">If you have encrypted documents saved locally:</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>They will become <span className="font-semibold">permanently inaccessible</span> after account deletion</li>
+                          <li>Your encryption keys are tied to your account and cannot be recovered</li>
+                          <li>Any encrypted files on your device will be impossible to decrypt</li>
+                        </ul>
+                        <div className="mt-3 p-3 bg-amber-100 rounded">
+                          <p className="font-semibold text-amber-900">Before deleting your account:</p>
+                          <ol className="list-decimal list-inside mt-1 space-y-1">
+                            <li>Decrypt all documents you want to keep</li>
+                            <li>Save the decrypted versions to a secure location</li>
+                            <li>Verify you have readable copies of important documents</li>
+                          </ol>
+                          <div className="mt-2">
+                            <Link 
+                              to="/documents" 
+                              className="text-amber-900 underline hover:text-amber-800 text-sm font-medium"
+                              target="_blank"
+                            >
+                              Go to Documents → View how to decrypt your files
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter your password to confirm
+                  </label>
+                  <input
+                    type="password"
+                    value={deleteData.password}
+                    onChange={(e) => setDeleteData({...deleteData, password: e.target.value})}
+                    className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type <span className="font-mono font-bold">DELETE MY ACCOUNT</span> to confirm
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteData.confirmText}
+                    onChange={(e) => setDeleteData({...deleteData, confirmText: e.target.value})}
+                    className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="DELETE MY ACCOUNT"
+                    required
+                  />
+                </div>
+                
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="acknowledge-encryption"
+                    checked={deleteData.acknowledgeEncryption}
+                    onChange={(e) => setDeleteData({...deleteData, acknowledgeEncryption: e.target.checked})}
+                    className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                    required
+                  />
+                  <label htmlFor="acknowledge-encryption" className="ml-3 text-sm text-gray-700">
+                    I understand that all my encrypted documents stored locally will become permanently inaccessible, 
+                    and I have decrypted and saved any documents I want to keep.
+                  </label>
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeleteData({ password: '', confirmText: '', acknowledgeEncryption: false });
+                      setError(null);
+                    }}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm"
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isDeleting || deleteData.confirmText !== 'DELETE MY ACCOUNT' || !deleteData.acknowledgeEncryption}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Account Permanently
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

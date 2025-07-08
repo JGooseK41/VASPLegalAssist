@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -11,6 +13,22 @@ const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     req.userRole = decoded.role;
+    
+    // Check if user is approved (skip for demo users)
+    if (decoded.role !== 'DEMO' && decoded.role !== 'ADMIN') {
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { isApproved: true }
+      });
+      
+      if (!user || !user.isApproved) {
+        return res.status(403).json({ 
+          error: 'Account pending approval',
+          message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
+          requiresApproval: true
+        });
+      }
+    }
     
     next();
   } catch (error) {
@@ -35,7 +53,7 @@ const demoMiddleware = (req, res, next) => {
 };
 
 // Auth middleware for newer routes
-const requireAuth = (req, res, next) => {
+const requireAuth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -46,6 +64,22 @@ const requireAuth = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     req.userRole = decoded.role;
+    
+    // Check if user is approved (skip for demo users)
+    if (decoded.role !== 'DEMO' && decoded.role !== 'ADMIN') {
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { isApproved: true }
+      });
+      
+      if (!user || !user.isApproved) {
+        return res.status(403).json({ 
+          error: 'Account pending approval',
+          message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
+          requiresApproval: true
+        });
+      }
+    }
     
     next();
   } catch (error) {

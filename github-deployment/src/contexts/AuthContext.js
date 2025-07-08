@@ -65,11 +65,22 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authAPI.register(userData);
       
-      // Save token and user
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Check if registration requires approval
+      if (response.requiresApproval) {
+        // Don't log them in - show success message
+        return { 
+          success: true, 
+          requiresApproval: true,
+          message: response.message || 'Registration successful! Your account is pending approval.'
+        };
+      }
       
-      setUser(response.user);
+      // Only save token if provided (admin users)
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+      }
       
       return { success: true };
     } catch (err) {

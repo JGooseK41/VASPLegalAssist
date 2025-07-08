@@ -19,10 +19,12 @@ const RegisterForm = () => {
     phone: ''
   });
   const [validationError, setValidationError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValidationError('');
+    setSuccessMessage('');
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
@@ -40,7 +42,26 @@ const RegisterForm = () => {
     const result = await register(registrationData);
     
     if (result.success) {
-      navigate('/');
+      if (result.requiresApproval) {
+        // Show success message for users requiring approval
+        setSuccessMessage(result.message);
+        // Clear form
+        setFormData({
+          email: '',
+          password: '',
+          confirmPassword: '',
+          firstName: '',
+          lastName: '',
+          agencyName: '',
+          agencyAddress: '',
+          badgeNumber: '',
+          title: '',
+          phone: ''
+        });
+      } else {
+        // Admin users or already approved users can navigate
+        navigate('/');
+      }
     }
   };
 
@@ -93,6 +114,21 @@ const RegisterForm = () => {
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <div className="ml-3">
                   <p className="text-sm text-red-800">{error || validationError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+              <div className="flex">
+                <Shield className="h-5 w-5 text-green-400" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">Registration Successful!</h3>
+                  <p className="text-sm text-green-700 mt-1">{successMessage}</p>
+                  <p className="text-sm text-green-600 mt-2">
+                    You can <Link to="/login" className="font-medium underline">return to login</Link> to sign in once approved.
+                  </p>
                 </div>
               </div>
             </div>
