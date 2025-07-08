@@ -61,20 +61,22 @@ const Layout = () => {
       {/* Navigation */}
       <header className="bg-blue-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            {/* Logo */}
-            <div className="flex items-center">
-              <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                <img
-                  src="/images/logo.png"
-                  alt="VASP Records Assistant Logo"
-                  className="h-12 w-auto bg-white rounded-md px-3 py-1 shadow-md object-contain"
-                  style={{ minWidth: '180px', maxWidth: '240px' }}
-                />
-              </a>
-              <span className="ml-3 text-xl font-semibold text-white">
-                VASP Records Assistant
-              </span>
+          <div className="flex justify-between items-center py-6">
+            {/* Logo and Title */}
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="/images/logo.png"
+                    alt="VASP Records Assistant Logo"
+                    className="h-14 w-auto bg-white rounded-md px-3 py-1 shadow-md object-contain"
+                    style={{ minWidth: '200px', maxWidth: '260px' }}
+                  />
+                </a>
+                <div className="mt-2 text-lg font-semibold text-white">
+                  VASP Records Assistant
+                </div>
+              </div>
             </div>
 
             {/* Desktop Navigation */}
