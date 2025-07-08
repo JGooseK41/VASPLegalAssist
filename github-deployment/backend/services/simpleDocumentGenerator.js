@@ -213,7 +213,12 @@ async function generateFromTemplate(templateContent, data) {
     const filepath = path.join(outputDir, filename);
     await fs.writeFile(filepath, buffer);
     
+    // Verify file was written correctly
+    const stats = await fs.stat(filepath);
     console.log(`Generated DOCX: ${filepath}`);
+    console.log(`File size: ${stats.size} bytes`);
+    console.log(`File exists: ${stats.isFile()}`);
+    console.log(`File permissions: ${stats.mode.toString(8)}`);
     
     return {
       filename,
