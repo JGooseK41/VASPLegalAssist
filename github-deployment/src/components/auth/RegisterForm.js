@@ -58,7 +58,7 @@ const RegisterForm = () => {
           <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
             <img
               src="/images/logo.png"
-              alt="VASP Legal Assistant Logo"
+              alt="VASP Records Assistant Logo"
               className="mx-auto h-12 w-auto"
             />
           </a>
@@ -67,7 +67,7 @@ const RegisterForm = () => {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Register for VASP Legal Process Assistant
+          Register for VASP Records Process Assistant
         </p>
       </div>
 

@@ -67,13 +67,13 @@ const Layout = () => {
               <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
                 <img
                   src="/images/logo.png"
-                  alt="VASP Legal Assistant Logo"
+                  alt="VASP Records Assistant Logo"
                   className="h-12 w-auto bg-white rounded-md px-3 py-1 shadow-md object-contain"
                   style={{ minWidth: '180px', maxWidth: '240px' }}
                 />
               </a>
               <span className="ml-3 text-xl font-semibold text-white">
-                VASP Legal Assistant
+                VASP Records Assistant
               </span>
             </div>
 

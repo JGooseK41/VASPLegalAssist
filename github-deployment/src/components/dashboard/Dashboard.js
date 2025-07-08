@@ -70,7 +70,7 @@ const Dashboard = () => {
             Welcome back, {user?.firstName}
           </h1>
           <p className="mt-2 text-lg text-gray-600">
-            {user?.agencyName} • Legal Service Hub
+            {user?.agencyName} • Records Service Hub
           </p>
         </div>
 
