@@ -112,16 +112,37 @@ const createCustomBatch = async (req, res) => {
       // Process each record
       for (const record of records) {
         try {
-          // Extract VASP info from CSV row
-          const vaspName = record.VASP_Name || record.vasp_name || '';
-          const vaspEmail = record.VASP_Email || record.vasp_email || '';
-          const vaspAddress = record.VASP_Address || record.vasp_address || '';
-          const vaspJurisdiction = record.VASP_Jurisdiction || record.vasp_jurisdiction || '';
+          // Extract VASP name from CSV row
+          const vaspName = record.VASP_Name || record.vasp_name || record.Vasp || record.VASP || '';
           
           if (!vaspName) {
+            console.error('No VASP name found in row:', record);
             results.failed++;
             continue;
           }
+          
+          // Look up VASP details from database
+          const vasp = await prisma.vasp.findFirst({
+            where: {
+              OR: [
+                { name: { equals: vaspName, mode: 'insensitive' } },
+                { legal_name: { equals: vaspName, mode: 'insensitive' } }
+              ],
+              isActive: true
+            }
+          });
+          
+          if (!vasp) {
+            console.error(`VASP not found in database: ${vaspName}`);
+            results.failed++;
+            continue;
+          }
+          
+          // Use VASP details from database
+          const vaspEmail = vasp.compliance_email || '';
+          const vaspAddress = vasp.service_address || '';
+          const vaspJurisdiction = vasp.jurisdiction || '';
+          const vaspLegalName = vasp.legal_name || vasp.name;
           
           // Check if this row specifies a custom template
           const templateName = record.Template_Name || record.template_name || '';
@@ -145,15 +166,19 @@ const createCustomBatch = async (req, res) => {
           
           // Prepare document data for template processing
           const documentData = {
-            // VASP Information from CSV
-            vaspName,
+            // VASP Information from DATABASE
+            vaspName: vasp.name,
+            vaspLegalName: vaspLegalName,
             vaspEmail,
             vaspAddress,
             vaspJurisdiction,
-            VASP_NAME: vaspName,
+            vaspPhone: vasp.phone || '',
+            VASP_NAME: vasp.name,
+            VASP_LEGAL_NAME: vaspLegalName,
             VASP_EMAIL: vaspEmail,
             VASP_ADDRESS: vaspAddress,
             VASP_JURISDICTION: vaspJurisdiction,
+            VASP_PHONE: vasp.phone || '',
             
             // User/Agency Information
             agentName: agentName || `${user.firstName} ${user.lastName}`,

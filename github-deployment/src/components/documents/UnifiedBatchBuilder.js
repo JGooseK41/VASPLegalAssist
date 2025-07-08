@@ -93,14 +93,14 @@ const UnifiedBatchBuilder = () => {
 
   const handleDownloadTemplate = () => {
     const csvContent = mode === 'simple' 
-      ? `VASP_Name,VASP_Email,VASP_Address,VASP_Jurisdiction,Transaction_ID,Date,From_Address,To_Address,Amount,Currency
-Binance US,compliance@binance.us,"1 Main St, San Francisco, CA",United States,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC
-Coinbase,legal@coinbase.com,"100 Pine St, San Francisco, CA",United States,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH
-Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`
-      : `VASP_Name,VASP_Email,VASP_Address,VASP_Jurisdiction,Transaction_ID,Date,From_Address,To_Address,Amount,Currency,Template_Name
-Binance US,compliance@binance.us,"1 Main St, San Francisco, CA",United States,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC,
-Coinbase,legal@coinbase.com,"100 Pine St, San Francisco, CA",United States,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH,
-Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`;
+      ? `VASP_Name,Transaction_ID,Date,From_Address,To_Address,Amount,Currency
+Binance US,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC
+Coinbase,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH
+Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`
+      : `VASP_Name,Transaction_ID,Date,From_Address,To_Address,Amount,Currency,Template_Name
+Binance US,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC,
+Coinbase,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH,
+Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -424,6 +424,31 @@ Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,de
       {/* CSV Upload */}
       <div className="bg-white shadow rounded-lg p-6 mb-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Upload CSV File</h2>
+        
+        {/* CSV Format Info */}
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex">
+            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-900">Simplified CSV Format</h3>
+              <p className="text-sm text-blue-800 mt-1">
+                Your CSV only needs transaction data and VASP names. We automatically pull:
+              </p>
+              <ul className="mt-2 text-sm text-blue-800 list-disc list-inside">
+                <li>VASP compliance emails, addresses, and jurisdictions from our database</li>
+                <li>Your agency information from your profile</li>
+                <li>Case information from the form above</li>
+              </ul>
+              <div className="mt-3 bg-blue-100 rounded p-2">
+                <p className="text-xs font-mono text-blue-900">
+                  Required columns: VASP_Name, Transaction_ID, Date, From_Address, To_Address, Amount, Currency
+                  {mode === 'custom' && ', Template_Name (optional)'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
           <div className="space-y-1 text-center">
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
