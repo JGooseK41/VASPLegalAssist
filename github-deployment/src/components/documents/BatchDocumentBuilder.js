@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Download, AlertCircle, CheckCircle, FileText, Users, Loader, X } from 'lucide-react';
 import { templateAPI } from '../../services/api';
+import { downloadFile, getFullBackendUrl } from '../../utils/urlHelpers';
 
 const BatchDocumentBuilder = () => {
   const navigate = useNavigate();
@@ -70,12 +71,8 @@ const BatchDocumentBuilder = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const link = document.createElement('a');
-    link.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/documents/batch/sample-csv`;
-    link.download = 'vasp_batch_template.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    downloadFile(`${apiUrl}/documents/batch/sample-csv`, 'vasp_batch_template.csv');
   };
 
   const handleSubmit = async () => {
@@ -125,12 +122,7 @@ const BatchDocumentBuilder = () => {
         // Download ZIP for more than 5 documents
         if (data.downloadUrl) {
           setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}${data.downloadUrl}`;
-            link.download = 'vasp_documents.zip';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            downloadFile(data.downloadUrl, 'vasp_documents.zip');
           }, 1000);
         }
       } else {

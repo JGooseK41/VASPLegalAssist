@@ -4,6 +4,7 @@ import { Upload, Plus, Trash2, Download, AlertCircle, CheckCircle, X, Lock } fro
 import { documentAPI, templateAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI, createEncryptedTemplateAPI } from '../../services/encryptedApi';
+import { downloadFile } from '../../utils/urlHelpers';
 
 const DocumentBuilder = () => {
   const navigate = useNavigate();
@@ -187,14 +188,10 @@ const DocumentBuilder = () => {
       }
       
       if (response.documentUrl || response.pdf_url) {
-        // Download the document
-        const link = document.createElement('a');
-        link.href = response.documentUrl || response.pdf_url;
+        // Download the document using the utility function
+        const documentUrl = response.documentUrl || response.pdf_url;
         const fileExtension = response.outputFormat === 'docx' ? 'docx' : 'pdf';
-        link.download = `${documentType}_${selectedVASP.name}_${caseInfo.case_number}.${fileExtension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        downloadFile(documentUrl, `${documentType}_${selectedVASP.name}_${caseInfo.case_number}.${fileExtension}`);
         
         if (!response.isDemo) {
           setSuccess(`Document created successfully as ${fileExtension.toUpperCase()}!`);

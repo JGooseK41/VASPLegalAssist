@@ -6,6 +6,7 @@ import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
 import VaspResponseModal from './VaspResponseModal';
 import axios from 'axios';
+import { downloadFile } from '../../utils/urlHelpers';
 
 const DocumentHistory = () => {
   const navigate = useNavigate();
@@ -90,22 +91,12 @@ const DocumentHistory = () => {
     try {
       // If we have a stored PDF URL, use it
       if (document.pdf_url) {
-        const link = window.document.createElement('a');
-        link.href = document.pdf_url;
-        link.download = `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`;
-        window.document.body.appendChild(link);
-        link.click();
-        window.document.body.removeChild(link);
+        downloadFile(document.pdf_url, `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`);
       } else {
         // Otherwise, regenerate the PDF
         const response = await documentAPI.regenerateDocument(document.id);
         if (response.pdf_url) {
-          const link = window.document.createElement('a');
-          link.href = response.pdf_url;
-          link.download = `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`;
-          window.document.body.appendChild(link);
-          link.click();
-          window.document.body.removeChild(link);
+          downloadFile(response.pdf_url, `${document.document_type}_${document.metadata?.vasp_name}_${document.case_info?.case_number}.pdf`);
         }
       }
     } catch (err) {

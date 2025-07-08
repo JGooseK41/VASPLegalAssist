@@ -5,6 +5,7 @@ import { documentAPI, templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI, createEncryptedTemplateAPI } from '../../services/encryptedApiOptimized';
+import { downloadFile } from '../../utils/urlHelpers';
 
 const CustomDocumentBuilder = () => {
   const navigate = useNavigate();
@@ -208,14 +209,10 @@ const CustomDocumentBuilder = () => {
       const response = await encryptedDocumentAPI.createDocument(requestData);
       
       if (response.documentUrl || response.pdf_url) {
-        // Download the document
-        const link = document.createElement('a');
-        link.href = response.documentUrl || response.pdf_url;
+        // Download the document using the utility function
+        const documentUrl = response.documentUrl || response.pdf_url;
         const fileExtension = outputFormat === 'docx' ? 'docx' : 'pdf';
-        link.download = `custom_${selectedVASP.name}_${documentData.caseNumber}.${fileExtension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        downloadFile(documentUrl, `custom_${selectedVASP.name}_${documentData.caseNumber}.${fileExtension}`);
         
         setSuccess(`Document created successfully as ${fileExtension.toUpperCase()}!`);
         

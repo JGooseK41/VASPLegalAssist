@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FileText, Download, AlertCircle, CheckCircle, Search, Users } from 'lucide-react';
 import { documentAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { downloadFile } from '../../utils/urlHelpers';
 
 const SimpleDocumentBuilder = () => {
   const navigate = useNavigate();
@@ -134,13 +135,8 @@ const SimpleDocumentBuilder = () => {
       const response = await documentAPI.createSimpleDocument(documentData);
       
       if (response.documentUrl) {
-        // Download the document
-        const link = document.createElement('a');
-        link.href = response.documentUrl;
-        link.download = `${documentType}_${selectedVASP.name}_${caseInfo.caseNumber}.docx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Download the document using the utility function
+        downloadFile(response.documentUrl, `${documentType}_${selectedVASP.name}_${caseInfo.caseNumber}.docx`);
         
         setSuccess('Document generated successfully! The download should start automatically.');
         

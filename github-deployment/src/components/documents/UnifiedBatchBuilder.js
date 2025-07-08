@@ -5,6 +5,7 @@ import { documentAPI, templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
+import { getFullBackendUrl } from '../../utils/urlHelpers';
 
 const UnifiedBatchBuilder = () => {
   const navigate = useNavigate();
@@ -777,7 +778,7 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`;
             {batchResults.downloadUrl && (
               <div className="mt-4 pt-4 border-t">
                 <a
-                  href={batchResults.downloadUrl}
+                  href={getFullBackendUrl(batchResults.downloadUrl)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
