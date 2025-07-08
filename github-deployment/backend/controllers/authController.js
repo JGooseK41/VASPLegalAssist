@@ -305,7 +305,6 @@ const getMemberCount = async (req, res) => {
   try {
     const count = await prisma.user.count({
       where: {
-        isApproved: true,
         role: {
           not: 'DEMO'
         }
