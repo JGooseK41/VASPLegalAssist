@@ -175,7 +175,9 @@ const uploadTemplate = async (req, res) => {
         validation
       });
     } catch (error) {
-      console.error('Smart template upload error:', error.message);
+      console.error('Smart template upload error:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Template data:', templateData);
       
       // Clean up uploaded file on error
       if (req.file && req.file.path) {
@@ -183,7 +185,7 @@ const uploadTemplate = async (req, res) => {
       }
       res.status(500).json({ 
         error: 'Failed to process template',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: error.message || 'Unknown error occurred'
       });
     }
   });

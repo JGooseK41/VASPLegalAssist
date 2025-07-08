@@ -13,6 +13,7 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const [uploadResponse, setUploadResponse] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
   const [isGlobal, setIsGlobal] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [templateData, setTemplateData] = useState({
     templateName: '',
     templateType: 'letterhead',
@@ -32,8 +33,7 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
     return null;
   }, [encryption]);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  const handleFileSelect = (selectedFile) => {
     if (selectedFile) {
       console.log('Selected file:', selectedFile.name, 'Type:', selectedFile.type);
       
@@ -56,6 +56,34 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
         ...templateData,
         templateName: selectedFile.name.replace(/\.[^/.]+$/, '')
       });
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    handleFileSelect(selectedFile);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      handleFileSelect(droppedFile);
     }
   };
 
@@ -203,9 +231,16 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Template File
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div 
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors ${
+                  isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <div className="space-y-1 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <Upload className={`mx-auto h-12 w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
                   <div className="flex text-sm text-gray-600">
                     <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                       <span>Upload a file</span>

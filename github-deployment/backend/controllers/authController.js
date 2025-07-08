@@ -115,6 +115,11 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Check if user is approved (skip for admin users)
+    if (!user.isApproved && user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Your account is pending approval. Please wait for an administrator to approve your registration.' });
+    }
+
     const token = generateToken(user.id, user.role);
 
     res.json({

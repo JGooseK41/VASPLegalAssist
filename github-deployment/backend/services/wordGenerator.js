@@ -104,6 +104,13 @@ class WordGenerator {
       INVESTIGATOR_TITLE: data.investigatorTitle || data.INVESTIGATOR_TITLE || '',
       INVESTIGATOR_BADGE: data.investigatorBadge || data.badgeNumber || data.INVESTIGATOR_BADGE || '',
       
+      // Additional agent fields (aliases for compatibility)
+      agentName: data.agentName || data.investigatorName || data.INVESTIGATOR_NAME || '',
+      agentTitle: data.agentTitle || data.investigatorTitle || data.INVESTIGATOR_TITLE || '',
+      agentPhone: data.agentPhone || data.agencyPhone || data.AGENCY_PHONE || '',
+      agentEmail: data.agentEmail || data.agencyEmail || data.AGENCY_EMAIL || '',
+      agentBadge: data.agentBadge || data.investigatorBadge || data.badgeNumber || data.INVESTIGATOR_BADGE || '',
+      
       // Transaction Information
       TRANSACTION_COUNT: data.transactions ? data.transactions.length : 0,
       TRANSACTION_LIST: this.formatTransactionList(data.transactions),

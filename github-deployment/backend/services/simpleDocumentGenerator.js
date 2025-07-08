@@ -3,6 +3,7 @@ const PizZip = require('pizzip');
 const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const Handlebars = require('handlebars');
 
 // Helper function to escape XML special characters
 function escapeXml(unsafe) {
@@ -95,12 +96,9 @@ async function generateFromTemplate(templateContent, data) {
       throw new Error('Failed to create output directory');
     }
     
-    // Process template content with data
-    let processedContent = templateContent;
-    Object.entries(data).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      processedContent = processedContent.replace(regex, value || '');
-    });
+    // Process template content with Handlebars to handle conditionals
+    const template = Handlebars.compile(templateContent);
+    const processedContent = template(data);
     
     // Create a complete DOCX structure
     const zip = new PizZip();
