@@ -247,8 +247,8 @@ const CustomDocumentBuilder = () => {
           </ol>
           <div className="mt-4 p-3 bg-white rounded">
             <p className="text-xs text-gray-600">
-              <strong>Common Smart Tags:</strong> {{`{{VASP_NAME}}`}}, {{`{{CASE_NUMBER}}`}}, {{`{{AGENT_NAME}}`}}, 
-              {{`{{AGENCY_NAME}}`}}, {{`{{DATE_TODAY}}`}}, {{`{{CRIME_DESCRIPTION}}`}}
+              <strong>Common Smart Tags:</strong> {`{{VASP_NAME}}`}, {`{{CASE_NUMBER}}`}, {`{{AGENT_NAME}}`}, 
+              {`{{AGENCY_NAME}}`}, {`{{DATE_TODAY}}`}, {`{{CRIME_DESCRIPTION}}`}
             </p>
           </div>
         </div>
