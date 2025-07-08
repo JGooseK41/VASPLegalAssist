@@ -42,6 +42,8 @@ const Dashboard = () => {
         console.error('Failed to load total document count:', error);
         console.error('Error details:', error.response?.data || error.message);
         console.error('Request URL:', error.config?.url);
+        console.error('Base URL:', error.config?.baseURL);
+        console.error('Full URL:', error.config?.baseURL + error.config?.url);
         console.error('Request method:', error.config?.method);
       }
       
@@ -56,6 +58,8 @@ const Dashboard = () => {
         console.error('Failed to load member count:', error);
         console.error('Error details:', error.response?.data || error.message);
         console.error('Request URL:', error.config?.url);
+        console.error('Base URL:', error.config?.baseURL);
+        console.error('Full URL:', error.config?.baseURL + error.config?.url);
         console.error('Request method:', error.config?.method);
       }
       
