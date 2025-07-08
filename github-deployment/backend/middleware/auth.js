@@ -1,37 +1,74 @@
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+// Create a single instance of PrismaClient
+let prisma;
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  // In development, use a global variable to prevent multiple instances
+  if (!global.prisma) {
+    global.prisma = new PrismaClient();
+  }
+  prisma = global.prisma;
+}
 
 const authMiddleware = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.log('Auth middleware: No token provided');
       throw new Error();
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Auth middleware: Decoded token:', { userId: decoded.userId, role: decoded.role });
+    
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     
-    // Check if user is approved (skip for demo users)
-    if (decoded.role !== 'DEMO' && decoded.role !== 'ADMIN') {
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { isApproved: true }
-      });
+    // Special handling for demo users - they don't exist in database
+    if (decoded.userId === 'demo-user-id' && decoded.role === 'DEMO') {
+      console.log('Auth middleware: Demo user authenticated');
+      next();
+      return;
+    }
+    
+    // Check if user is approved (skip for admin users)
+    if (decoded.role !== 'ADMIN') {
+      console.log('Auth middleware: Checking approval for non-admin user');
       
-      if (!user || !user.isApproved) {
-        return res.status(403).json({ 
-          error: 'Account pending approval',
-          message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
-          requiresApproval: true
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: { isApproved: true, email: true }
+        });
+        
+        console.log('Auth middleware: User lookup result:', user);
+        
+        if (!user || !user.isApproved) {
+          console.log('Auth middleware: User not approved or not found');
+          return res.status(403).json({ 
+            error: 'Account pending approval',
+            message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
+            requiresApproval: true
+          });
+        }
+      } catch (dbError) {
+        console.error('Auth middleware: Database error during user lookup:', dbError);
+        return res.status(500).json({ 
+          error: 'Database error',
+          message: 'Failed to verify user approval status'
         });
       }
     }
     
+    console.log('Auth middleware: Authentication successful');
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error.message);
     res.status(401).json({ error: 'Please authenticate' });
   }
 };
@@ -58,31 +95,56 @@ const requireAuth = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.log('RequireAuth: No token provided');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('RequireAuth: Decoded token:', { userId: decoded.userId, role: decoded.role });
+    
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     
-    // Check if user is approved (skip for demo users)
-    if (decoded.role !== 'DEMO' && decoded.role !== 'ADMIN') {
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { isApproved: true }
-      });
+    // Special handling for demo users - they don't exist in database
+    if (decoded.userId === 'demo-user-id' && decoded.role === 'DEMO') {
+      console.log('RequireAuth: Demo user authenticated');
+      next();
+      return;
+    }
+    
+    // Check if user is approved (skip for admin users)
+    if (decoded.role !== 'ADMIN') {
+      console.log('RequireAuth: Checking approval for non-admin user');
       
-      if (!user || !user.isApproved) {
-        return res.status(403).json({ 
-          error: 'Account pending approval',
-          message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
-          requiresApproval: true
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: { isApproved: true, email: true }
+        });
+        
+        console.log('RequireAuth: User lookup result:', user);
+        
+        if (!user || !user.isApproved) {
+          console.log('RequireAuth: User not approved or not found');
+          return res.status(403).json({ 
+            error: 'Account pending approval',
+            message: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
+            requiresApproval: true
+          });
+        }
+      } catch (dbError) {
+        console.error('RequireAuth: Database error during user lookup:', dbError);
+        return res.status(500).json({ 
+          error: 'Database error',
+          message: 'Failed to verify user approval status'
         });
       }
     }
     
+    console.log('RequireAuth: Authentication successful');
     next();
   } catch (error) {
+    console.error('RequireAuth error:', error.message);
     res.status(401).json({ error: 'Invalid authentication token' });
   }
 };
