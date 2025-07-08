@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap } from 'lucide-react';
+import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI } from '../../services/api';
 import TopContributor from './TopContributor';
@@ -123,101 +123,111 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Stats Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{stats.totalVASPs}</p>
-              <p className="text-sm text-gray-600">VASPs in Database</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{stats.documentsCreated}</p>
-              <p className="text-sm text-gray-600">Documents Created</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">24/7</p>
-              <p className="text-sm text-gray-600">Available Support</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">100%</p>
-              <p className="text-sm text-gray-600">Success Rate</p>
-            </div>
+        {/* Top Contributor - Horizontal and Centered */}
+        <div className="mb-8">
+          <div className="max-w-3xl mx-auto">
+            <TopContributor />
           </div>
         </div>
 
-        {/* Secondary Actions Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Documents</h3>
-            {stats.loading ? (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              </div>
-            ) : stats.recentDocuments.length > 0 ? (
-              <div className="space-y-2">
-                {stats.recentDocuments.slice(0, 3).map((doc) => (
-                  <div key={doc.id} className="py-2 border-b border-gray-100 last:border-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">
-                      {doc.caseNumber}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {doc.vaspName} • {new Date(doc.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 py-4 text-sm">
-                No documents yet
-              </p>
-            )}
+        {/* Recent Documents - Full Width */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Recent Documents</h3>
             <Link
               to="/documents/history"
-              className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 hover:text-blue-800"
             >
-              View all documents →
+              View all →
             </Link>
+          </div>
+          
+          {stats.loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : stats.recentDocuments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stats.recentDocuments.map((doc) => (
+                <div key={doc.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <p className="font-medium text-gray-900 truncate">
+                    {doc.caseNumber}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {doc.vaspName}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {new Date(doc.createdAt).toLocaleDateString()} • {new Date(doc.createdAt).toLocaleTimeString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No documents created yet</p>
+              <p className="text-sm text-gray-400 mt-2">Your recent documents will appear here</p>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Stats and Links Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Stats */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Stats</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalVASPs}</p>
+                <p className="text-sm text-gray-600">VASPs in Database</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">{stats.documentsCreated}</p>
+                <p className="text-sm text-gray-600">Documents Created</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">24/7</p>
+                <p className="text-sm text-gray-600">Available Support</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">100%</p>
+                <p className="text-sm text-gray-600">Success Rate</p>
+              </div>
+            </div>
           </div>
 
           {/* Quick Links */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Links</h3>
-            <div className="space-y-3">
-              <Link
-                to="/documents/simple"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Simple freeze/records request
-              </Link>
-              <Link
-                to="/documents/custom"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Custom template document
-              </Link>
+            <div className="grid grid-cols-2 gap-3">
               <Link
                 to="/templates"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
               >
                 <FileText className="h-4 w-4 mr-2" />
-                Manage templates
+                My Templates
+              </Link>
+              <Link
+                to="/documents/batch"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Batch Process
               </Link>
               <Link
                 to="/leaderboard"
-                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
               >
                 <Users className="h-4 w-4 mr-2" />
-                Community leaderboard
+                Leaderboard
+              </Link>
+              <Link
+                to="/submissions/new"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Submit VASP
               </Link>
             </div>
-          </div>
-
-          {/* Top Contributor */}
-          <div className="bg-white rounded-lg shadow-sm">
-            <TopContributor />
           </div>
         </div>
 
