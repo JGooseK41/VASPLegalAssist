@@ -5,14 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
 import VaspSubmissionModal from './VaspSubmissionModal';
 import VaspResponseStats from './VaspResponseStats';
+import { extractDbaFromNames } from '../../utils/parseVaspNames';
 
 const VASPCard = ({ vasp, onSelect }) => {
+  const { legalName, dba } = extractDbaFromNames(vasp.name, vasp.legal_name);
+  
   return (
     <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow border border-gray-200">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 truncate">{vasp.name}</h3>
-          <p className="text-sm text-gray-600 truncate">{vasp.legal_name}</p>
+          <h3 className="text-lg font-semibold text-gray-900 truncate">{legalName}</h3>
+          {dba && (
+            <p className="text-sm text-gray-600 truncate">
+              <span className="text-gray-500">DBA:</span> {dba}
+            </p>
+          )}
         </div>
         <div className="flex items-center space-x-1 ml-4">
           <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -90,13 +97,7 @@ const VASPCard = ({ vasp, onSelect }) => {
         </button>
       </div>
 
-      {vasp.notes && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 line-clamp-2">{vasp.notes}</p>
-        </div>
-      )}
-      
-      {/* Comments Section */}
+      {/* Comments Section - User-generated content with voting */}
       <VaspComments vaspId={vasp.id} vaspName={vasp.name} />
     </div>
   );

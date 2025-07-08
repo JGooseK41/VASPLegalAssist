@@ -99,6 +99,7 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 VASP Name *
+                <span className="text-xs text-gray-500 ml-1">(Common/Trading name)</span>
               </label>
               <input
                 type="text"
@@ -106,6 +107,7 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                placeholder="e.g., Binance US, Kraken, Circle"
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -113,6 +115,7 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Legal Name *
+                <span className="text-xs text-gray-500 ml-1">(Full legal entity name)</span>
               </label>
               <input
                 type="text"
@@ -120,8 +123,12 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
                 value={formData.legal_name}
                 onChange={handleChange}
                 required
+                placeholder="e.g., BAM Trading Services Inc., d/b/a Binance US"
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Include "d/b/a" if applicable (e.g., "Payward Ventures Inc d/b/a Kraken")
+              </p>
             </div>
             
             <div>
