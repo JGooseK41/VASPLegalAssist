@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Download, AlertCircle, CheckCircle, FileText, Users, Info, X, ArrowLeft } from 'lucide-react';
+import { Upload, Download, AlertCircle, CheckCircle, FileText, Users, Info, X, ArrowLeft, HelpCircle } from 'lucide-react';
 import { documentAPI, templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
@@ -12,6 +12,7 @@ const UnifiedBatchBuilder = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
   
   // Mode selection
   const [mode, setMode] = useState('simple'); // 'simple' or 'custom'
@@ -37,6 +38,9 @@ const UnifiedBatchBuilder = () => {
   
   // Results
   const [batchResults, setBatchResults] = useState(null);
+  
+  // Template markers for custom mode
+  const [selectedTemplateMarkers, setSelectedTemplateMarkers] = useState([]);
   
   // Initialize encryption for custom templates
   const encryption = useEncryption();
@@ -91,16 +95,120 @@ const UnifiedBatchBuilder = () => {
     reader.readAsText(file);
   };
 
+  // Helper function to check if a marker exists in the template
+  const hasMarker = (markerName) => {
+    return selectedTemplateMarkers.some(marker => 
+      marker.marker?.toLowerCase() === markerName.toLowerCase() ||
+      marker.marker?.toLowerCase() === `{{${markerName.toLowerCase()}}}` ||
+      marker.name?.toLowerCase() === markerName.toLowerCase() ||
+      marker === markerName ||
+      marker === `{{${markerName}}}`
+    );
+  };
+
+  // Generate dynamic CSV headers based on template markers
+  const generateDynamicCSVHeaders = () => {
+    const baseHeaders = ['VASP_Name'];
+    const dynamicHeaders = [];
+    
+    // Transaction fields
+    if (hasMarker('TRANSACTION_ID') || hasMarker('TRANSACTION_LIST') || hasMarker('TRANSACTION_TABLE')) {
+      dynamicHeaders.push('Transaction_ID', 'Date', 'From_Address', 'To_Address', 'Amount', 'Currency');
+    }
+    
+    // Date fields
+    if (hasMarker('DATE_DEADLINE')) {
+      dynamicHeaders.push('Date_Deadline');
+    }
+    
+    // Agency contact fields
+    if (hasMarker('AGENCY_PHONE')) {
+      dynamicHeaders.push('Agency_Phone');
+    }
+    if (hasMarker('AGENCY_EMAIL')) {
+      dynamicHeaders.push('Agency_Email');
+    }
+    
+    // Investigator fields
+    if (hasMarker('INVESTIGATOR_NAME')) {
+      dynamicHeaders.push('Investigator_Name');
+    }
+    if (hasMarker('INVESTIGATOR_TITLE')) {
+      dynamicHeaders.push('Investigator_Title');
+    }
+    if (hasMarker('INVESTIGATOR_BADGE')) {
+      dynamicHeaders.push('Investigator_Badge');
+    }
+    
+    // Custom fields
+    if (hasMarker('CUSTOM_FIELD_1')) {
+      dynamicHeaders.push('Custom_Field_1');
+    }
+    if (hasMarker('CUSTOM_FIELD_2')) {
+      dynamicHeaders.push('Custom_Field_2');
+    }
+    if (hasMarker('CUSTOM_FIELD_3')) {
+      dynamicHeaders.push('Custom_Field_3');
+    }
+    
+    return [...baseHeaders, ...dynamicHeaders];
+  };
+
   const handleDownloadTemplate = () => {
-    const csvContent = mode === 'simple' 
-      ? `VASP_Name,Transaction_ID,Date,From_Address,To_Address,Amount,Currency
+    let csvContent;
+    
+    if (mode === 'simple') {
+      csvContent = `VASP_Name,Transaction_ID,Date,From_Address,To_Address,Amount,Currency
 Binance US,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC
 Coinbase,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH
-Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`
-      : `VASP_Name,Transaction_ID,Date,From_Address,To_Address,Amount,Currency,Template_Name
-Binance US,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC,
-Coinbase,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH,
-Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`;
+Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`;
+    } else {
+      // Generate dynamic headers based on selected template
+      const headers = generateDynamicCSVHeaders();
+      csvContent = headers.join(',') + '\n';
+      
+      // Add sample rows with dynamic fields
+      const sampleRow1 = ['Binance US'];
+      const sampleRow2 = ['Coinbase'];
+      const sampleRow3 = ['Kraken'];
+      
+      // Add values for each dynamic header
+      headers.slice(1).forEach(header => {
+        if (header.includes('Transaction') || header === 'Date' || header.includes('Address') || header === 'Amount' || header === 'Currency') {
+          sampleRow1.push(header === 'Transaction_ID' ? 'abc123def456' : 
+                           header === 'Date' ? '2024-01-15' :
+                           header === 'From_Address' ? '1A2B3C4D5E' :
+                           header === 'To_Address' ? '5E4D3C2B1A' :
+                           header === 'Amount' ? '0.5' :
+                           header === 'Currency' ? 'BTC' : '');
+          sampleRow2.push(header === 'Transaction_ID' ? 'xyz789ghi012' : 
+                           header === 'Date' ? '2024-01-16' :
+                           header === 'From_Address' ? '6F7G8H9I0J' :
+                           header === 'To_Address' ? '0J9I8H7G6F' :
+                           header === 'Amount' ? '1.2' :
+                           header === 'Currency' ? 'ETH' : '');
+          sampleRow3.push(header === 'Transaction_ID' ? 'def456abc123' : 
+                           header === 'Date' ? '2024-01-17' :
+                           header === 'From_Address' ? '2B3C4D5E6F' :
+                           header === 'To_Address' ? '6F5E4D3C2B' :
+                           header === 'Amount' ? '100' :
+                           header === 'Currency' ? 'USDT' : '');
+        } else if (header === 'Date_Deadline') {
+          sampleRow1.push('2024-02-15');
+          sampleRow2.push('2024-02-16');
+          sampleRow3.push('2024-02-17');
+        } else {
+          // For other fields, add empty sample values
+          sampleRow1.push('');
+          sampleRow2.push('');
+          sampleRow3.push('');
+        }
+      });
+      
+      csvContent += sampleRow1.join(',') + '\n';
+      csvContent += sampleRow2.join(',') + '\n';
+      csvContent += sampleRow3.join(',');
+    }
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -182,19 +290,89 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`
   return (
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <div className="flex items-center mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="mr-4 text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">Batch Document Generator</h1>
+          </div>
           <button
-            onClick={() => navigate(-1)}
-            className="mr-4 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowHelp(!showHelp)}
+            className="text-blue-600 hover:text-blue-800 p-2"
+            title="Help"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <HelpCircle className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">Batch Document Generator</h1>
         </div>
         <p className="text-gray-600">
           Generate multiple documents at once from a CSV file (maximum 100 VASPs per batch)
         </p>
       </div>
+
+      {showHelp && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-semibold text-blue-900 text-lg">How Batch Document Generation Works</h3>
+            <button
+              onClick={() => setShowHelp(false)}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div className="space-y-4 text-sm text-blue-800">
+            <div>
+              <h4 className="font-semibold mb-2">Why Use Batch Processing?</h4>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>Generate dozens of personalized documents in seconds instead of hours</li>
+                <li>Maintain consistency across all documents with the same template</li>
+                <li>Track all case-specific data in one CSV file for easy management</li>
+                <li>Reduce errors by automating repetitive document creation</li>
+                <li>Download all documents in a single ZIP file</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-2">Simple vs Custom Mode</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="bg-white rounded p-3">
+                  <h5 className="font-medium text-blue-900 mb-1">Simple Documents</h5>
+                  <p className="text-xs">Pre-built templates for freeze requests and records requests. Fixed format, quick to use.</p>
+                </div>
+                <div className="bg-white rounded p-3">
+                  <h5 className="font-medium text-blue-900 mb-1">Custom Templates</h5>
+                  <p className="text-xs">Use your uploaded templates with smart tags. CSV format adapts to your template's needs.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-2">Custom Template Magic ✨</h4>
+              <p className="mb-2">When you select a custom template, the system:</p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Detects all smart tags in your template (like {{`{{INVESTIGATOR_NAME}}`} or {{`{{DATE_DEADLINE}}`})</li>
+                <li>Generates a custom CSV format with only the fields your template needs</li>
+                <li>Allows you to provide different values for each VASP (e.g., different deadlines, investigators)</li>
+                <li>Automatically fills in VASP details from our database and your profile</li>
+              </ol>
+            </div>
+            
+            <div className="bg-blue-100 rounded p-3">
+              <p className="font-medium text-blue-900 mb-1">💡 Pro Tip:</p>
+              <p className="text-xs">
+                Create a master tracking spreadsheet with all your case data, then export just the columns 
+                needed for each template. This lets you maintain one source of truth while generating 
+                different document types as needed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
@@ -314,7 +492,22 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`
                       type="radio"
                       value={template.id}
                       checked={selectedTemplate === template.id}
-                      onChange={(e) => setSelectedTemplate(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedTemplate(e.target.value);
+                        // Find and parse template markers
+                        const template = templates.find(t => t.id === e.target.value);
+                        if (template && template.markers) {
+                          try {
+                            const markers = JSON.parse(template.markers);
+                            setSelectedTemplateMarkers(markers);
+                          } catch (error) {
+                            console.error('Failed to parse template markers:', error);
+                            setSelectedTemplateMarkers([]);
+                          }
+                        } else {
+                          setSelectedTemplateMarkers([]);
+                        }
+                      }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-3">
@@ -362,16 +555,23 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`
           <div className="flex-1">
             <h3 className="font-medium text-blue-900 mb-2">CSV Format</h3>
             <p className="text-sm text-blue-800 mb-3">
-              Your CSV should include: VASP_Name, VASP_Email, VASP_Address, VASP_Jurisdiction, 
-              and optionally transaction details. Maximum 100 VASPs per batch file.
+              {mode === 'simple' 
+                ? 'Your CSV should include: VASP_Name and transaction details (Transaction_ID, Date, From_Address, To_Address, Amount, Currency).'
+                : selectedTemplate && selectedTemplateMarkers.length > 0 
+                  ? `This template requires: VASP_Name${generateDynamicCSVHeaders().slice(1).length > 0 ? ', ' + generateDynamicCSVHeaders().slice(1).join(', ') : ''}`
+                  : 'Select a template to see required CSV fields'
+              }
+              {' Maximum 100 VASPs per batch file.'}
             </p>
-            <button
-              onClick={handleDownloadTemplate}
-              className="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download Sample CSV
-            </button>
+            {(mode === 'simple' || (mode === 'custom' && selectedTemplate)) && (
+              <button
+                onClick={handleDownloadTemplate}
+                className="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Sample CSV
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -426,28 +626,53 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT,Subpoena Template`
         <h2 className="text-lg font-medium text-gray-900 mb-4">Upload CSV File</h2>
         
         {/* CSV Format Info */}
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex">
-            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-900">Simplified CSV Format</h3>
-              <p className="text-sm text-blue-800 mt-1">
-                Your CSV only needs transaction data and VASP names. We automatically pull:
-              </p>
-              <ul className="mt-2 text-sm text-blue-800 list-disc list-inside">
-                <li>VASP compliance emails, addresses, and jurisdictions from our database</li>
-                <li>Your agency information from your profile</li>
-                <li>Case information from the form above</li>
-              </ul>
-              <div className="mt-3 bg-blue-100 rounded p-2">
-                <p className="text-xs font-mono text-blue-900">
-                  Required columns: VASP_Name, Transaction_ID, Date, From_Address, To_Address, Amount, Currency
-                  {mode === 'custom' && ', Template_Name (optional)'}
+        {mode === 'simple' ? (
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-900">Simplified CSV Format</h3>
+                <p className="text-sm text-blue-800 mt-1">
+                  Your CSV only needs transaction data and VASP names. We automatically pull:
                 </p>
+                <ul className="mt-2 text-sm text-blue-800 list-disc list-inside">
+                  <li>VASP compliance emails, addresses, and jurisdictions from our database</li>
+                  <li>Your agency information from your profile</li>
+                  <li>Case information from the form above</li>
+                </ul>
+                <div className="mt-3 bg-blue-100 rounded p-2">
+                  <p className="text-xs font-mono text-blue-900">
+                    Required columns: VASP_Name, Transaction_ID, Date, From_Address, To_Address, Amount, Currency
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          selectedTemplate && (
+            <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex">
+                <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-900">Dynamic CSV Format</h3>
+                  <p className="text-sm text-blue-800 mt-1">
+                    This template's CSV format adapts to the smart tags detected. We automatically provide:
+                  </p>
+                  <ul className="mt-2 text-sm text-blue-800 list-disc list-inside">
+                    <li>VASP details from our database (just provide VASP name)</li>
+                    <li>Your agency and agent information from your profile</li>
+                    <li>Case information from the form above</li>
+                  </ul>
+                  <div className="mt-3 bg-blue-100 rounded p-2">
+                    <p className="text-xs font-mono text-blue-900">
+                      Required columns: {generateDynamicCSVHeaders().join(', ')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        )}
         
         <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
           <div className="space-y-1 text-center">

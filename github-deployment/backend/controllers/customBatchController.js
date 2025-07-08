@@ -218,7 +218,34 @@ const createCustomBatch = async (req, res) => {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
-            })
+            }),
+            
+            // Dynamic fields from CSV
+            // Date fields
+            dateDeadline: record.Date_Deadline || record.date_deadline || '',
+            DATE_DEADLINE: record.Date_Deadline || record.date_deadline || '',
+            
+            // Agency contact fields from CSV (override defaults if provided)
+            agencyPhone: record.Agency_Phone || record.agency_phone || user.phone || '',
+            AGENCY_PHONE: record.Agency_Phone || record.agency_phone || user.phone || '',
+            agencyEmail: record.Agency_Email || record.agency_email || user.email || '',
+            AGENCY_EMAIL: record.Agency_Email || record.agency_email || user.email || '',
+            
+            // Investigator fields from CSV (override defaults if provided)
+            investigatorName: record.Investigator_Name || record.investigator_name || `${user.firstName} ${user.lastName}`,
+            INVESTIGATOR_NAME: record.Investigator_Name || record.investigator_name || `${user.firstName} ${user.lastName}`,
+            investigatorTitle: record.Investigator_Title || record.investigator_title || user.title || '',
+            INVESTIGATOR_TITLE: record.Investigator_Title || record.investigator_title || user.title || '',
+            investigatorBadge: record.Investigator_Badge || record.investigator_badge || user.badgeNumber || '',
+            INVESTIGATOR_BADGE: record.Investigator_Badge || record.investigator_badge || user.badgeNumber || '',
+            
+            // Custom fields
+            customField1: record.Custom_Field_1 || record.custom_field_1 || '',
+            CUSTOM_FIELD_1: record.Custom_Field_1 || record.custom_field_1 || '',
+            customField2: record.Custom_Field_2 || record.custom_field_2 || '',
+            CUSTOM_FIELD_2: record.Custom_Field_2 || record.custom_field_2 || '',
+            customField3: record.Custom_Field_3 || record.custom_field_3 || '',
+            CUSTOM_FIELD_3: record.Custom_Field_3 || record.custom_field_3 || ''
           };
           
           // Check if this row has transaction data
