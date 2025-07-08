@@ -97,10 +97,10 @@ const Dashboard = () => {
               return (
                 <div
                   key={index}
-                  className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-2 border-transparent hover:border-${action.color}-500 cursor-pointer`}
+                  className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-2 border-transparent hover:border-${action.color}-500 cursor-pointer h-full flex flex-col`}
                   onClick={action.action}
                 >
-                  <div className="p-8">
+                  <div className="p-8 flex flex-col h-full">
                     <div className={`inline-flex items-center justify-center w-16 h-16 rounded-lg bg-${action.color}-100 mb-6`}>
                       <Icon className={`h-8 w-8 text-${action.color}-600`} />
                     </div>
@@ -110,7 +110,7 @@ const Dashboard = () => {
                     <p className="text-gray-600 mb-6">
                       {action.description}
                     </p>
-                    <div className="space-y-2 mb-6">
+                    <div className="space-y-2 mb-6 flex-grow">
                       {action.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center text-sm text-gray-600">
                           <ChevronRight className="h-4 w-4 mr-2 text-gray-400" />
@@ -142,7 +142,7 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Documents - Full Width */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-blue-50 rounded-lg shadow-sm p-6 mb-8 border border-blue-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900">Recent Documents</h3>
             <Link
@@ -160,7 +160,7 @@ const Dashboard = () => {
           ) : stats.recentDocuments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.recentDocuments.map((doc) => (
-                <div key={doc.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={doc.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <p className="font-medium text-gray-900 truncate">
                     {doc.caseNumber}
                   </p>
