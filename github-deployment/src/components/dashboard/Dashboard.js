@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI, authAPI } from '../../services/api';
 import TopContributor from './TopContributor';
 import { downloadFile } from '../../utils/urlHelpers';
+import OnboardingTour from '../common/OnboardingTour';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -18,10 +19,17 @@ const Dashboard = () => {
   });
   const [deletingDocId, setDeletingDocId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+    
+    // Check if user needs onboarding
+    const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
+    if (!hasCompletedOnboarding && user?.role !== 'DEMO') {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
@@ -118,6 +126,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showOnboarding && (
+        <OnboardingTour onComplete={() => setShowOnboarding(false)} />
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section with Top Contributor */}
         <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
@@ -146,6 +157,7 @@ const Dashboard = () => {
               return (
                 <div
                   key={index}
+                  data-tour={index === 0 ? 'search-vasp' : 'generate-request'}
                   className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-2 border-transparent hover:border-${action.color}-500 cursor-pointer h-full flex flex-col`}
                   onClick={action.action}
                 >
@@ -185,7 +197,7 @@ const Dashboard = () => {
 
 
         {/* Recent Documents - Full Width */}
-        <div className="bg-blue-50 rounded-lg shadow-sm p-6 mb-8 border border-blue-100">
+        <div data-tour="recent-documents" className="bg-blue-50 rounded-lg shadow-sm p-6 mb-8 border border-blue-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900">Recent Documents</h3>
             <Link
@@ -284,7 +296,7 @@ const Dashboard = () => {
         {/* Quick Stats and Links Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Stats */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm p-6 border border-blue-200">
+          <div data-tour="platform-stats" className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm p-6 border border-blue-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Stats</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center border border-blue-300 rounded-lg p-4 bg-white/50">
@@ -303,7 +315,7 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm p-6 border border-green-200">
+          <div data-tour="quick-links" className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm p-6 border border-green-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Links</h3>
             <div className="grid grid-cols-2 gap-3">
               <Link

@@ -4,6 +4,7 @@ import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCir
 import { useAuth } from '../../contexts/AuthContext';
 import DemoBanner from './DemoBanner';
 import { contributorAPI } from '../../services/api';
+import { ToastContainer } from './Toast';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -254,6 +255,7 @@ const Layout = () => {
       <main>
         <Outlet />
       </main>
+      <ToastContainer />
     </div>
   );
 };

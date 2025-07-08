@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info, Lock, Globe } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Upload, FileText, AlertCircle, CheckCircle, Map, HelpCircle, Info, Lock, Globe, Camera } from 'lucide-react';
 import { templateAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { getErrorMessage } from '../../utils/errorMessages';
+import { showToast } from '../common/Toast';
+import { LoadingButton } from '../common/LoadingStates';
 
 const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const { user } = useAuth();
@@ -14,6 +17,7 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
   const [showHelp, setShowHelp] = useState(false);
   const [isGlobal, setIsGlobal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [templateData, setTemplateData] = useState({
     templateName: '',
     templateType: 'letterhead',
@@ -32,6 +36,16 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
     }
     return null;
   }, [encryption]);
+
+  // Check if mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleFileSelect = (selectedFile) => {
     if (selectedFile) {
@@ -117,6 +131,9 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
       
       setUploadResponse(response);
       
+      // Show success toast
+      showToast('Template uploaded successfully!', 'success');
+      
       if (response.validation.warnings.length > 0) {
         console.warn('Template warnings:', response.validation.warnings);
       }
@@ -124,12 +141,11 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
     } catch (err) {
       console.error('Upload error:', err);
       
-      // Check if this is a demo restriction error
-      if (err.response?.data?.isDemo) {
-        setError(err.response.data.message || 'Demo users cannot upload templates.');
-      } else {
-        setError(err.response?.data?.error || 'Failed to upload template');
-      }
+      const errorInfo = getErrorMessage(err, 'template-upload');
+      setError(errorInfo);
+      
+      // Show specific error toast
+      showToast(errorInfo.message, 'error');
     } finally {
       setUploading(false);
     }
@@ -231,35 +247,60 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Template File
               </label>
-              <div 
-                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors ${
-                  isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <div className="space-y-1 text-center">
-                  <Upload className={`mx-auto h-12 w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
-                  <div className="flex text-sm text-gray-600">
-                    <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                      <span>Upload a file</span>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        onChange={handleFileChange}
-                        accept=".docx,.html,.txt"
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    DOCX, HTML, or TXT up to 5MB
-                  </p>
+              {isMobile ? (
+                // Mobile-friendly upload interface
+                <div className="mt-1 space-y-3">
+                  <label htmlFor="file-upload-mobile" className="block">
+                    <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                      <div className="flex flex-col items-center space-y-2">
+                        <Camera className="w-10 h-10 text-gray-400" />
+                        <span className="text-sm text-gray-600">Tap to select file</span>
+                        <span className="text-xs text-gray-500">DOCX, HTML, or TXT</span>
+                      </div>
+                    </div>
+                    <input
+                      id="file-upload-mobile"
+                      name="file-upload-mobile"
+                      type="file"
+                      className="hidden"
+                      onChange={handleFileChange}
+                      accept=".docx,.html,.txt"
+                      capture="environment"
+                    />
+                  </label>
                 </div>
-              </div>
+              ) : (
+                // Desktop drag-and-drop interface
+                <div 
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors ${
+                    isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <div className="space-y-1 text-center">
+                    <Upload className={`mx-auto h-12 w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+                    <div className="flex text-sm text-gray-600">
+                      <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                        <span>Upload a file</span>
+                        <input
+                          id="file-upload"
+                          name="file-upload"
+                          type="file"
+                          className="sr-only"
+                          onChange={handleFileChange}
+                          accept=".docx,.html,.txt"
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      DOCX, HTML, or TXT up to 5MB
+                    </p>
+                  </div>
+                </div>
+              )}
               {file && (
                 <div className="mt-2 flex items-center text-sm text-gray-600">
                   <FileText className="h-4 w-4 mr-2" />
