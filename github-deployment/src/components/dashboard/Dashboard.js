@@ -33,18 +33,22 @@ const Dashboard = () => {
       let totalDocumentCount = 0;
       try {
         const response = await documentAPI.getTotalDocumentCount();
+        console.log('Total document count response:', response);
         totalDocumentCount = response.count || 0;
       } catch (error) {
         console.error('Failed to load total document count:', error);
+        console.error('Error details:', error.response?.data || error.message);
       }
       
       // Load member count
       let memberCount = 0;
       try {
         const response = await authAPI.getMemberCount();
+        console.log('Member count response:', response);
         memberCount = response.count || 0;
       } catch (error) {
         console.error('Failed to load member count:', error);
+        console.error('Error details:', error.response?.data || error.message);
       }
       
       setStats({
@@ -206,18 +210,18 @@ const Dashboard = () => {
         {/* Quick Stats and Links Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Stats */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-sm p-6 border border-purple-200">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm p-6 border border-blue-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Stats</h3>
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
+              <div className="text-center border border-blue-300 rounded-lg p-4 bg-white/50">
                 <p className="text-3xl font-bold text-gray-900">{stats.totalMembers}</p>
                 <p className="text-sm text-gray-600">Active Members</p>
               </div>
-              <div className="text-center">
+              <div className="text-center border border-blue-300 rounded-lg p-4 bg-white/50">
                 <p className="text-3xl font-bold text-gray-900">{stats.documentsCreated}</p>
                 <p className="text-sm text-gray-600">Documents Created</p>
               </div>
-              <div className="text-center">
+              <div className="text-center border border-blue-300 rounded-lg p-4 bg-white/50">
                 <p className="text-3xl font-bold text-gray-900">{stats.totalVASPs}</p>
                 <p className="text-sm text-gray-600">VASPs Supported</p>
               </div>

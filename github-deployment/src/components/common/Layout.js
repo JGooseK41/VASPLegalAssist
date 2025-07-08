@@ -65,7 +65,7 @@ const Layout = () => {
           <div className="flex justify-between items-center py-6">
             {/* Logo and Title */}
             <div className="flex items-start">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 text-center">
                 <a href="https://www.theblockaudit.com" target="_blank" rel="noopener noreferrer">
                   <img
                     src="/images/logo.png"
