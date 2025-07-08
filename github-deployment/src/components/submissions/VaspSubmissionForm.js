@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { submissionAPI } from '../../services/api';
 
@@ -101,6 +101,17 @@ const VaspSubmissionForm = () => {
   
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      {/* Back Button */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Go Back
+        </button>
+      </div>
+      
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Submit New VASP Information</h1>
         <p className="mt-1 text-sm text-gray-600">

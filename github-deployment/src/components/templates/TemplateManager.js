@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe, ArrowLeft } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
@@ -12,6 +12,7 @@ import DirectTemplateCreator from './DirectTemplateCreator';
 const TemplateManager = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -169,6 +170,15 @@ const TemplateManager = () => {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go Back
+          </button>
+        </div>
         <div className="mb-8 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">My Custom Templates</h1>
