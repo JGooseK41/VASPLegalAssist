@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, Download, AlertCircle, CheckCircle, Search, Upload, Plus, HelpCircle, Users } from 'lucide-react';
+import { FileText, Download, AlertCircle, CheckCircle, Search, Upload, Plus, HelpCircle, Users, Info } from 'lucide-react';
 import { documentAPI, templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
@@ -37,6 +37,7 @@ const CustomDocumentBuilder = () => {
   // Template selection
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateMarkers, setTemplateMarkers] = useState([]);
   
   // VASP Data
   const [selectedVASP, setSelectedVASP] = useState(null);
@@ -95,6 +96,33 @@ const CustomDocumentBuilder = () => {
 
   const handleSelectVASP = () => {
     navigate('/search');
+  };
+
+  const handleTemplateSelect = (templateId) => {
+    setSelectedTemplate(templateId);
+    
+    // Find the selected template and parse its markers
+    const template = templates.find(t => t.id === templateId);
+    if (template && template.markers) {
+      try {
+        const markers = JSON.parse(template.markers);
+        setTemplateMarkers(markers);
+      } catch (error) {
+        console.error('Failed to parse template markers:', error);
+        setTemplateMarkers([]);
+      }
+    } else {
+      setTemplateMarkers([]);
+    }
+  };
+
+  // Helper function to check if a marker exists in the template
+  const hasMarker = (markerName) => {
+    return templateMarkers.some(marker => 
+      marker.toLowerCase() === markerName.toLowerCase() ||
+      marker.toLowerCase() === `{{${markerName.toLowerCase()}}}` ||
+      marker === markerName
+    );
   };
 
   const handleGenerateDocument = async (e) => {
@@ -311,7 +339,7 @@ const CustomDocumentBuilder = () => {
                     value={template.id}
                     checked={selectedTemplate === template.id}
                     onChange={(e) => {
-                      setSelectedTemplate(e.target.value);
+                      handleTemplateSelect(e.target.value);
                       const template = templates.find(t => t.id === e.target.value);
                       if (template) {
                         setSuccess(`Selected template: ${template.templateName}`);
@@ -454,110 +482,145 @@ const CustomDocumentBuilder = () => {
           </div>
         </div>
 
-        {/* Advanced Fields (Optional) */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Advanced Fields (Optional)
-            <span className="text-sm font-normal text-gray-500 ml-2">
-              Fill these if your template uses these smart tags
-            </span>
-          </h2>
+        {/* Dynamic Template Fields Message */}
+        {selectedTemplate && templateMarkers.length === 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="ml-3">
+                <p className="text-sm text-blue-800">
+                  This template uses only basic fields that are automatically filled from your profile and VASP selection.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Advanced Fields (Optional) - Only show if template is selected and has markers */}
+        {selectedTemplate && templateMarkers.length > 0 && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Template Fields
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                Fill in the fields used by your template
+              </span>
+            </h2>
+            
+            {/* Show detected markers */}
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600">
+                <strong>Detected smart tags:</strong> {templateMarkers.join(', ')}
+              </p>
+            </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Date Fields */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Response Deadline
-                <span className="text-xs text-gray-500 ml-1">{`{{DATE_DEADLINE}}`}</span>
-              </label>
-              <input
-                type="date"
-                value={documentData.dateDeadline || ''}
-                onChange={(e) => setDocumentData({...documentData, dateDeadline: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('DATE_DEADLINE') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Response Deadline
+                  <span className="text-xs text-gray-500 ml-1">{`{{DATE_DEADLINE}}`}</span>
+                </label>
+                <input
+                  type="date"
+                  value={documentData.dateDeadline || ''}
+                  onChange={(e) => setDocumentData({...documentData, dateDeadline: e.target.value})}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
             
             {/* Agency Contact Fields */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Agency Phone
-                <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_PHONE}}`}</span>
-              </label>
-              <input
-                type="tel"
-                value={documentData.agencyPhone || ''}
-                onChange={(e) => setDocumentData({...documentData, agencyPhone: e.target.value})}
-                placeholder="(555) 123-4567"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('AGENCY_PHONE') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Agency Phone
+                  <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_PHONE}}`}</span>
+                </label>
+                <input
+                  type="tel"
+                  value={documentData.agencyPhone || ''}
+                  onChange={(e) => setDocumentData({...documentData, agencyPhone: e.target.value})}
+                  placeholder="(555) 123-4567"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Agency Email
-                <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_EMAIL}}`}</span>
-              </label>
-              <input
-                type="email"
-                value={documentData.agencyEmail || ''}
-                onChange={(e) => setDocumentData({...documentData, agencyEmail: e.target.value})}
-                placeholder="contact@agency.gov"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('AGENCY_EMAIL') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Agency Email
+                  <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_EMAIL}}`}</span>
+                </label>
+                <input
+                  type="email"
+                  value={documentData.agencyEmail || ''}
+                  onChange={(e) => setDocumentData({...documentData, agencyEmail: e.target.value})}
+                  placeholder="contact@agency.gov"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
             
             {/* Investigator Fields */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Investigator Name
-                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_NAME}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.investigatorName || ''}
-                onChange={(e) => setDocumentData({...documentData, investigatorName: e.target.value})}
-                placeholder="If different from your profile name"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('INVESTIGATOR_NAME') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Investigator Name
+                  <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_NAME}}`}</span>
+                </label>
+                <input
+                  type="text"
+                  value={documentData.investigatorName || ''}
+                  onChange={(e) => setDocumentData({...documentData, investigatorName: e.target.value})}
+                  placeholder="If different from your profile name"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Investigator Title
-                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_TITLE}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.investigatorTitle || ''}
-                onChange={(e) => setDocumentData({...documentData, investigatorTitle: e.target.value})}
-                placeholder="If different from your profile title"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('INVESTIGATOR_TITLE') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Investigator Title
+                  <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_TITLE}}`}</span>
+                </label>
+                <input
+                  type="text"
+                  value={documentData.investigatorTitle || ''}
+                  onChange={(e) => setDocumentData({...documentData, investigatorTitle: e.target.value})}
+                  placeholder="If different from your profile title"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Investigator Badge
-                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_BADGE}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.investigatorBadge || ''}
-                onChange={(e) => setDocumentData({...documentData, investigatorBadge: e.target.value})}
-                placeholder="If different from your profile badge"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {hasMarker('INVESTIGATOR_BADGE') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Investigator Badge
+                  <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_BADGE}}`}</span>
+                </label>
+                <input
+                  type="text"
+                  value={documentData.investigatorBadge || ''}
+                  onChange={(e) => setDocumentData({...documentData, investigatorBadge: e.target.value})}
+                  placeholder="If different from your profile badge"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
           </div>
           
           {/* Requested Information */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Requested Information
-              <span className="text-xs text-gray-500 ml-1">{`{{REQUESTED_INFO_LIST}}`}</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
+          {(hasMarker('REQUESTED_INFO_LIST') || hasMarker('REQUESTED_INFO_CHECKBOXES')) && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Requested Information
+                <span className="text-xs text-gray-500 ml-1">{`{{REQUESTED_INFO_LIST}}`}</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
               {[
                 { key: 'kyc_info', label: 'KYC Information' },
                 { key: 'transaction_history', label: 'Transaction History' },
@@ -586,49 +649,59 @@ const CustomDocumentBuilder = () => {
                   <span className="ml-2 text-sm text-gray-700">{option.label}</span>
                 </label>
               ))}
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Custom Fields */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Custom Field 1
-                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_1}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.customField1 || ''}
-                onChange={(e) => setDocumentData({...documentData, customField1: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
+          {(hasMarker('CUSTOM_FIELD_1') || hasMarker('CUSTOM_FIELD_2') || hasMarker('CUSTOM_FIELD_3')) && (
+            <div className="space-y-4">
+              {hasMarker('CUSTOM_FIELD_1') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Custom Field 1
+                    <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_1}}`}</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={documentData.customField1 || ''}
+                    onChange={(e) => setDocumentData({...documentData, customField1: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
+              {hasMarker('CUSTOM_FIELD_2') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Custom Field 2
+                    <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_2}}`}</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={documentData.customField2 || ''}
+                    onChange={(e) => setDocumentData({...documentData, customField2: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
+              {hasMarker('CUSTOM_FIELD_3') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Custom Field 3
+                    <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_3}}`}</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={documentData.customField3 || ''}
+                    onChange={(e) => setDocumentData({...documentData, customField3: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Custom Field 2
-                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_2}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.customField2 || ''}
-                onChange={(e) => setDocumentData({...documentData, customField2: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Custom Field 3
-                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_3}}`}</span>
-              </label>
-              <input
-                type="text"
-                value={documentData.customField3 || ''}
-                onChange={(e) => setDocumentData({...documentData, customField3: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+          )}
           </div>
-        </div>
+        )}
 
         {/* Output Format */}
         <div className="bg-white shadow rounded-lg p-6">
