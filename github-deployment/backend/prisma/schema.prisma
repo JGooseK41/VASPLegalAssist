@@ -275,3 +275,9 @@ model PageView {
   @@index([path])
   @@index([createdAt])
 }
+
+model DocumentStats {
+  id                    String    @id @default("global-stats")
+  totalDocumentsCreated Int       @default(0)
+  updatedAt             DateTime  @updatedAt
+}
