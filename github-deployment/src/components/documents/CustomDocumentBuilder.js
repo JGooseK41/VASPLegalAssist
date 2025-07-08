@@ -46,6 +46,7 @@ const CustomDocumentBuilder = () => {
     caseNumber: '',
     statute: '',
     crimeDescription: '',
+    requestedInfo: [],
     // Additional fields based on template
     customFields: {}
   });
@@ -139,7 +140,7 @@ const CustomDocumentBuilder = () => {
         // Additional data for smart placeholders
         custom_data: {
           ...documentData.customFields,
-          // Auto-filled data
+          // Auto-filled data from profile
           vaspName: selectedVASP.name,
           vaspEmail: selectedVASP.email || '',
           vaspAddress: selectedVASP.address || '',
@@ -150,11 +151,23 @@ const CustomDocumentBuilder = () => {
           agentPhone: user.phone || '',
           agentBadge: user.badgeNumber || '',
           agencyName: user.agencyName,
+          agencyAddress: user.agencyAddress || '',
           dateToday: new Date().toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-          })
+          }),
+          // Advanced fields from form
+          dateDeadline: documentData.dateDeadline || '',
+          agencyPhone: documentData.agencyPhone || user.phone || '',
+          agencyEmail: documentData.agencyEmail || user.email || '',
+          investigatorName: documentData.investigatorName || `${user.firstName} ${user.lastName}`,
+          investigatorTitle: documentData.investigatorTitle || user.title || '',
+          investigatorBadge: documentData.investigatorBadge || user.badgeNumber || '',
+          requestedInfo: documentData.requestedInfo || [],
+          customField1: documentData.customField1 || '',
+          customField2: documentData.customField2 || '',
+          customField3: documentData.customField3 || ''
         }
       };
       
@@ -184,6 +197,7 @@ const CustomDocumentBuilder = () => {
             caseNumber: '',
             statute: '',
             crimeDescription: '',
+            requestedInfo: [],
             customFields: {}
           });
           setTransaction({
@@ -436,6 +450,182 @@ const CustomDocumentBuilder = () => {
                 <option value="USDC">USDC</option>
                 <option value="Other">Other</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced Fields (Optional) */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Advanced Fields (Optional)
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              Fill these if your template uses these smart tags
+            </span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Date Fields */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Response Deadline
+                <span className="text-xs text-gray-500 ml-1">{`{{DATE_DEADLINE}}`}</span>
+              </label>
+              <input
+                type="date"
+                value={documentData.dateDeadline || ''}
+                onChange={(e) => setDocumentData({...documentData, dateDeadline: e.target.value})}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            {/* Agency Contact Fields */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Agency Phone
+                <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_PHONE}}`}</span>
+              </label>
+              <input
+                type="tel"
+                value={documentData.agencyPhone || ''}
+                onChange={(e) => setDocumentData({...documentData, agencyPhone: e.target.value})}
+                placeholder="(555) 123-4567"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Agency Email
+                <span className="text-xs text-gray-500 ml-1">{`{{AGENCY_EMAIL}}`}</span>
+              </label>
+              <input
+                type="email"
+                value={documentData.agencyEmail || ''}
+                onChange={(e) => setDocumentData({...documentData, agencyEmail: e.target.value})}
+                placeholder="contact@agency.gov"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            {/* Investigator Fields */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Investigator Name
+                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_NAME}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.investigatorName || ''}
+                onChange={(e) => setDocumentData({...documentData, investigatorName: e.target.value})}
+                placeholder="If different from your profile name"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Investigator Title
+                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_TITLE}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.investigatorTitle || ''}
+                onChange={(e) => setDocumentData({...documentData, investigatorTitle: e.target.value})}
+                placeholder="If different from your profile title"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Investigator Badge
+                <span className="text-xs text-gray-500 ml-1">{`{{INVESTIGATOR_BADGE}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.investigatorBadge || ''}
+                onChange={(e) => setDocumentData({...documentData, investigatorBadge: e.target.value})}
+                placeholder="If different from your profile badge"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          
+          {/* Requested Information */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Requested Information
+              <span className="text-xs text-gray-500 ml-1">{`{{REQUESTED_INFO_LIST}}`}</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { key: 'kyc_info', label: 'KYC Information' },
+                { key: 'transaction_history', label: 'Transaction History' },
+                { key: 'ip_addresses', label: 'IP Addresses' },
+                { key: 'device_info', label: 'Device Information' },
+                { key: 'account_activity', label: 'Account Activity' },
+                { key: 'linked_accounts', label: 'Linked Accounts' },
+                { key: 'source_of_funds', label: 'Source of Funds' },
+                { key: 'communications', label: 'Communications' }
+              ].map(option => (
+                <label key={option.key} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    value={option.key}
+                    checked={(documentData.requestedInfo || []).includes(option.key)}
+                    onChange={(e) => {
+                      const current = documentData.requestedInfo || [];
+                      if (e.target.checked) {
+                        setDocumentData({...documentData, requestedInfo: [...current, option.key]});
+                      } else {
+                        setDocumentData({...documentData, requestedInfo: current.filter(i => i !== option.key)});
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          {/* Custom Fields */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Custom Field 1
+                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_1}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.customField1 || ''}
+                onChange={(e) => setDocumentData({...documentData, customField1: e.target.value})}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Custom Field 2
+                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_2}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.customField2 || ''}
+                onChange={(e) => setDocumentData({...documentData, customField2: e.target.value})}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Custom Field 3
+                <span className="text-xs text-gray-500 ml-1">{`{{CUSTOM_FIELD_3}}`}</span>
+              </label>
+              <input
+                type="text"
+                value={documentData.customField3 || ''}
+                onChange={(e) => setDocumentData({...documentData, customField3: e.target.value})}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
         </div>
