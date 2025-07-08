@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle } from 'lucide-react';
+import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle, Download } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI, authAPI } from '../../services/api';
 import TopContributor from './TopContributor';
+import { downloadFile } from '../../utils/urlHelpers';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -160,16 +161,29 @@ const Dashboard = () => {
           ) : stats.recentDocuments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.recentDocuments.map((doc) => (
-                <div key={doc.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <p className="font-medium text-gray-900 truncate">
-                    {doc.caseNumber}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {doc.vaspName}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {new Date(doc.createdAt).toLocaleDateString()} • {new Date(doc.createdAt).toLocaleTimeString()}
-                  </p>
+                <div 
+                  key={doc.id} 
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={() => {
+                    const url = doc.pdfUrl || doc.filePath || (doc.outputFormat === 'docx' ? `/docs/${doc.id}.docx` : `/pdfs/${doc.id}.pdf`);
+                    const filename = `${doc.documentType}_${doc.vaspName}_${doc.caseNumber}.${doc.outputFormat || 'pdf'}`;
+                    downloadFile(url, filename);
+                  }}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {doc.caseNumber}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {doc.vaspName}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        {new Date(doc.createdAt).toLocaleDateString()} • {new Date(doc.createdAt).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <Download className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  </div>
                 </div>
               ))}
             </div>
