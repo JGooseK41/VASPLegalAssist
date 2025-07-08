@@ -355,7 +355,7 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`;
               <h4 className="font-semibold mb-2">Custom Template Magic ✨</h4>
               <p className="mb-2">When you select a custom template, the system:</p>
               <ol className="list-decimal list-inside space-y-1 ml-2">
-                <li>Detects all smart tags in your template (like {{`{{INVESTIGATOR_NAME}}`} or {{`{{DATE_DEADLINE}}`})</li>
+                <li>Detects all smart tags in your template (like {`{{INVESTIGATOR_NAME}}`} or {`{{DATE_DEADLINE}}`})</li>
                 <li>Generates a custom CSV format with only the fields your template needs</li>
                 <li>Allows you to provide different values for each VASP (e.g., different deadlines, investigators)</li>
                 <li>Automatically fills in VASP details from our database and your profile</li>
