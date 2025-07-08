@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEncryption } from '../../hooks/useEncryption';
@@ -10,6 +11,7 @@ import DirectTemplateCreator from './DirectTemplateCreator';
 
 const TemplateManager = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,6 +43,14 @@ const TemplateManager = () => {
       setError('Encryption initialization failed. Templates may not be available.');
     }
   }, [encryptedAPI, encryption.isKeyReady]);
+
+  // Check for showInfo query parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('showInfo') === 'true') {
+      setShowHelp(true);
+    }
+  }, [location]);
 
   // Separate timeout effect to prevent infinite loading
   useEffect(() => {
@@ -161,9 +171,9 @@ const TemplateManager = () => {
       <div className="px-4 py-6 sm:px-0">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
+            <h1 className="text-2xl font-bold text-gray-900">My Custom Templates</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Customize your subpoena and letterhead templates or upload smart templates
+              Upload and manage your custom document templates with smart tags
             </p>
             {encryption.isKeyReady && (
               <div className="mt-2 flex items-center text-xs text-green-600">
@@ -178,28 +188,14 @@ const TemplateManager = () => {
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded flex items-center"
             >
               <HelpCircle className="h-4 w-4 mr-2" />
-              Help Guide
+              How It Works
             </button>
             <button
               onClick={() => setShowSmartUpload(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Smart Template
-            </button>
-            <button
-              onClick={() => setShowDirectCreator(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center"
-            >
-              <FileCode className="h-4 w-4 mr-2" />
-              Create Template Directly
-            </button>
-            <button
-              onClick={() => setShowNewTemplate(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              New Basic Template
+              <Upload className="h-4 w-4 mr-2" />
+              Upload New Template
             </button>
           </div>
         </div>
@@ -237,20 +233,6 @@ const TemplateManager = () => {
           </div>
         )}
 
-        {showNewTemplate && (
-          <TemplateEditor
-            template={{
-              name: '',
-              document_type: 'subpoena',
-              header_info: {},
-              footer_text: '',
-              custom_fields: {}
-            }}
-            onSave={handleSaveTemplate}
-            onCancel={() => setShowNewTemplate(false)}
-          />
-        )}
-
         {showSmartUpload && (
           <SmartTemplateUpload
             onSuccess={(template) => {
@@ -259,18 +241,6 @@ const TemplateManager = () => {
               loadTemplates();
             }}
             onCancel={() => setShowSmartUpload(false)}
-          />
-        )}
-
-        {showDirectCreator && (
-          <DirectTemplateCreator
-            encryptedAPI={encryptedAPI}
-            onSuccess={(template) => {
-              setShowDirectCreator(false);
-              loadTemplates();
-              setSuccess('Template created successfully!');
-            }}
-            onCancel={() => setShowDirectCreator(false)}
           />
         )}
 

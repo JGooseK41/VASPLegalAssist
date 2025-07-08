@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Database, FileText, Clock, Upload, Search, Plus, TrendingUp } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI } from '../../services/api';
 import TopContributor from './TopContributor';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalVASPs: 0,
     documentsCreated: 0,
@@ -33,211 +34,196 @@ const Dashboard = () => {
         loading: false
       });
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
       setStats(prev => ({ ...prev, loading: false }));
     }
   };
 
+  const primaryActions = [
+    {
+      title: "Search VASP",
+      description: "Find compliance information and read the latest investigator intel",
+      icon: Search,
+      color: "blue",
+      action: () => navigate('/search'),
+      stats: `${stats.totalVASPs} VASPs with live intel`,
+      buttonText: "Search VASPs",
+      features: ["Compliance contacts", "Service protocols", "Real-time officer comments", "Response experiences"]
+    },
+    {
+      title: "Generate VASP Request",
+      description: "Create legal documents for freeze orders and data requests",
+      icon: FileText,
+      color: "green",
+      action: () => navigate('/documents/create'),
+      stats: "Quick & custom templates",
+      buttonText: "Generate Request",
+      features: ["Standard letterheads", "Custom templates", "Batch processing", "Auto-fill from profile"]
+    }
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto pt-8 pb-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900">
             Welcome back, {user?.firstName}
           </h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {user?.agencyName}
+          <p className="mt-2 text-lg text-gray-600">
+            {user?.agencyName} • Legal Service Hub
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Database className="h-6 w-6 text-gray-400" />
+        {/* Primary Actions - MAIN FOCUS */}
+        <div className="mb-12">
+          <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+            <Zap className="h-5 w-5 text-yellow-500 mr-2" />
+            What do you need today?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {primaryActions.map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <div
+                  key={index}
+                  className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden border-2 border-transparent hover:border-${action.color}-500 cursor-pointer`}
+                  onClick={action.action}
+                >
+                  <div className="p-8">
+                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-lg bg-${action.color}-100 mb-6`}>
+                      <Icon className={`h-8 w-8 text-${action.color}-600`} />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      {action.title}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {action.description}
+                    </p>
+                    <div className="space-y-2 mb-6">
+                      {action.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center text-sm text-gray-600">
+                          <ChevronRight className="h-4 w-4 mr-2 text-gray-400" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                    <div className={`bg-${action.color}-50 rounded-lg px-4 py-3 mb-6`}>
+                      <p className={`text-base font-medium text-${action.color}-700`}>
+                        {action.stats}
+                      </p>
+                    </div>
+                    <button className={`w-full bg-${action.color}-600 hover:bg-${action.color}-700 text-white font-medium py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-lg`}>
+                      {action.buttonText}
+                      <ChevronRight className="h-5 w-5 ml-2" />
+                    </button>
+                  </div>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total VASPs
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.loading ? '...' : stats.totalVASPs}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <FileText className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Documents Created
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.loading ? '...' : stats.documentsCreated}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
+        {/* Quick Stats Bar */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900">{stats.totalVASPs}</p>
+              <p className="text-sm text-gray-600">VASPs in Database</p>
             </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Clock className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Last Activity
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.recentDocuments.length > 0 
-                        ? new Date(stats.recentDocuments[0].createdAt).toLocaleDateString()
-                        : 'No activity'}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900">{stats.documentsCreated}</p>
+              <p className="text-sm text-gray-600">Documents Created</p>
             </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Success Rate
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">100%</dd>
-                  </dl>
-                </div>
-              </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900">24/7</p>
+              <p className="text-sm text-gray-600">Available Support</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900">100%</p>
+              <p className="text-sm text-gray-600">Success Rate</p>
             </div>
           </div>
         </div>
 
-        {/* Top Contributor Section - Centered and thin */}
-        <div className="mb-8 flex justify-center">
-          <div className="w-full max-w-2xl">
-            <TopContributor />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Documents */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Recent Documents</h3>
-              <Link
-                to="/documents/history"
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                View all →
-              </Link>
-            </div>
-            
+        {/* Secondary Actions Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Recent Activity */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Documents</h3>
             {stats.loading ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               </div>
             ) : stats.recentDocuments.length > 0 ? (
-              <div className="space-y-3">
-                {stats.recentDocuments.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">
-                        {doc.caseNumber}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {doc.vaspName} • {doc.documentType}
-                      </p>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {new Date(doc.createdAt).toLocaleDateString()}
-                    </span>
+              <div className="space-y-2">
+                {stats.recentDocuments.slice(0, 3).map((doc) => (
+                  <div key={doc.id} className="py-2 border-b border-gray-100 last:border-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">
+                      {doc.caseNumber}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {doc.vaspName} • {new Date(doc.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-4">
-                No documents created yet
+              <p className="text-center text-gray-500 py-4 text-sm">
+                No documents yet
               </p>
             )}
+            <Link
+              to="/documents/history"
+              className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-800"
+            >
+              View all documents →
+            </Link>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          {/* Quick Links */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Links</h3>
             <div className="space-y-3">
               <Link
-                to="/search"
-                className="w-full flex items-center p-3 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                to="/documents/simple"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
               >
-                <Search className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="font-medium text-blue-900">Search VASP Database</span>
+                <FileText className="h-4 w-4 mr-2" />
+                Simple freeze/records request
               </Link>
-              
               <Link
-                to="/documents/new"
-                className="w-full flex items-center p-3 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                to="/documents/custom"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
               >
-                <Plus className="h-5 w-5 text-green-600 mr-3" />
-                <span className="font-medium text-green-900">Create New Document</span>
+                <Upload className="h-4 w-4 mr-2" />
+                Custom template document
               </Link>
-              
               <Link
                 to="/templates"
-                className="w-full flex items-center p-3 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
               >
-                <FileText className="h-5 w-5 text-purple-600 mr-3" />
-                <span className="font-medium text-purple-900">Manage Templates</span>
+                <FileText className="h-4 w-4 mr-2" />
+                Manage templates
               </Link>
-              
-              <button
-                className="w-full flex items-center p-3 bg-orange-50 hover:bg-orange-100 rounded-md transition-colors"
-                onClick={() => document.getElementById('csv-upload').click()}
+              <Link
+                to="/leaderboard"
+                className="flex items-center text-sm text-gray-700 hover:text-blue-600"
               >
-                <Upload className="h-5 w-5 text-orange-600 mr-3" />
-                <span className="font-medium text-orange-900">Import Transaction CSV</span>
-              </button>
-              <input
-                id="csv-upload"
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={(e) => {
-                  // Handle CSV upload
-                  console.log('CSV upload:', e.target.files[0]);
-                }}
-              />
+                <Users className="h-4 w-4 mr-2" />
+                Community leaderboard
+              </Link>
             </div>
+          </div>
+
+          {/* Top Contributor */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <TopContributor />
           </div>
         </div>
 
         {/* Demo Mode Notice */}
         {user?.role === 'DEMO' && (
-          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -246,9 +232,9 @@ const Dashboard = () => {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800">Demo Mode</h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>You're using a demo account. Some features may be limited.</p>
-                </div>
+                <p className="mt-1 text-sm text-yellow-700">
+                  You're using a demo account. Some features may be limited.
+                </p>
               </div>
             </div>
           </div>

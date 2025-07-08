@@ -24,7 +24,7 @@ const fileFilter = (req, file, cb) => {
   const allowedTypes = ['.docx', '.html', '.txt'];
   const ext = path.extname(file.originalname).toLowerCase();
   
-  // Also allow by MIME type
+  // Strict MIME type validation
   const allowedMimeTypes = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
@@ -32,12 +32,24 @@ const fileFilter = (req, file, cb) => {
     'text/plain'
   ];
   
-  console.log('Upload file check:', file.originalname, 'ext:', ext, 'mimetype:', file.mimetype);
+  // Validate file type
   
-  if (allowedTypes.includes(ext) || allowedMimeTypes.includes(file.mimetype)) {
+  // Require both extension and MIME type to match
+  const validExtension = allowedTypes.includes(ext);
+  const validMimeType = allowedMimeTypes.includes(file.mimetype);
+  
+  if (validExtension && validMimeType) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type. Only DOCX, HTML, and TXT files are allowed. (Got: ${ext}, MIME: ${file.mimetype})`), false);
+    let errorMsg = 'Invalid file type. ';
+    if (!validExtension) {
+      errorMsg += `Extension "${ext}" not allowed. `;
+    }
+    if (!validMimeType) {
+      errorMsg += `MIME type "${file.mimetype}" not allowed. `;
+    }
+    errorMsg += 'Only DOCX, HTML, and TXT files are allowed.';
+    cb(new Error(errorMsg), false);
   }
 };
 
@@ -65,11 +77,10 @@ const uploadTemplate = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
+    let templateData = {}; // Define outside try block for error handler access
+    
     try {
-      console.log('Upload request received:', {
-        file: req.file ? req.file.originalname : 'No file',
-        body: req.body
-      });
+      // Process upload request
       
       const {
         templateName,
@@ -101,9 +112,11 @@ const uploadTemplate = async (req, res) => {
         select: { role: true }
       });
       
-      const templateData = {
+      templateData = {
         userId: req.userId,
-        templateName: templateName || req.file.originalname,
+        templateName: isClientEncrypted && typeof templateName === 'object' 
+          ? JSON.stringify(templateName) 
+          : (templateName || req.file.originalname),
         templateType: templateType || 'letterhead',
         fileUrl: `/uploads/templates/${req.file.filename}`,
         fileType,
@@ -114,17 +127,33 @@ const uploadTemplate = async (req, res) => {
         markerMappings: JSON.stringify({}),
         isClientEncrypted: isClientEncrypted || false,
         encryptionVersion: encryptionVersion || null,
-        isGlobal: user?.role === 'ADMIN' && req.body.isGlobal === 'true'
+        isGlobal: user?.role === 'ADMIN' && (req.body.isGlobal === true || req.body.isGlobal === 'true')
       };
       
       // Store encrypted or unencrypted data based on flag
       if (isClientEncrypted) {
         // Client has already encrypted these fields
-        templateData.agencyHeader = agencyHeader || '';
-        templateData.agencyAddress = agencyAddress || '';
-        templateData.agencyContact = agencyContact || '';
-        templateData.footerText = footerText || '';
-        templateData.signatureBlock = signatureBlock || '';
+        // Check if they're already stringified to avoid double serialization
+        const processEncryptedField = (field) => {
+          if (!field) return '';
+          if (typeof field === 'string') {
+            // Already a string, check if it's valid JSON
+            try {
+              JSON.parse(field);
+              return field; // It's already a JSON string
+            } catch {
+              return field; // It's a plain string
+            }
+          }
+          // It's an object, stringify it once
+          return JSON.stringify(field);
+        };
+        
+        templateData.agencyHeader = processEncryptedField(agencyHeader);
+        templateData.agencyAddress = processEncryptedField(agencyAddress);
+        templateData.agencyContact = processEncryptedField(agencyContact);
+        templateData.footerText = processEncryptedField(footerText);
+        templateData.signatureBlock = processEncryptedField(signatureBlock);
       } else {
         // Store as plain text (legacy support)
         templateData.agencyHeader = agencyHeader || '';
@@ -133,6 +162,8 @@ const uploadTemplate = async (req, res) => {
         templateData.footerText = footerText || '';
         templateData.signatureBlock = signatureBlock || '';
       }
+      
+      // Create template in database
       
       const template = await prisma.documentTemplate.create({
         data: templateData
@@ -144,8 +175,8 @@ const uploadTemplate = async (req, res) => {
         validation
       });
     } catch (error) {
-      console.error('Upload template error:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Smart template upload error:', error.message);
+      
       // Clean up uploaded file on error
       if (req.file && req.file.path) {
         await fs.unlink(req.file.path).catch(() => {});

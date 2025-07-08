@@ -14,7 +14,7 @@ const generateToken = (userId, role) => {
 
 const register = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, agencyName, badgeNumber, title, phone } = req.body;
+    const { email, password, firstName, lastName, agencyName, agencyAddress, badgeNumber, title, phone } = req.body;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -36,6 +36,7 @@ const register = async (req, res) => {
         firstName,
         lastName,
         agencyName,
+        agencyAddress,
         badgeNumber,
         title,
         phone
@@ -60,6 +61,7 @@ const register = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         agencyName: user.agencyName,
+        agencyAddress: user.agencyAddress,
         role: user.role
       },
       token
@@ -82,8 +84,12 @@ const login = async (req, res) => {
         firstName: 'Demo',
         lastName: 'User',
         agencyName: 'Demo Law Enforcement Agency',
+        agencyAddress: '123 Demo Street, Washington, DC 20001',
         badgeNumber: 'DEMO-001',
-        role: 'DEMO'
+        title: 'Special Agent',
+        phone: '(555) 123-4567',
+        role: 'DEMO',
+        is_demo: true
       };
 
       const token = generateToken(demoUser.id, demoUser.role);
@@ -118,6 +124,7 @@ const login = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         agencyName: user.agencyName,
+        agencyAddress: user.agencyAddress,
         role: user.role
       },
       token

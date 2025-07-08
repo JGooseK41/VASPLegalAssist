@@ -165,6 +165,43 @@ const VaspComments = ({ vaspId, vaspName }) => {
       setComments([comment, ...comments]);
       setNewComment('');
       setIsUpdate(false);
+      
+      // Show points earned notification
+      const pointsNotification = document.createElement('div');
+      pointsNotification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50 animate-slide-in';
+      pointsNotification.innerHTML = `
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <div class="font-semibold">+1 Point Earned!</div>
+          <div class="text-sm opacity-90">Thanks for contributing</div>
+        </div>
+        <a href="/leaderboard" class="ml-4 text-sm underline hover:no-underline">View Leaderboard</a>
+      `;
+      document.body.appendChild(pointsNotification);
+      
+      // Add animation styles if not already present
+      if (!document.getElementById('points-animation-styles')) {
+        const style = document.createElement('style');
+        style.id = 'points-animation-styles';
+        style.textContent = `
+          @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          .animate-slide-in { animation: slide-in 0.3s ease-out; }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Remove notification after delay
+      setTimeout(() => {
+        pointsNotification.style.transition = 'all 0.3s ease-out';
+        pointsNotification.style.transform = 'translateX(100%)';
+        pointsNotification.style.opacity = '0';
+        setTimeout(() => pointsNotification.remove(), 300);
+      }, 3000);
     } catch (error) {
       console.error('Failed to create comment:', error);
     } finally {

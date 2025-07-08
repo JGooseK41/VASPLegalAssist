@@ -188,7 +188,60 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
+// Get current user's score
+const getUserScore = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        vaspSubmissions: {
+          where: { status: 'APPROVED' },
+          select: { id: true }
+        },
+        comments: {
+          select: { 
+            id: true,
+            voteScore: true 
+          }
+        },
+        vaspResponses: {
+          select: { id: true }
+        }
+      }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Calculate score
+    const submissionPoints = user.vaspSubmissions.length * 10;
+    const commentPoints = user.comments.length * 1;
+    const upvotePoints = user.comments.reduce((sum, comment) => sum + (comment.voteScore > 0 ? comment.voteScore * 5 : 0), 0);
+    const responsePoints = user.vaspResponses.length * 5;
+    const totalPoints = submissionPoints + commentPoints + upvotePoints + responsePoints;
+    
+    res.json({
+      userId,
+      userName: `${user.firstName} ${user.lastName}`,
+      totalPoints,
+      breakdown: {
+        submissions: submissionPoints,
+        comments: commentPoints,
+        upvotes: upvotePoints,
+        responses: responsePoints
+      }
+    });
+  } catch (error) {
+    console.error('Get user score error:', error);
+    res.status(500).json({ error: 'Failed to get user score' });
+  }
+};
+
 module.exports = {
   getTopContributor,
-  getLeaderboard
+  getLeaderboard,
+  getUserScore
 };

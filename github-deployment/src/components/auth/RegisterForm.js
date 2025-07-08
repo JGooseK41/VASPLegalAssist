@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle, Shield } from 'lucide-react';
+import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle, Shield, MapPin } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ const RegisterForm = () => {
     firstName: '',
     lastName: '',
     agencyName: '',
+    agencyAddress: '',
     badgeNumber: '',
     title: '',
     phone: ''
@@ -168,6 +169,24 @@ const RegisterForm = () => {
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
                 <Building className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Agency Address <span className="text-gray-400 text-sm">(Optional)</span>
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  type="text"
+                  name="agencyAddress"
+                  autoComplete="street-address"
+                  value={formData.agencyAddress}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="123 Main St, City, State ZIP"
+                />
+                <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
             </div>
 

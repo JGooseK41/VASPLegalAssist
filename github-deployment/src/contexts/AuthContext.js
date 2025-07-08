@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { clearEncryptionKeyCache } from '../hooks/useEncryption';
 
 const AuthContext = createContext();
 
@@ -83,7 +84,17 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('lastActivity');
+    // Clear encryption key cache on logout
+    clearEncryptionKeyCache();
     setUser(null);
+  };
+
+  const updateUser = (updatedUserData) => {
+    // Update user in state and localStorage
+    const updatedUser = { ...user, ...updatedUserData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const value = {
@@ -93,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user
   };
 

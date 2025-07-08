@@ -63,13 +63,16 @@ const migrateRoutes = require('./routes/migrate');
 const debugRoutes = require('./routes/debug');
 const analyticsRoutes = require('./routes/analytics');
 const { trackVisitor } = require('./middleware/analytics');
+const { startFileCleanup } = require('./utils/fileCleanup');
 
 const app = express();
 
 // Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  // Allow file downloads
+  exposedHeaders: ['Content-Disposition', 'Content-Type']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -78,9 +81,26 @@ app.use(cookieParser());
 // Analytics tracking middleware
 app.use(trackVisitor);
 
-// Static files for PDFs, Word documents, and templates
-app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs')));
-app.use('/docs', express.static(path.join(__dirname, 'generated-docs')));
+// Static files for PDFs, Word documents, and templates with proper Content-Type headers
+app.use('/pdfs', express.static(path.join(__dirname, 'generated-pdfs'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.pdf')) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment');
+    }
+  }
+}));
+app.use('/docs', express.static(path.join(__dirname, 'generated-docs'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.docx')) {
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', 'attachment');
+    } else if (path.endsWith('.zip')) {
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment');
+    }
+  }
+}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/documents', express.static(path.join(__dirname, 'public/documents')));
 
@@ -133,4 +153,8 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Start file cleanup service
+  startFileCleanup();
+  console.log('File cleanup service started');
 });

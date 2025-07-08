@@ -26,6 +26,12 @@ const { generateDemoDocument } = require('../controllers/demoDocumentController'
 // Import batch document controller
 const batchDocumentController = require('../controllers/batchDocumentController');
 
+// Import simple document controller
+const { createSimpleDocument, createSimpleBatch } = require('../controllers/simpleDocumentController');
+
+// Import custom batch controller
+const { createCustomBatch } = require('../controllers/customBatchController');
+
 const { authMiddleware, demoMiddleware } = require('../middleware/auth');
 
 // All document routes require authentication
@@ -46,6 +52,15 @@ router.post('/', (req, res, next) => {
   // For regular users, proceed with normal document creation
   createDocument(req, res, next);
 });
+
+// POST /api/documents/simple - Simple document generation without templates
+router.post('/simple', createSimpleDocument);
+
+// POST /api/documents/simple-batch - Simple batch document generation
+router.post('/simple-batch', createSimpleBatch);
+
+// POST /api/documents/custom-batch - Custom batch document generation
+router.post('/custom-batch', createCustomBatch);
 
 // POST /api/documents/:id/duplicate
 router.post('/:id/duplicate', demoMiddleware, duplicateDocument);

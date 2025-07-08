@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings, Trophy, FileStack } from 'lucide-react';
+import { Home, Search, FileEdit, Clock, FileText, User, LogOut, Menu, X, PlusCircle, HelpCircle, Shield, MessageSquare, ChevronDown, Settings, Trophy, FileStack, Star } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import DemoBanner from './DemoBanner';
+import { contributorAPI } from '../../services/api';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -10,12 +11,13 @@ const Layout = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userPoints, setUserPoints] = useState(null);
   const userMenuRef = useRef(null);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'VASP Search', href: '/search', icon: Search },
-    { name: 'Generate Document', href: '/documents/new', icon: FileEdit },
+    { name: 'Search VASP', href: '/search', icon: Search },
+    { name: 'Generate Request', href: '/documents/create', icon: FileText },
     { name: 'FAQ', href: '/faq', icon: HelpCircle },
   ];
   
@@ -44,6 +46,15 @@ const Layout = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  // Fetch user points
+  useEffect(() => {
+    if (user && !user.leaderboardOptOut) {
+      contributorAPI.getUserScore()
+        .then(data => setUserPoints(data.totalPoints))
+        .catch(() => setUserPoints(null));
+    }
+  }, [user, location]); // Refetch on route change
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,6 +108,12 @@ const Layout = () => {
                 >
                   <User className="h-4 w-4 flex-shrink-0" />
                   <span className="whitespace-nowrap">{user?.firstName} {user?.lastName}</span>
+                  {userPoints !== null && (
+                    <span className="flex items-center space-x-1 bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                      <Star className="h-3 w-3" />
+                      <span>{userPoints}</span>
+                    </span>
+                  )}
                   <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 

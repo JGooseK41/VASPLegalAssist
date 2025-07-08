@@ -162,7 +162,7 @@ const VASPSearch = () => {
   const handleVASPSelect = (vasp) => {
     // Store selected VASP in sessionStorage
     sessionStorage.setItem('selectedVASP', JSON.stringify(vasp));
-    navigate('/documents/new');
+    navigate('/documents/simple');
   };
 
   // Get unique values for filter options

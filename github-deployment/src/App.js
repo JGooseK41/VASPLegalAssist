@@ -9,8 +9,10 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import Dashboard from './components/dashboard/Dashboard';
 import VASPSearch from './components/search/VASPSearch';
-import DocumentBuilder from './components/documents/DocumentBuilder';
-import BatchDocumentBuilder from './components/documents/BatchDocumentBuilder';
+import DocumentCreateChoice from './components/documents/DocumentCreateChoice';
+import SimpleDocumentBuilder from './components/documents/SimpleDocumentBuilder';
+import CustomDocumentBuilder from './components/documents/CustomDocumentBuilder';
+import UnifiedBatchBuilder from './components/documents/UnifiedBatchBuilder';
 import DocumentHistory from './components/documents/DocumentHistory';
 import TemplateManager from './components/templates/TemplateManager';
 import Profile from './components/auth/Profile';
@@ -37,8 +39,10 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/search" element={<VASPSearch />} />
-              <Route path="/documents/new" element={<DocumentBuilder />} />
-              <Route path="/documents/batch" element={<BatchDocumentBuilder />} />
+              <Route path="/documents/create" element={<DocumentCreateChoice />} />
+              <Route path="/documents/simple" element={<SimpleDocumentBuilder />} />
+              <Route path="/documents/custom" element={<CustomDocumentBuilder />} />
+              <Route path="/documents/batch" element={<UnifiedBatchBuilder />} />
               <Route path="/documents/history" element={<DocumentHistory />} />
               <Route path="/templates" element={<TemplateManager />} />
               <Route path="/profile" element={<Profile />} />

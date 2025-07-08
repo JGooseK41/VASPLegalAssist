@@ -10,29 +10,43 @@ const api = axios.create({
   }
 });
 
-// Add auth token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 // Handle auth errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Check if we should show a session expired message
+      const lastActivity = localStorage.getItem('lastActivity');
+      const now = Date.now();
+      const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (lastActivity && (now - parseInt(lastActivity)) > sessionTimeout) {
+        // Session expired
+        localStorage.setItem('sessionExpired', 'true');
+      }
+      
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('lastActivity');
       window.location.href = '/login';
     }
+    return Promise.reject(error);
+  }
+);
+
+// Update last activity on each request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      // Update last activity timestamp
+      localStorage.setItem('lastActivity', Date.now().toString());
+    }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
@@ -131,18 +145,20 @@ export const documentAPI = {
   createDocument: async (documentData) => {
     // Transform frontend data to match backend expectations
     const transformedData = {
-      vaspId: documentData.vasp_id,
-      vaspName: documentData.metadata?.vasp_name || '',
-      vaspJurisdiction: documentData.vasp_jurisdiction || '',
-      vaspEmail: documentData.vasp_email || '',
-      vaspAddress: documentData.vasp_address || '',
-      templateId: documentData.template_id,
-      documentType: documentData.document_type,
-      caseNumber: documentData.case_info?.case_number || '',
-      crimeDescription: documentData.case_info?.crime_description || '',
-      statute: documentData.case_info?.statute || '',
+      vaspId: documentData.vasp_id || documentData.vaspId,
+      vaspName: documentData.metadata?.vasp_name || documentData.vaspName || '',
+      vaspJurisdiction: documentData.vasp_jurisdiction || documentData.vaspJurisdiction || '',
+      vaspEmail: documentData.vasp_email || documentData.vaspEmail || '',
+      vaspAddress: documentData.vasp_address || documentData.vaspAddress || '',
+      templateId: documentData.template_id || documentData.templateId,
+      documentType: documentData.document_type || documentData.documentType,
+      caseNumber: documentData.case_info?.case_number || documentData.caseNumber || '',
+      crimeDescription: documentData.case_info?.crime_description || documentData.crimeDescription || '',
+      statute: documentData.case_info?.statute || documentData.statute || '',
       transactions: documentData.transactions || [],
-      outputFormat: documentData.outputFormat || 'pdf'
+      outputFormat: documentData.outputFormat || 'pdf',
+      // Pass through custom_data if present
+      custom_data: documentData.custom_data
     };
     
     const response = await api.post('/documents', transformedData);
@@ -172,6 +188,29 @@ export const documentAPI = {
     }
     
     const response = await api.post('/documents/import-transactions', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+  
+  createSimpleDocument: async (documentData) => {
+    const response = await api.post('/documents/simple', documentData);
+    return response.data;
+  },
+  
+  createSimpleBatch: async (formData) => {
+    const response = await api.post('/documents/simple-batch', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+  
+  createCustomBatch: async (formData) => {
+    const response = await api.post('/documents/custom-batch', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -312,6 +351,19 @@ export const submissionAPI = {
   
   deleteSubmission: async (id) => {
     const response = await api.delete(`/submissions/${id}`);
+    return response.data;
+  }
+};
+
+// Contributor API
+export const contributorAPI = {
+  getLeaderboard: async () => {
+    const response = await api.get('/contributors/leaderboard');
+    return response.data;
+  },
+  
+  getUserScore: async () => {
+    const response = await api.get('/contributors/my-score');
     return response.data;
   }
 };

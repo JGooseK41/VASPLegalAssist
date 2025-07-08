@@ -12,6 +12,7 @@ const Profile = () => {
     name: '',
     email: '',
     agency: '',
+    agencyAddress: '',
     title: '',
     phone: '',
     leaderboardOptOut: false
@@ -36,6 +37,7 @@ const Profile = () => {
         name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
         email: data.email || '',
         agency: data.agencyName || '',
+        agencyAddress: data.agencyAddress || '',
         title: data.title || '',
         phone: data.phone || '',
         leaderboardOptOut: data.leaderboardOptOut || false
@@ -62,6 +64,7 @@ const Profile = () => {
         firstName,
         lastName,
         agencyName: profileData.agency,
+        agencyAddress: profileData.agencyAddress,
         title: profileData.title,
         phone: profileData.phone,
         badgeNumber: user?.badgeNumber || '',
@@ -235,6 +238,19 @@ const Profile = () => {
                 onChange={(e) => setProfileData({...profileData, agency: e.target.value})}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="U.S. Department of Justice"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Agency Address
+              </label>
+              <input
+                type="text"
+                value={profileData.agencyAddress}
+                onChange={(e) => setProfileData({...profileData, agencyAddress: e.target.value})}
+                className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="123 Main St, Washington, DC 20001"
               />
             </div>
             

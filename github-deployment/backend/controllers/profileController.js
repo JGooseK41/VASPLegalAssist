@@ -5,6 +5,24 @@ const prisma = new PrismaClient();
 
 const getProfile = async (req, res) => {
   try {
+    // Check for demo user
+    if (req.userId === 'demo-user-id') {
+      return res.json({
+        id: 'demo-user-id',
+        email: 'demo@theblockaudit.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        agencyName: 'Demo Law Enforcement Agency',
+        agencyAddress: '123 Demo Street, Washington, DC 20001',
+        badgeNumber: 'DEMO-001',
+        title: 'Special Agent',
+        phone: '(555) 123-4567',
+        role: 'DEMO',
+        leaderboardOptOut: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
       select: {
@@ -13,6 +31,7 @@ const getProfile = async (req, res) => {
         firstName: true,
         lastName: true,
         agencyName: true,
+        agencyAddress: true,
         badgeNumber: true,
         title: true,
         phone: true,
@@ -35,7 +54,24 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, agencyName, badgeNumber, title, phone, leaderboardOptOut } = req.body;
+    const { firstName, lastName, agencyName, agencyAddress, badgeNumber, title, phone, leaderboardOptOut } = req.body;
+
+    // Demo user cannot be updated
+    if (req.userId === 'demo-user-id') {
+      return res.json({
+        id: 'demo-user-id',
+        email: 'demo@theblockaudit.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        agencyName: 'Demo Law Enforcement Agency',
+        agencyAddress: '123 Demo Street, Washington, DC 20001',
+        badgeNumber: 'DEMO-001',
+        title: 'Special Agent',
+        phone: '(555) 123-4567',
+        role: 'DEMO',
+        leaderboardOptOut: false
+      });
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: req.userId },
@@ -43,6 +79,7 @@ const updateProfile = async (req, res) => {
         firstName,
         lastName,
         agencyName,
+        agencyAddress,
         badgeNumber,
         title,
         phone,
@@ -54,6 +91,7 @@ const updateProfile = async (req, res) => {
         firstName: true,
         lastName: true,
         agencyName: true,
+        agencyAddress: true,
         badgeNumber: true,
         title: true,
         phone: true,
@@ -72,6 +110,11 @@ const updateProfile = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+
+    // Demo user cannot change password
+    if (req.userId === 'demo-user-id') {
+      return res.status(403).json({ error: 'Demo account password cannot be changed' });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: req.userId }

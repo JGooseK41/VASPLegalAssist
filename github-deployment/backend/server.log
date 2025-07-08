@@ -1,0 +1,32 @@
+[dotenv@17.0.1] injecting env (8) from .env – [tip] encrypt with dotenvx: https://dotenvx.com
+🚀 VASP Legal Assistant Backend Starting...
+Version: 1.0.3 - FORCE REDEPLOY WITH MIGRATE FIX
+Time: 2025-07-07T21:33:27.199Z
+🔧 All routes now use isActive field instead of status field
+
+🔧 Running database migrations...
+Step 1: Generating Prisma client...
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.11.1) to ./node_modules/@prisma/client in 73ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+Step 2: Deploying migrations...
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blockrecord", schema "public" at "dpg-d1iuj0ndiees73cd9fj0-a.virginia-postgres.render.com"
+
+5 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+✅ Migrations completed successfully!
+API key does not start with "SG.".
+🔐 Client-side encryption is supported - server stores encrypted data as-is
+Server running on port 5000
+
+📊 Found 86 VASPs in database
