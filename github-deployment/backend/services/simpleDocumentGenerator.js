@@ -86,6 +86,19 @@ async function generateSimpleDocx(content, filename) {
 }
 
 // Alternative: Use a pre-made template approach
+// Helper function to escape XML special characters
+function escapeXml(unsafe) {
+  if (typeof unsafe !== 'string') {
+    return String(unsafe || '');
+  }
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function generateFromTemplate(templateContent, data) {
   try {
     const outputDir = path.join(__dirname, '../generated-docs');
@@ -105,9 +118,9 @@ async function generateFromTemplate(templateContent, data) {
       let processedLine = line;
       Object.entries(data).forEach(([key, value]) => {
         const regex = new RegExp(`{{${key}}}`, 'g');
-        processedLine = processedLine.replace(regex, value || '');
+        processedLine = processedLine.replace(regex, escapeXml(value || ''));
       });
-      return `<w:p><w:r><w:t>${processedLine}</w:t></w:r></w:p>`;
+      return `<w:p><w:r><w:t>${escapeXml(processedLine)}</w:t></w:r></w:p>`;
     }).join('')}
   </w:body>
 </w:document>`;
