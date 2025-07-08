@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock, MessageSquare, CheckCircle, Trophy, ArrowLeft } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, Lock, MessageSquare, CheckCircle, Trophy, ArrowLeft, Trash2 } from 'lucide-react';
 import { documentAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
@@ -17,6 +17,8 @@ const DocumentHistory = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [responseModal, setResponseModal] = useState({ isOpen: false, document: null });
   const [documentResponses, setDocumentResponses] = useState({});
+  const [deletingDocId, setDeletingDocId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   
   // Initialize encryption
   const encryption = useEncryption();
@@ -101,6 +103,27 @@ const DocumentHistory = () => {
       }
     } catch (err) {
       console.error('Failed to download document:', err);
+    }
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    try {
+      setDeletingDocId(docId);
+      await documentAPI.deleteDocument(docId);
+      
+      // Reload the documents list
+      await loadDocuments();
+      
+      // Clear the confirmation
+      setDeleteConfirmId(null);
+      setSuccess('Document deleted successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      setError('Failed to delete document. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -315,6 +338,36 @@ const DocumentHistory = () => {
                         >
                           <Download className="h-4 w-4" />
                         </button>
+                        {deleteConfirmId === doc.id ? (
+                          <>
+                            <button
+                              onClick={() => handleDeleteDocument(doc.id)}
+                              disabled={deletingDocId === doc.id}
+                              className="bg-red-600 hover:bg-red-700 text-white p-2 rounded disabled:opacity-50"
+                              title="Confirm delete"
+                            >
+                              {deletingDocId === doc.id ? (
+                                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="text-gray-500 hover:text-gray-600 text-xs"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirmId(doc.id)}
+                            className="bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 p-2 rounded transition-colors"
+                            title="Delete document"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

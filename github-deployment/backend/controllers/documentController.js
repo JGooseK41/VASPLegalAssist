@@ -346,6 +346,34 @@ const getTotalDocumentCount = async (req, res) => {
   }
 };
 
+const deleteDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // First check if the document exists and belongs to the user
+    const document = await prisma.document.findFirst({
+      where: {
+        id: id,
+        userId: req.userId
+      }
+    });
+    
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Delete the document
+    await prisma.document.delete({
+      where: { id: id }
+    });
+    
+    res.json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    console.error('Delete document error:', error);
+    res.status(500).json({ error: 'Failed to delete document' });
+  }
+};
+
 module.exports = {
   createDocument,
   getDocuments,
@@ -353,5 +381,6 @@ module.exports = {
   duplicateDocument,
   importTransactions,
   getTotalDocumentCount,
+  deleteDocument,
   uploadCSV: upload.single('file')
 };

@@ -228,6 +228,11 @@ export const documentAPI = {
     return response.data;
   },
   
+  deleteDocument: async (id) => {
+    const response = await api.delete(`/documents/${id}`);
+    return response.data;
+  },
+  
   downloadEncryptedPackage: async (documentId) => {
     const response = await api.get(`/encrypted-documents/download/${documentId}`, {
       responseType: 'blob'

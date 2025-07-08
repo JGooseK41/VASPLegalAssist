@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle, Download } from 'lucide-react';
+import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { vaspAPI, documentAPI, authAPI } from '../../services/api';
 import TopContributor from './TopContributor';
@@ -16,6 +16,8 @@ const Dashboard = () => {
     recentDocuments: [],
     loading: true
   });
+  const [deletingDocId, setDeletingDocId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -34,10 +36,13 @@ const Dashboard = () => {
       try {
         const response = await documentAPI.getTotalDocumentCount();
         console.log('Total document count response:', response);
+        console.log('API URL used:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
         totalDocumentCount = response.count || 0;
       } catch (error) {
         console.error('Failed to load total document count:', error);
         console.error('Error details:', error.response?.data || error.message);
+        console.error('Request URL:', error.config?.url);
+        console.error('Request method:', error.config?.method);
       }
       
       // Load member count
@@ -45,10 +50,13 @@ const Dashboard = () => {
       try {
         const response = await authAPI.getMemberCount();
         console.log('Member count response:', response);
+        console.log('API URL used:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
         memberCount = response.count || 0;
       } catch (error) {
         console.error('Failed to load member count:', error);
         console.error('Error details:', error.response?.data || error.message);
+        console.error('Request URL:', error.config?.url);
+        console.error('Request method:', error.config?.method);
       }
       
       setStats({
@@ -60,6 +68,24 @@ const Dashboard = () => {
       });
     } catch (error) {
       setStats(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    try {
+      setDeletingDocId(docId);
+      await documentAPI.deleteDocument(docId);
+      
+      // Reload the dashboard data to update the stats and documents list
+      await loadDashboardData();
+      
+      // Clear the confirmation
+      setDeleteConfirmId(null);
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      alert('Failed to delete document. Please try again.');
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -175,15 +201,17 @@ const Dashboard = () => {
               {stats.recentDocuments.map((doc) => (
                 <div 
                   key={doc.id} 
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group"
-                  onClick={() => {
-                    const url = doc.pdfUrl || doc.filePath || (doc.outputFormat === 'docx' ? `/docs/${doc.id}.docx` : `/pdfs/${doc.id}.pdf`);
-                    const filename = `${doc.documentType}_${doc.vaspName}_${doc.caseNumber}.${doc.outputFormat || 'pdf'}`;
-                    downloadFile(url, filename);
-                  }}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group"
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => {
+                        const url = doc.pdfUrl || doc.filePath || (doc.outputFormat === 'docx' ? `/docs/${doc.id}.docx` : `/pdfs/${doc.id}.pdf`);
+                        const filename = `${doc.documentType}_${doc.vaspName}_${doc.caseNumber}.${doc.outputFormat || 'pdf'}`;
+                        downloadFile(url, filename);
+                      }}
+                    >
                       <p className="font-medium text-gray-900 truncate">
                         {doc.caseNumber}
                       </p>
@@ -194,7 +222,49 @@ const Dashboard = () => {
                         {new Date(doc.createdAt).toLocaleDateString()} • {new Date(doc.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
-                    <Download className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    <div className="flex items-center space-x-2 ml-2">
+                      <Download 
+                        className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors cursor-pointer" 
+                        onClick={() => {
+                          const url = doc.pdfUrl || doc.filePath || (doc.outputFormat === 'docx' ? `/docs/${doc.id}.docx` : `/pdfs/${doc.id}.pdf`);
+                          const filename = `${doc.documentType}_${doc.vaspName}_${doc.caseNumber}.${doc.outputFormat || 'pdf'}`;
+                          downloadFile(url, filename);
+                        }}
+                      />
+                      {deleteConfirmId === doc.id ? (
+                        <>
+                          <button
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            disabled={deletingDocId === doc.id}
+                            className="text-red-600 hover:text-red-700 p-1 rounded disabled:opacity-50"
+                            title="Confirm delete"
+                          >
+                            {deletingDocId === doc.id ? (
+                              <div className="h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="text-gray-500 hover:text-gray-600 text-xs"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(doc.id);
+                          }}
+                          className="text-gray-400 hover:text-red-600 p-1 rounded transition-colors"
+                          title="Delete document"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

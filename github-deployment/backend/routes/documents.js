@@ -18,7 +18,7 @@ const {
 } = documentController;
 
 // Import regular controller functions that aren't in encrypted version yet
-const { duplicateDocument, uploadCSV, getTotalDocumentCount } = require('../controllers/documentController');
+const { duplicateDocument, uploadCSV, getTotalDocumentCount, deleteDocument } = require('../controllers/documentController');
 
 // Import demo document controller
 const { generateDemoDocument } = require('../controllers/demoDocumentController');
@@ -68,6 +68,9 @@ router.post('/custom-batch', createCustomBatch);
 
 // POST /api/documents/:id/duplicate
 router.post('/:id/duplicate', demoMiddleware, duplicateDocument);
+
+// DELETE /api/documents/:id
+router.delete('/:id', demoMiddleware, deleteDocument);
 
 // POST /api/documents/import-transactions - Allow demo users to import transactions (just parsing, no saving)
 router.post('/import-transactions', upload.single('file'), importTransactions);
