@@ -301,10 +301,29 @@ const validateResetToken = async (req, res) => {
   }
 };
 
+const getMemberCount = async (req, res) => {
+  try {
+    const count = await prisma.user.count({
+      where: {
+        isApproved: true,
+        role: {
+          not: 'DEMO'
+        }
+      }
+    });
+
+    res.json({ count });
+  } catch (error) {
+    console.error('Get member count error:', error);
+    res.status(500).json({ error: 'Failed to get member count' });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
   resetPassword,
-  validateResetToken
+  validateResetToken,
+  getMemberCount
 };

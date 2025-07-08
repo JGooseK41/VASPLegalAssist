@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { vaspAPI, documentAPI } from '../../services/api';
+import { vaspAPI, documentAPI, authAPI } from '../../services/api';
 import TopContributor from './TopContributor';
 
 const Dashboard = () => {
@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalVASPs: 0,
     documentsCreated: 0,
+    totalMembers: 0,
     recentDocuments: [],
     loading: true
   });
@@ -27,9 +28,19 @@ const Dashboard = () => {
       // Load recent documents
       const { documents, total } = await documentAPI.getDocuments(5, 0);
       
+      // Load member count
+      let memberCount = 0;
+      try {
+        const response = await authAPI.getMemberCount();
+        memberCount = response.count || 0;
+      } catch (error) {
+        console.error('Failed to load member count:', error);
+      }
+      
       setStats({
         totalVASPs: vasps.length,
         documentsCreated: total,
+        totalMembers: memberCount,
         recentDocuments: documents,
         loading: false
       });
@@ -175,22 +186,18 @@ const Dashboard = () => {
           {/* Stats */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalVASPs}</p>
-                <p className="text-sm text-gray-600">VASPs in Database</p>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-gray-900">{stats.totalMembers}</p>
+                <p className="text-sm text-gray-600">Active Members</p>
               </div>
-              <div>
+              <div className="text-center">
                 <p className="text-3xl font-bold text-gray-900">{stats.documentsCreated}</p>
                 <p className="text-sm text-gray-600">Documents Created</p>
               </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900">24/7</p>
-                <p className="text-sm text-gray-600">Available Support</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900">100%</p>
-                <p className="text-sm text-gray-600">Success Rate</p>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-gray-900">{stats.totalVASPs}</p>
+                <p className="text-sm text-gray-600">VASPs Supported</p>
               </div>
             </div>
           </div>

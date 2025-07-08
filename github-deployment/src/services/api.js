@@ -61,6 +61,11 @@ export const authAPI = {
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
     return response.data;
+  },
+  
+  getMemberCount: async () => {
+    const response = await api.get('/auth/member-count');
+    return response.data;
   }
 };
 
