@@ -14,14 +14,14 @@ const OnboardingTour = ({ onComplete }) => {
   const steps = [
     {
       title: "Welcome to VASP Legal Assistant! 🚀",
-      content: "Join 500+ investigators using the world's first AI-powered platform for cryptocurrency legal requests. This tutorial will walk you through a typical investigation workflow in just 5 minutes.",
+      content: "The world's first crowdsourced platform for cryptocurrency legal requests. Built by investigators, for investigators. This tutorial will walk you through a typical investigation workflow in just 5 minutes.",
       target: null,
       position: 'center',
       page: '/dashboard'
     },
     {
       title: "Step 1: Start Your Investigation 🔍",
-      content: "Begin by searching our database of 100+ VASPs. Type exchange names like 'Binance', 'Coinbase', or search by jurisdiction. Real-time data from global investigators at your fingertips!",
+      content: "Begin by searching our crowdsourced database of 100+ VASPs. Type exchange names like 'Binance', 'Coinbase', or search by jurisdiction. Updated by investigators worldwide!",
       target: '[data-tour="search-vasp"]',
       position: 'bottom',
       page: '/search'
@@ -112,7 +112,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Start Your First Request! 🎯",
-      content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. Most users save 30+ minutes per request. Need help? support@theblockrecord.com",
+      content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. Save 30+ minutes per request using our crowdsourced data. Need help? support@theblockrecord.com",
       target: '[data-tour="quick-links"]',
       position: 'top',
       page: '/dashboard'
@@ -174,7 +174,7 @@ const OnboardingTour = ({ onComplete }) => {
     };
 
     // Add delay after navigation to ensure page loads
-    const navigationDelay = location.pathname !== currentStepData.page ? 800 : 0;
+    const navigationDelay = location.pathname !== currentStepData.page ? 1500 : 0;
     
     setTimeout(() => {
       // Scroll target into view if needed
@@ -190,7 +190,7 @@ const OnboardingTour = ({ onComplete }) => {
         if (!isInViewport) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           // Wait for scroll to complete before updating positions
-          setTimeout(updatePositions, 500);
+          setTimeout(updatePositions, 800);
         } else {
           updatePositions();
         }
@@ -221,7 +221,7 @@ const OnboardingTour = ({ onComplete }) => {
         } else {
           handleComplete();
         }
-      }, 7000); // Increased to 7 seconds for longer content
+      }, 10000); // 10 seconds to read welcome/completion screens
       return () => clearTimeout(timer);
     }
   }, [currentStep]);
