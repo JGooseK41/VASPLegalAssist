@@ -39,7 +39,13 @@ const UserAccessLog = () => {
       setSummary(response.data.summary);
     } catch (err) {
       console.error('Error loading user sessions:', err);
-      setError('Failed to load user sessions');
+      if (err.response?.status === 403) {
+        setError(err.response.data.message || 'You do not have permission to view user access logs. This feature requires administrator privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Your session has expired. Please log in again.');
+      } else {
+        setError('Failed to load user sessions. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -103,9 +109,16 @@ const UserAccessLog = () => {
   if (error) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex items-center space-x-2 text-red-600">
-          <AlertCircle className="h-5 w-5" />
-          <span>{error}</span>
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Access Denied</h3>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       </div>
     );

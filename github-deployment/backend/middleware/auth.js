@@ -184,10 +184,38 @@ const requireRole = (requiredRole) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
     
+    // Allow MASTER_ADMIN to access everything
+    if (req.userRole === 'MASTER_ADMIN') {
+      next();
+      return;
+    }
+    
     if (req.userRole !== requiredRole) {
       return res.status(403).json({ 
         error: 'Insufficient permissions',
+        message: 'You do not have permission to access this resource. This feature requires administrator privileges.',
         required: requiredRole,
+        current: req.userRole
+      });
+    }
+    
+    next();
+  };
+};
+
+// Check for admin-level roles (ADMIN or MASTER_ADMIN)
+const requireAdminRole = () => {
+  return (req, res, next) => {
+    if (!req.userRole) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const adminRoles = ['ADMIN', 'MASTER_ADMIN'];
+    if (!adminRoles.includes(req.userRole)) {
+      return res.status(403).json({ 
+        error: 'Insufficient permissions',
+        message: 'You do not have permission to access this resource. This feature requires administrator privileges.',
+        required: 'ADMIN or MASTER_ADMIN',
         current: req.userRole
       });
     }
@@ -202,3 +230,4 @@ module.exports.authMiddleware = authMiddleware;
 module.exports.demoMiddleware = demoMiddleware;
 module.exports.requireAuth = requireAuth;
 module.exports.requireRole = requireRole;
+module.exports.requireAdminRole = requireAdminRole;

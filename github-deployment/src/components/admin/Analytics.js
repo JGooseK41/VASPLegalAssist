@@ -61,9 +61,16 @@ const Analytics = () => {
         }
       });
       setAnalyticsData(response.data);
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Error loading analytics:', err);
-      setError('Failed to load analytics data');
+      if (err.response?.status === 403) {
+        setError(err.response.data.message || 'You do not have permission to view analytics. This feature requires administrator privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Your session has expired. Please log in again.');
+      } else {
+        setError('Failed to load analytics data. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -80,6 +87,8 @@ const Analytics = () => {
       setRealtimeData(response.data);
     } catch (err) {
       console.error('Error loading real-time data:', err);
+      // Don't set error for realtime data failures - just log it
+      // This prevents overwriting the main error message
     }
   };
 
@@ -103,8 +112,18 @@ const Analytics = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error}</p>
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Access Denied</h3>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       </div>
     );
