@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import DemoBanner from './DemoBanner';
 import { contributorAPI } from '../../services/api';
 import { ToastContainer } from './Toast';
+import SurveyReminderPopup from './SurveyReminderPopup';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -256,6 +257,7 @@ const Layout = () => {
         <Outlet />
       </main>
       <ToastContainer />
+      <SurveyReminderPopup />
     </div>
   );
 };

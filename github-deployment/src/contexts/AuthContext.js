@@ -46,6 +46,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
+      // Save survey reminder data if present
+      if (response.surveyReminder) {
+        sessionStorage.setItem('surveyReminder', JSON.stringify(response.surveyReminder));
+      }
+      
       setUser(response.user);
       
       return { success: true };

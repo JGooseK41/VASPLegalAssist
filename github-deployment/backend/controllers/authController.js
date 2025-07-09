@@ -172,6 +172,32 @@ const login = async (req, res) => {
 
     const token = generateToken(user.id, user.role);
 
+    // Check for documents without responses from the past month
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const documentsWithoutResponses = await prisma.document.count({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: oneMonthAgo
+        },
+        vaspResponses: {
+          none: {}
+        }
+      }
+    });
+
+    // Check if we should show the survey reminder
+    let shouldShowSurveyReminder = false;
+    if (documentsWithoutResponses > 0) {
+      // Check if we've shown the reminder in the past month
+      const lastShown = user.lastSurveyReminderShown;
+      if (!lastShown || (new Date() - lastShown) > 30 * 24 * 60 * 60 * 1000) {
+        shouldShowSurveyReminder = true;
+      }
+    }
+
     res.json({
       user: {
         id: user.id,
@@ -180,9 +206,14 @@ const login = async (req, res) => {
         lastName: user.lastName,
         agencyName: user.agencyName,
         agencyAddress: user.agencyAddress,
-        role: user.role
+        role: user.role,
+        lastSurveyReminderShown: user.lastSurveyReminderShown
       },
-      token
+      token,
+      surveyReminder: {
+        shouldShow: shouldShowSurveyReminder,
+        documentsWithoutResponses
+      }
     });
   } catch (error) {
     console.error('Login error:', error);

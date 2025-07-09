@@ -140,6 +140,27 @@ const changePassword = async (req, res) => {
   }
 };
 
+const updateSurveyReminderShown = async (req, res) => {
+  try {
+    // Demo user doesn't need tracking
+    if (req.userId === 'demo-user-id') {
+      return res.json({ success: true });
+    }
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        lastSurveyReminderShown: new Date()
+      }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Update survey reminder error:', error);
+    res.status(500).json({ error: 'Failed to update survey reminder' });
+  }
+};
+
 const deleteAccount = async (req, res) => {
   try {
     const { password, confirmText } = req.body;
@@ -279,5 +300,6 @@ module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  updateSurveyReminderShown,
   deleteAccount
 };
