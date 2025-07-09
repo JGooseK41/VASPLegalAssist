@@ -161,6 +161,11 @@ export const templateAPI = {
   getAvailableMarkers: async () => {
     const response = await api.get('/templates/markers');
     return response.data;
+  },
+  
+  trackTemplateUsage: async (templateId) => {
+    const response = await api.post(`/templates/${templateId}/usage`);
+    return response.data;
   }
 };
 

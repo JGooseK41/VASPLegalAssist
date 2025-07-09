@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Globe } from 'lucide-react';
+import { Globe, Users } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { templateAPI } from '../../services/api';
+import TemplateSharingModal from './TemplateSharingModal';
 
 const DirectTemplateCreator = ({ onSuccess, onCancel, encryptedAPI }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isGlobal, setIsGlobal] = useState(false);
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  const [showSharingModal, setShowSharingModal] = useState(false);
   
   const [useEncryption, setUseEncryption] = useState(true);
   
@@ -54,6 +57,26 @@ Office: {{agent_phone}}`,
     ])
   });
 
+  const handleShareToggle = (checked) => {
+    if (checked) {
+      setShowSharingModal(true);
+    } else {
+      setShareWithCommunity(false);
+      setUseEncryption(true);
+    }
+  };
+
+  const handleSharingConfirm = (sharingData) => {
+    setShareWithCommunity(true);
+    setUseEncryption(false); // Shared templates cannot be encrypted
+    setShowSharingModal(false);
+    // Store sharing data in formData
+    setFormData(prev => ({
+      ...prev,
+      ...sharingData
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,11 +96,15 @@ Office: {{agent_phone}}`,
         markerMappings: '{}',
         customFields: {},  // Add empty customFields
         isGlobal: user?.role === 'ADMIN' ? isGlobal : false,
+        isUserShared: shareWithCommunity,
+        sharedTitle: formData.sharedTitle || null,
+        sharedDescription: formData.sharedDescription || null,
+        allowedDomains: formData.allowedDomains || [],
         fileUrl: null,
         fileType: formData.fileType,
         fileSize: formData.templateContent.length,
         originalFilename: 'direct_template.html',
-        isClientEncrypted: useEncryption
+        isClientEncrypted: useEncryption && !shareWithCommunity // Cannot encrypt shared templates
       };
 
       console.log('Sending template data:', dataToSend);
@@ -86,7 +113,7 @@ Office: {{agent_phone}}`,
       console.log('Markers:', dataToSend.markers);
       
       let response;
-      if (useEncryption && encryptedAPI) {
+      if (useEncryption && encryptedAPI && !shareWithCommunity) {
         console.log('Using encryptedAPI');
         response = await encryptedAPI.createTemplate(dataToSend);
       } else {
@@ -161,11 +188,34 @@ Office: {{agent_phone}}`,
               />
               <span className="flex items-center">
                 <Globe className="h-4 w-4 mr-1 text-blue-600" />
-                <span className="text-sm font-medium">Make this template available to all users</span>
+                <span className="text-sm font-medium">Make this template available to all users (Admin)</span>
               </span>
             </label>
           </div>
         )}
+        
+        {/* Community Sharing Option */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={shareWithCommunity}
+              onChange={(e) => handleShareToggle(e.target.checked)}
+              className="h-4 w-4 text-green-600 rounded mr-2 mt-0.5"
+              disabled={isGlobal} // Cannot share if admin is making it global
+            />
+            <div className="flex-1">
+              <span className="flex items-center">
+                <Users className="h-4 w-4 mr-1 text-green-600" />
+                <span className="text-sm font-medium">Share with community</span>
+              </span>
+              <p className="text-xs text-gray-600 mt-1">
+                Share your template with other users and earn points when they use it.
+                {shareWithCommunity && ' Template will not be encrypted.'}
+              </p>
+            </div>
+          </label>
+        </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <label className="flex items-center">
@@ -174,9 +224,11 @@ Office: {{agent_phone}}`,
               checked={useEncryption}
               onChange={(e) => setUseEncryption(e.target.checked)}
               className="h-4 w-4 text-yellow-600 rounded mr-2"
+              disabled={shareWithCommunity} // Cannot encrypt shared templates
             />
             <span className="text-sm">
-              <span className="font-medium">Use encryption</span> (uncheck if having issues)
+              <span className="font-medium">Use encryption</span> 
+              {shareWithCommunity ? ' (disabled for shared templates)' : ' (uncheck if having issues)'}
             </span>
           </label>
         </div>
@@ -211,6 +263,14 @@ Office: {{agent_phone}}`,
         </div>
       </form>
       </div>
+      
+      {/* Sharing Consent Modal */}
+      <TemplateSharingModal
+        isOpen={showSharingModal}
+        onClose={() => setShowSharingModal(false)}
+        onConfirm={handleSharingConfirm}
+        templateName={formData.templateName}
+      />
     </div>
   );
 };

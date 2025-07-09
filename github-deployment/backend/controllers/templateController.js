@@ -4,18 +4,59 @@ const prisma = new PrismaClient();
 
 const getTemplates = async (req, res) => {
   try {
-    // Get user's own templates and all global templates
+    // Check if user is a demo user
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true }
+    });
+    
+    const isDemo = user?.email?.includes('demo@');
+    
+    // Build where clause based on user type
+    const whereClause = {
+      OR: [
+        { userId: req.userId },
+        { isGlobal: true }
+      ]
+    };
+    
+    // Only include user-shared templates for non-demo users
+    if (!isDemo) {
+      whereClause.OR.push({ isUserShared: true });
+    }
+    
     const templates = await prisma.documentTemplate.findMany({
-      where: {
-        OR: [
-          { userId: req.userId },
-          { isGlobal: true }
-        ]
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            agencyName: true
+          }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
+    
+    // Filter by domain restrictions if applicable
+    const userDomain = user?.email?.split('@')[1]?.toLowerCase();
+    const filteredTemplates = templates.filter(template => {
+      // Always include user's own templates and global templates
+      if (template.userId === req.userId || template.isGlobal) {
+        return true;
+      }
+      
+      // Check domain restrictions for shared templates
+      if (template.isUserShared && template.allowedDomains && template.allowedDomains.length > 0) {
+        return template.allowedDomains.includes(userDomain);
+      }
+      
+      return true;
+    });
 
-    res.json(templates);
+    res.json(filteredTemplates);
   } catch (error) {
     console.error('Get templates error:', error);
     res.status(500).json({ error: 'Failed to get templates' });
@@ -24,18 +65,47 @@ const getTemplates = async (req, res) => {
 
 const getTemplate = async (req, res) => {
   try {
+    // Check if user is a demo user
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true }
+    });
+    
+    const isDemo = user?.email?.includes('demo@');
+    const userDomain = user?.email?.split('@')[1]?.toLowerCase();
+    
     const template = await prisma.documentTemplate.findFirst({
       where: {
         id: req.params.id,
         OR: [
           { userId: req.userId },
-          { isGlobal: true }
+          { isGlobal: true },
+          // Only allow non-demo users to access shared templates
+          ...(!isDemo ? [{ isUserShared: true }] : [])
         ]
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            agencyName: true
+          }
+        }
       }
     });
 
     if (!template) {
       return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    // Check domain restrictions
+    if (template.isUserShared && template.userId !== req.userId && 
+        template.allowedDomains && template.allowedDomains.length > 0) {
+      if (!template.allowedDomains.includes(userDomain)) {
+        return res.status(403).json({ error: 'Access denied - domain restriction' });
+      }
     }
 
     res.json(template);
@@ -75,7 +145,8 @@ const createTemplate = async (req, res) => {
       fileType,
       fileSize,
       originalFilename,
-      isGlobal
+      isGlobal,
+      isUserShared
     } = req.body;
 
     // Handle both old format and new format
@@ -148,6 +219,16 @@ const createTemplate = async (req, res) => {
     if (originalFilename) {
       templateData.originalFilename = originalFilename;
     }
+    
+    // Handle user sharing
+    if (isUserShared === true && !isClientEncrypted) {
+      templateData.isUserShared = true;
+      // Award 5 points to user for sharing
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: { points: { increment: 5 } }
+      });
+    }
 
     const template = await prisma.documentTemplate.create({
       data: templateData
@@ -193,7 +274,11 @@ const updateTemplate = async (req, res) => {
       name,
       header_info,
       footer_text,
-      custom_fields
+      custom_fields,
+      isUserShared,
+      sharedTitle,
+      sharedDescription,
+      allowedDomains
     } = req.body;
 
     // Handle both old format and new format
@@ -207,6 +292,21 @@ const updateTemplate = async (req, res) => {
       encryptionVersion: encryptionVersion || null,
       updatedAt: new Date()
     };
+    
+    // Handle sharing updates - owner can update or revoke sharing
+    if (isUserShared !== undefined) {
+      updateData.isUserShared = isUserShared;
+      if (isUserShared) {
+        updateData.sharedTitle = sharedTitle || null;
+        updateData.sharedDescription = sharedDescription || null;
+        updateData.allowedDomains = allowedDomains || [];
+      } else {
+        // If revoking sharing, clear sharing fields
+        updateData.sharedTitle = null;
+        updateData.sharedDescription = null;
+        updateData.allowedDomains = [];
+      }
+    }
     
     if (isClientEncrypted) {
       // Store encrypted data as-is
@@ -299,11 +399,62 @@ const setDefaultTemplate = async (req, res) => {
   }
 };
 
+const trackTemplateUsage = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    
+    // Verify template exists and is shared
+    const template = await prisma.documentTemplate.findUnique({
+      where: { id: templateId },
+      select: {
+        id: true,
+        isUserShared: true,
+        userId: true
+      }
+    });
+    
+    if (!template || !template.isUserShared) {
+      return res.status(404).json({ error: 'Shared template not found' });
+    }
+    
+    // Don't track if user is using their own template
+    if (template.userId === req.userId) {
+      return res.json({ message: 'Usage not tracked for template owner' });
+    }
+    
+    // Create usage record
+    await prisma.templateUsage.create({
+      data: {
+        templateId: templateId,
+        userId: req.userId
+      }
+    });
+    
+    // Award 1 point to template creator
+    await prisma.user.update({
+      where: { id: template.userId },
+      data: { points: { increment: 1 } }
+    });
+    
+    // Update template share points
+    await prisma.documentTemplate.update({
+      where: { id: templateId },
+      data: { sharePoints: { increment: 1 } }
+    });
+    
+    res.json({ message: 'Template usage tracked successfully' });
+  } catch (error) {
+    console.error('Track template usage error:', error);
+    res.status(500).json({ error: 'Failed to track template usage' });
+  }
+};
+
 module.exports = {
   getTemplates,
   getTemplate,
   createTemplate,
   updateTemplate,
   deleteTemplate,
-  setDefaultTemplate
+  setDefaultTemplate,
+  trackTemplateUsage
 };

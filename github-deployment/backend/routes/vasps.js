@@ -48,6 +48,9 @@ router.get('/', async (req, res) => {
           freeze_accepts_us: vasp.freeze_accepts_us !== undefined ? vasp.freeze_accepts_us : null,
           freeze_jurisdictions: vasp.freeze_jurisdictions || [],
           
+          // Service types
+          service_types: vasp.service_types || [],
+          
           // Legacy fields for backward compatibility
           processing_time: vasp.processing_time || null, // Don't show default without data
           accepts_international: true,
@@ -124,7 +127,8 @@ router.get('/:id', async (req, res) => {
       info_types: Array.isArray(vasp.info_types) ? vasp.info_types : ["KYC", "Transaction History"],
       last_updated: vasp.updatedAt ? new Date(vasp.updatedAt).toISOString().split('T')[0] : "2024-01-01",
       required_document: vasp.required_document || "Letterhead",
-      notes: vasp.notes || ""
+      notes: vasp.notes || "",
+      service_types: vasp.service_types || []
     };
     
     res.json(formattedVasp);

@@ -265,8 +265,62 @@ const TemplateManager = () => {
           />
         )}
 
+        {/* Tabs */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('my-templates')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'my-templates'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <FileText className="w-4 w-4 mr-2" />
+                My Templates
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {templates.length}
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('global-templates')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'global-templates'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <Globe className="w-4 w-4 mr-2" />
+                Standard Templates
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {globalTemplates.length}
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('user-shared')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'user-shared'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <Users className="w-4 w-4 mr-2" />
+                Community Templates
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {userSharedTemplates.length}
+                </span>
+              </div>
+            </button>
+          </nav>
+        </div>
+
         <div className="grid grid-cols-1 gap-6">
-          {templates.map((template) => (
+          {getActiveTemplates().map((template) => (
             <div key={template.id}>
               {editingTemplate?.id === template.id ? (
                 <TemplateEditor
@@ -280,13 +334,15 @@ const TemplateManager = () => {
                   onEdit={() => setEditingTemplate(template)}
                   onDelete={() => handleDeleteTemplate(template.id)}
                   onConfigureMarkers={() => setMappingTemplate(template)}
+                  onCopy={() => handleCopyTemplate(template)}
+                  activeTab={activeTab}
                 />
               )}
             </div>
           ))}
         </div>
 
-        {templates.length === 0 && !showNewTemplate && (
+        {getActiveTemplates().length === 0 && !showNewTemplate && activeTab === 'my-templates' && (
           <div className="space-y-6">
             {/* Welcome Message */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
@@ -365,6 +421,11 @@ const TemplateManager = () => {
               </div>
             </div>
           </div>
+        )}
+        
+        {/* Empty state for other tabs */}
+        {getActiveTemplates().length === 0 && activeTab !== 'my-templates' && (
+          getEmptyStateMessage()
         )}
 
         {/* Help Modal */}
@@ -618,8 +679,9 @@ const TemplateManager = () => {
   );
 };
 
-const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
+const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers, onCopy, activeTab }) => {
   const { user } = useAuth();
+  const [expanded, setExpanded] = useState(false);
   const isEncrypted = template.isClientEncrypted || false;
   const hasDecryptionError = template.decryptionError || false;
   const getDocumentTypeLabel = (type) => {
@@ -668,10 +730,64 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
                 Global
               </span>
             )}
+            {template.isUserShared && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <Users className="h-3 w-3 mr-1" />
+                Community
+              </span>
+            )}
+            {template.sharePoints > 0 && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <Award className="h-3 w-3 mr-1" />
+                {template.sharePoints} points earned
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Type: {getDocumentTypeLabel(template.templateType || template.document_type)}
           </p>
+          
+          {/* Shared template info */}
+          {template.isUserShared && template.sharedTitle && (
+            <div className="mt-2">
+              <h4 className="text-base font-semibold text-gray-800">{template.sharedTitle}</h4>
+              {template.user && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Shared by {template.user.firstName} {template.user.lastName} • {template.user.agencyName}
+                </p>
+              )}
+              {template.allowedDomains && template.allowedDomains.length > 0 && (
+                <div className="mt-1">
+                  <span className="text-xs text-gray-500">Restricted to: </span>
+                  {template.allowedDomains.map((domain, idx) => (
+                    <span key={domain} className="text-xs text-blue-600">
+                      {domain}{idx < template.allowedDomains.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Expandable description for shared templates */}
+          {template.isUserShared && template.sharedDescription && (
+            <div className="mt-3">
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
+              >
+                {expanded ? 'Hide' : 'Show'} description
+                <svg className={`ml-1 h-4 w-4 transform transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expanded && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{template.sharedDescription}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {isSmartTemplate && markers.length > 0 && (
             <div className="mt-3">
@@ -713,7 +829,7 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
             </div>
           )}
           
-          {template.footer_text && (
+          {template.footer_text && !expanded && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-700">Footer Text:</h4>
               <p className="mt-1 text-sm text-gray-600 line-clamp-2">{template.footer_text}</p>
@@ -731,8 +847,36 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers }) => {
               <Map className="h-4 w-4" />
             </button>
           )}
+          {/* Copy button for shared/global templates */}
+          {(activeTab === 'global-templates' || activeTab === 'user-shared') && (
+            <button
+              onClick={onCopy}
+              className="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded"
+              title="Copy to my templates"
+            >
+              <Copy className="h-4 w-4" />
+            </button>
+          )}
           {/* Only allow editing/deleting if user owns the template or is admin for global templates */}
-          {(!template.isGlobal || user?.role === 'ADMIN') && (
+          {activeTab === 'my-templates' && (
+            <>
+              <button
+                onClick={onEdit}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded"
+                title="Edit template"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={onDelete}
+                className="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded"
+                title="Delete template"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </>
+          )}
+          {activeTab === 'global-templates' && user?.role === 'ADMIN' && (
             <>
               <button
                 onClick={onEdit}

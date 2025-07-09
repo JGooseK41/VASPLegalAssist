@@ -10,11 +10,15 @@ import DirectContactDisplay from './DirectContactDisplay';
 import VaspRequestTypeInfo from './VaspRequestTypeInfo';
 import LEOFriendlyScore from './LEOFriendlyScore';
 import { extractDbaFromNames } from '../../utils/parseVaspNames';
+import ServiceTypeModal from './ServiceTypeModal';
+
+import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
 
 const VASPCard = ({ vasp, onSelect }) => {
   const { legalName, dba } = extractDbaFromNames(vasp.name, vasp.legal_name);
   const [stats, setStats] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showServiceTypeModal, setShowServiceTypeModal] = useState(false);
   
   return (
     <div className="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
@@ -27,6 +31,47 @@ const VASPCard = ({ vasp, onSelect }) => {
               <p className="text-sm text-gray-700 truncate mt-1">
                 <span className="text-gray-600">DBA:</span> <span className="font-medium">{dba}</span>
               </p>
+            )}
+            
+            {/* Service Type Badges - Moved under title */}
+            {vasp.service_types && vasp.service_types.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {vasp.service_types.map((type) => {
+                  const config = SERVICE_TYPE_DEFINITIONS[type];
+                  if (!config) return null;
+                  
+                  return (
+                    <div key={type} className="relative group">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-help transition-all hover:shadow-md`}
+                      >
+                        {config.label}
+                      </span>
+                      
+                      {/* Hover tooltip */}
+                      <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-xs rounded-lg py-2 px-3 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap max-w-xs">
+                        <div className="font-semibold mb-1">{config.fullName}</div>
+                        <div className="text-gray-300">{config.shortDescription}</div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                          <div className="border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Info button for full details */}
+                <button
+                  onClick={() => setShowServiceTypeModal(true)}
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                  title="View service type details"
+                >
+                  <span className="sr-only">Service type information</span>
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </div>
             )}
           </div>
           <span className="text-sm text-gray-600 flex items-center ml-3 bg-white px-2 py-1 rounded-full shadow-sm">
@@ -154,6 +199,15 @@ const VASPCard = ({ vasp, onSelect }) => {
       <div className="border-t border-gray-200">
         <VaspComments vaspId={vasp.id} vaspName={vasp.name} />
       </div>
+      
+      {/* Service Type Modal */}
+      {showServiceTypeModal && (
+        <ServiceTypeModal
+          isOpen={showServiceTypeModal}
+          onClose={() => setShowServiceTypeModal(false)}
+          selectedTypes={vasp.service_types || []}
+        />
+      )}
     </div>
   );
 };
@@ -163,7 +217,8 @@ const VASPSearch = () => {
   const [filters, setFilters] = useState({
     jurisdiction: '',
     preferred_method: '',
-    accepts_us_service: ''
+    accepts_us_service: '',
+    service_type: ''
   });
   const [vaspData, setVaspData] = useState([]);
   const [filteredVASPs, setFilteredVASPs] = useState([]);
@@ -206,6 +261,9 @@ const VASPSearch = () => {
         if (key === 'accepts_us_service') {
           return vasp[key] === (value === 'true');
         }
+        if (key === 'service_type') {
+          return vasp.service_types && vasp.service_types.includes(value);
+        }
         return vasp[key] === value;
       });
 
@@ -224,6 +282,7 @@ const VASPSearch = () => {
   // Get unique values for filter options
   const uniqueJurisdictions = [...new Set(vaspData.map(v => v.jurisdiction))].filter(Boolean).sort();
   const uniqueMethods = [...new Set(vaspData.map(v => v.preferred_method))].filter(Boolean).sort();
+  const uniqueServiceTypes = [...new Set(vaspData.flatMap(v => v.service_types || []))].filter(Boolean).sort();
 
   if (loading) {
     return (
@@ -355,6 +414,25 @@ const VASPSearch = () => {
                 <option value="false">No US Service</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Service Type
+              </label>
+              <select
+                value={filters.service_type}
+                onChange={(e) => setFilters({...filters, service_type: e.target.value})}
+                className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Service Types</option>
+                {uniqueServiceTypes.map(type => {
+                  const config = SERVICE_TYPE_DEFINITIONS[type];
+                  return config ? (
+                    <option key={type} value={type}>{config.label}</option>
+                  ) : null;
+                })}
+              </select>
+            </div>
           </div>
 
           <div className="mt-4 flex justify-between items-center">
@@ -365,7 +443,7 @@ const VASPSearch = () => {
               <button
                 onClick={() => {
                   setSearchQuery('');
-                  setFilters({ jurisdiction: '', preferred_method: '', accepts_us_service: '' });
+                  setFilters({ jurisdiction: '', preferred_method: '', accepts_us_service: '', service_type: '' });
                 }}
                 className="text-sm text-blue-600 hover:text-blue-500"
               >

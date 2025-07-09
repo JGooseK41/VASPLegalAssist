@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award, PlayCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award, PlayCircle, Trophy, Star, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -832,6 +832,146 @@ Badge #{{badge_number}}
             </div>
           ),
           icon: Shield
+        }
+      ]
+    },
+    {
+      title: 'Community & Points',
+      items: [
+        {
+          question: 'How do I earn points and climb the leaderboard?',
+          answer: (
+            <div>
+              <p className="mb-3">Earn points by contributing to the community:</p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <CheckCircle className="w-5 h-5 mr-2 mt-0.5 text-green-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">10 points</span> - Submit a new VASP that gets approved
+                    <p className="text-sm text-gray-600">Help grow our database with new service providers</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <Star className="w-5 h-5 mr-2 mt-0.5 text-yellow-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">5 points</span> - Receive an upvote on your comment
+                    <p className="text-sm text-gray-600">Share valuable insights that help others</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <Shield className="w-5 h-5 mr-2 mt-0.5 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">5 points</span> - Log a VASP response
+                    <p className="text-sm text-gray-600">Help track compliance and response times</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <FileText className="w-5 h-5 mr-2 mt-0.5 text-indigo-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">5 points</span> - Share a template with the community
+                    <p className="text-sm text-gray-600">Help others with your document templates</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <MessageSquare className="w-5 h-5 mr-2 mt-0.5 text-blue-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">1 point</span> - Add a comment
+                    <p className="text-sm text-gray-600">Share your experience with VASPs</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <Award className="w-5 h-5 mr-2 mt-0.5 text-teal-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold">1 point</span> - Each time someone uses your shared template
+                    <p className="text-sm text-gray-600">Earn ongoing rewards when your templates help others</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Pro Tip:</strong> Quality contributions earn the most points! Focus on sharing 
+                  detailed VASP responses and useful templates that save time for fellow investigators.
+                </p>
+              </div>
+            </div>
+          ),
+          icon: Trophy
+        },
+        {
+          question: 'How does template sharing work?',
+          answer: (
+            <div>
+              <p className="mb-3">Share your custom templates to help the community:</p>
+              
+              <ol className="list-decimal list-inside space-y-3">
+                <li>
+                  <strong>Create a Template</strong>
+                  <p className="text-sm text-gray-600 mt-1">Build your template in the Template Manager</p>
+                </li>
+                <li>
+                  <strong>Choose to Share</strong>
+                  <p className="text-sm text-gray-600 mt-1">When creating, check "Share with community" option</p>
+                </li>
+                <li>
+                  <strong>Add Details</strong>
+                  <ul className="list-disc list-inside ml-4 mt-1 text-sm text-gray-600">
+                    <li>Give your template a clear, descriptive title</li>
+                    <li>Write a brief description of its use case</li>
+                    <li>Optionally restrict access by email domain</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Maintain Control</strong>
+                  <p className="text-sm text-gray-600 mt-1">You can edit, delete, or revoke sharing at any time</p>
+                </li>
+              </ol>
+              
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3">
+                <p className="text-sm text-green-800">
+                  <strong>Rewards:</strong> Earn 5 points when you share a template, plus 1 point 
+                  each time another user copies it to their collection!
+                </p>
+              </div>
+              
+              <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Shared templates are not encrypted and will be visible to other 
+                  users (with your agency branding). Only share templates you're comfortable making public.
+                </p>
+              </div>
+            </div>
+          ),
+          icon: Globe
+        },
+        {
+          question: 'Who can see the leaderboard?',
+          answer: (
+            <div>
+              <p>The leaderboard is visible to all authenticated users and shows:</p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Top contributors ranked by total points</li>
+                <li>Breakdown of how points were earned</li>
+                <li>Agency affiliations (unless opted out)</li>
+              </ul>
+              
+              <p className="mt-3">You can opt out of the leaderboard in your profile settings if you prefer to remain anonymous.</p>
+              
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-md p-3">
+                <p className="text-sm text-blue-800">
+                  The leaderboard fosters healthy competition and recognizes valuable contributors 
+                  who help build our collective intelligence on VASP compliance.
+                </p>
+              </div>
+            </div>
+          ),
+          icon: Users
         }
       ]
     },

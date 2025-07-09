@@ -182,8 +182,16 @@ function Leaderboard() {
             <span><strong>5 points</strong> for each VASP response you log (compliance & turnaround time)</span>
           </li>
           <li className="flex items-start">
+            <Shield className="w-4 h-4 mr-2 mt-0.5 text-indigo-600 flex-shrink-0" />
+            <span><strong>5 points</strong> for sharing a template with the community</span>
+          </li>
+          <li className="flex items-start">
             <MessageSquare className="w-4 h-4 mr-2 mt-0.5 text-blue-600 flex-shrink-0" />
             <span><strong>1 point</strong> for each comment you make</span>
+          </li>
+          <li className="flex items-start">
+            <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-teal-600 flex-shrink-0" />
+            <span><strong>1 point</strong> each time another user uses your shared template</span>
           </li>
         </ul>
       </div>

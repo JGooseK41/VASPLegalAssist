@@ -9,7 +9,8 @@ const {
   createTemplate,
   updateTemplate,
   deleteTemplate,
-  setDefaultTemplate
+  setDefaultTemplate,
+  trackTemplateUsage
 } = templateController;
 
 const {
@@ -52,5 +53,8 @@ router.delete('/:id', demoMiddleware, deleteTemplate);
 
 // PUT /api/templates/:id/default
 router.put('/:id/default', demoMiddleware, setDefaultTemplate);
+
+// POST /api/templates/:id/usage
+router.post('/:templateId/usage', trackTemplateUsage);
 
 module.exports = router;

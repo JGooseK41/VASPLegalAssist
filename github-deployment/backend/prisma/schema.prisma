@@ -34,6 +34,7 @@ model User {
   comments                VaspComment[]
   vaspResponses           VaspResponse[]
   vaspSubmissions         VaspSubmission[]
+  templateUsage           TemplateUsage[]
 }
 
 model DocumentTemplate {
@@ -65,7 +66,15 @@ model DocumentTemplate {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   isGlobal              Boolean  @default(false)
+  isUserShared          Boolean  @default(false) // User chose to share with community
+  sharePoints           Int      @default(0) // Points earned from shares
+  sharedTitle           String?  // Clear title for shared templates
+  sharedDescription     String?  @db.Text // Use case description for shared templates
+  allowedDomains        String[] @default([]) // Email domains allowed to use template (empty = all)
   user                  User     @relation(fields: [userId], references: [id])
+  usageTracking         TemplateUsage[]
+  
+  @@index([isUserShared])
 }
 
 model Document {
@@ -152,10 +161,21 @@ model Vasp {
   preferred_method    String
   required_document   String?
   info_types          String[]
+  service_types       String[]       @default([])
   accepts_us_service  Boolean        @default(false)
   has_own_portal      Boolean        @default(false)
   law_enforcement_url String?
   notes               String?
+  
+  // Request type specific fields
+  records_processing_time    String?
+  records_required_document  String?
+  records_accepts_us         Boolean?
+  records_jurisdictions      String[]      @default([])
+  freeze_processing_time     String?
+  freeze_required_document   String?
+  freeze_accepts_us          Boolean?
+  freeze_jurisdictions       String[]      @default([])
   isActive            Boolean        @default(true)
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
@@ -179,6 +199,7 @@ model VaspSubmission {
   preferred_method    String
   required_document   String?
   info_types          String[]
+  service_types       String[]  @default([])
   accepts_us_service  Boolean   @default(false)
   has_own_portal      Boolean   @default(false)
   law_enforcement_url String?
@@ -284,4 +305,18 @@ model DocumentStats {
   id                    String   @id @default("global-stats")
   totalDocumentsCreated Int      @default(0)
   updatedAt             DateTime @updatedAt
+}
+
+model TemplateUsage {
+  id          String   @id @default(uuid())
+  templateId  String
+  userId      String    // User who used the template
+  createdAt   DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id])
+  template    DocumentTemplate @relation(fields: [templateId], references: [id])
+  
+  @@index([templateId])
+  @@index([userId])
+  @@index([createdAt])
 }

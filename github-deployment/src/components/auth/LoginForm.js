@@ -3,6 +3,7 @@ import { Mail, Lock, AlertCircle, Info, HelpCircle, Building } from 'lucide-reac
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import VaspSelfRegistration from '../public/VaspSelfRegistration';
+import SimpleCaptcha from './SimpleCaptcha';
 
 const LoginForm = () => {
   const { login, isLoading, error } = useAuth();
@@ -12,11 +13,21 @@ const LoginForm = () => {
   const [showVaspRegistration, setShowVaspRegistration] = useState(false);
   const [loginError, setLoginError] = useState(null);
   const [showVerificationLink, setShowVerificationLink] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError(null);
     setShowVerificationLink(false);
+    
+    // Check if it's a demo account
+    if (formData.email.toLowerCase().includes('demo@')) {
+      if (!captchaVerified) {
+        setShowCaptcha(true);
+        return;
+      }
+    }
     
     const result = await login(formData.email, formData.password);
     if (result.success) {
@@ -26,6 +37,17 @@ const LoginForm = () => {
       if (result.requiresEmailVerification) {
         setShowVerificationLink(true);
       }
+    }
+  };
+  
+  const handleCaptchaVerify = (verified) => {
+    if (verified) {
+      setCaptchaVerified(true);
+      setShowCaptcha(false);
+      // Auto-submit form after captcha verification
+      setTimeout(() => {
+        document.getElementById('login-form').requestSubmit();
+      }, 100);
     }
   };
 
@@ -110,7 +132,7 @@ const LoginForm = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="login-form" onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Email address
@@ -121,7 +143,13 @@ const LoginForm = () => {
                   required
                   autoComplete="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => {
+                    setFormData({...formData, email: e.target.value});
+                    // Reset CAPTCHA verification if email changes
+                    if (captchaVerified && !e.target.value.toLowerCase().includes('demo@')) {
+                      setCaptchaVerified(false);
+                    }
+                  }}
                   className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your email"
                 />
@@ -220,6 +248,25 @@ const LoginForm = () => {
           </div>
         </div>
       </div>
+      
+      {/* CAPTCHA Modal for Demo Accounts */}
+      {showCaptcha && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Demo Account Verification
+            </h3>
+            <SimpleCaptcha onVerify={handleCaptchaVerify} />
+            <button
+              type="button"
+              onClick={() => setShowCaptcha(false)}
+              className="mt-4 w-full text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* VASP Self-Registration Modal */}
       <VaspSelfRegistration 

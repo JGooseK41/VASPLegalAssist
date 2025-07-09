@@ -58,10 +58,20 @@ const createVasp = async (req, res) => {
         preferred_method: req.body.preferred_method,
         required_document: req.body.required_document,
         info_types: req.body.info_types || [],
+        service_types: req.body.service_types || [],
         accepts_us_service: req.body.accepts_us_service || false,
         has_own_portal: req.body.has_own_portal || false,
         law_enforcement_url: req.body.law_enforcement_url,
-        notes: req.body.notes
+        notes: req.body.notes,
+        // Request type specific fields
+        records_processing_time: req.body.records_processing_time,
+        records_required_document: req.body.records_required_document,
+        records_accepts_us: req.body.records_accepts_us,
+        records_jurisdictions: req.body.records_jurisdictions || [],
+        freeze_processing_time: req.body.freeze_processing_time,
+        freeze_required_document: req.body.freeze_required_document,
+        freeze_accepts_us: req.body.freeze_accepts_us,
+        freeze_jurisdictions: req.body.freeze_jurisdictions || []
       }
     });
     
@@ -90,11 +100,21 @@ const updateVasp = async (req, res) => {
         preferred_method: req.body.preferred_method,
         required_document: req.body.required_document,
         info_types: req.body.info_types,
+        service_types: req.body.service_types || [],
         accepts_us_service: req.body.accepts_us_service,
         has_own_portal: req.body.has_own_portal,
         law_enforcement_url: req.body.law_enforcement_url,
         notes: req.body.notes,
-        isActive: req.body.isActive
+        isActive: req.body.isActive,
+        // Request type specific fields
+        records_processing_time: req.body.records_processing_time,
+        records_required_document: req.body.records_required_document,
+        records_accepts_us: req.body.records_accepts_us,
+        records_jurisdictions: req.body.records_jurisdictions || [],
+        freeze_processing_time: req.body.freeze_processing_time,
+        freeze_required_document: req.body.freeze_required_document,
+        freeze_accepts_us: req.body.freeze_accepts_us,
+        freeze_jurisdictions: req.body.freeze_jurisdictions || []
       }
     });
     
@@ -291,6 +311,7 @@ const approveSubmission = async (req, res) => {
         preferred_method: submission.preferred_method,
         required_document: submission.required_document,
         info_types: submission.info_types,
+        service_types: submission.service_types || [],
         accepts_us_service: submission.accepts_us_service,
         has_own_portal: submission.has_own_portal,
         law_enforcement_url: submission.law_enforcement_url,

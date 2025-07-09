@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import VaspForm from './VaspForm';
+import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
 
 // Submission Detail Modal Component
 const SubmissionDetail = ({ submission, onClose, onApprove, onReject }) => {
@@ -90,6 +91,124 @@ const SubmissionDetail = ({ submission, onClose, onApprove, onReject }) => {
   );
 };
 
+// Service Type Quick Edit Modal
+const ServiceTypeQuickEdit = ({ vasp, onClose, onSave }) => {
+  const [selectedTypes, setSelectedTypes] = useState(vasp.service_types || []);
+  const [saving, setSaving] = useState(false);
+  
+  const serviceTypeOptions = [
+    { value: 'CEX', label: 'Centralized Exchange (CEX)' },
+    { value: 'DEX', label: 'Decentralized Exchange (DEX)' },
+    { value: 'P2P', label: 'P2P Trading' },
+    { value: 'Kiosk', label: 'Crypto Kiosk/ATM' },
+    { value: 'Bridge', label: 'Bridging Service' },
+    { value: 'Gambling', label: 'Gambling Service' },
+    { value: 'Wallet', label: 'Wallet Provider' },
+    { value: 'OTC', label: 'OTC Desk' },
+    { value: 'Mining', label: 'Mining Pool' },
+    { value: 'Payment', label: 'Payment Processor' },
+    { value: 'Staking', label: 'Staking Service' },
+    { value: 'Lending', label: 'Lending Platform' },
+    { value: 'NFT', label: 'NFT Marketplace' },
+    { value: 'Stablecoin', label: 'Stablecoin Issuer' },
+    { value: 'Mixer', label: 'Mixing Service' }
+  ];
+  
+  const handleToggle = (type) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+  
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(vasp.id, selectedTypes);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save service types:', error);
+      alert('Failed to save service types');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Edit Service Types</h3>
+          <p className="mt-1 text-sm text-gray-500">{vasp.name}</p>
+        </div>
+        
+        <div className="p-6">
+          <p className="text-sm text-gray-600 mb-4">Select all service types that apply to this VASP:</p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {serviceTypeOptions.map(({ value, label }) => {
+              const isSelected = selectedTypes.includes(value);
+              const definition = SERVICE_TYPE_DEFINITIONS[value];
+              
+              return (
+                <label
+                  key={value}
+                  className={`relative flex items-start p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
+                    isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleToggle(value)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggle(value)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className="flex items-center">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getServiceTypeColorClasses(definition?.color || 'gray')} mr-2`}>
+                        {definition?.label || value}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">{label}</span>
+                    </div>
+                    {definition?.shortDescription && (
+                      <p className="text-xs text-gray-500 mt-1">{definition.shortDescription}</p>
+                    )}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="p-6 bg-gray-50 flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const VaspManagement = () => {
   const [activeTab, setActiveTab] = useState('vasps');
   const [vasps, setVasps] = useState([]);
@@ -102,6 +221,7 @@ const VaspManagement = () => {
   const [editingVasp, setEditingVasp] = useState(null);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState('PENDING');
+  const [editingServiceTypes, setEditingServiceTypes] = useState(null);
   
   useEffect(() => {
     if (activeTab === 'vasps') {
@@ -202,6 +322,16 @@ const VaspManagement = () => {
     } catch (error) {
       console.error('Failed to reject submission:', error);
       alert('Failed to reject submission');
+    }
+  };
+  
+  const handleSaveServiceTypes = async (vaspId, serviceTypes) => {
+    try {
+      await adminAPI.updateVasp(vaspId, { service_types: serviceTypes });
+      loadVasps();
+    } catch (error) {
+      console.error('Failed to update service types:', error);
+      throw error;
     }
   };
   
@@ -324,6 +454,9 @@ const VaspManagement = () => {
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Service Types
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Method
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -352,6 +485,39 @@ const VaspManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {vasp.compliance_email}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="flex flex-wrap gap-1 flex-1">
+                          {vasp.service_types && vasp.service_types.length > 0 ? (
+                            vasp.service_types.slice(0, 3).map((type) => {
+                              const config = SERVICE_TYPE_DEFINITIONS[type];
+                              if (!config) return null;
+                              return (
+                                <span
+                                  key={type}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getServiceTypeColorClasses(config.color)}`}
+                                  title={config.shortDescription}
+                                >
+                                  {config.label}
+                                </span>
+                              );
+                            })
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">No types assigned</span>
+                          )}
+                          {vasp.service_types && vasp.service_types.length > 3 && (
+                            <span className="text-xs text-gray-500">+{vasp.service_types.length - 3} more</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setEditingServiceTypes(vasp)}
+                          className="ml-2 text-gray-400 hover:text-gray-600"
+                          title="Edit service types"
+                        >
+                          <Tag className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -571,6 +737,14 @@ const VaspManagement = () => {
           onClose={() => setSelectedSubmission(null)}
           onApprove={handleApproveSubmission}
           onReject={handleRejectSubmission}
+        />
+      )}
+      
+      {editingServiceTypes && (
+        <ServiceTypeQuickEdit
+          vasp={editingServiceTypes}
+          onClose={() => setEditingServiceTypes(null)}
+          onSave={handleSaveServiceTypes}
         />
       )}
     </div>

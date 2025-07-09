@@ -21,6 +21,7 @@ const VaspSubmissionForm = () => {
     preferred_method: 'email',
     required_document: 'Letterhead',
     info_types: ['KYC', 'Transaction History'],
+    service_types: [],
     accepts_us_service: false,
     has_own_portal: false,
     law_enforcement_url: '',
@@ -37,6 +38,24 @@ const VaspSubmissionForm = () => {
     'Wallet Addresses'
   ];
   
+  const serviceTypeOptions = [
+    { value: 'CEX', label: 'Centralized Exchange (CEX)' },
+    { value: 'DEX', label: 'Decentralized Exchange (DEX)' },
+    { value: 'P2P', label: 'P2P Trading' },
+    { value: 'Kiosk', label: 'Crypto Kiosk/ATM' },
+    { value: 'Bridge', label: 'Bridging Service' },
+    { value: 'Gambling', label: 'Gambling Service' },
+    { value: 'Wallet', label: 'Wallet Provider' },
+    { value: 'OTC', label: 'OTC Desk' },
+    { value: 'Mining', label: 'Mining Pool' },
+    { value: 'Payment', label: 'Payment Processor' },
+    { value: 'Staking', label: 'Staking Service' },
+    { value: 'Lending', label: 'Lending Platform' },
+    { value: 'NFT', label: 'NFT Marketplace' },
+    { value: 'Stablecoin', label: 'Stablecoin Issuer' },
+    { value: 'Mixer', label: 'Mixing Service' }
+  ];
+  
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -51,6 +70,15 @@ const VaspSubmissionForm = () => {
       info_types: prev.info_types.includes(type)
         ? prev.info_types.filter(t => t !== type)
         : [...prev.info_types, type]
+    }));
+  };
+  
+  const handleServiceTypeToggle = (type) => {
+    setFormData(prev => ({
+      ...prev,
+      service_types: prev.service_types.includes(type)
+        ? prev.service_types.filter(t => t !== type)
+        : [...prev.service_types, type]
     }));
   };
   
@@ -325,6 +353,26 @@ const VaspSubmissionForm = () => {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Service Types
+              <span className="text-xs text-gray-500 ml-1">(Select all that apply)</span>
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {serviceTypeOptions.map(({ value, label }) => (
+                <label key={value} className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.service_types.includes(value)}
+                    onChange={() => handleServiceTypeToggle(value)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{label}</span>
                 </label>
               ))}
             </div>
