@@ -31,7 +31,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "LEO Friendly Score System 📊",
       content: "See the green/yellow/red grades? That's our LEO Friendly Score - showing how cooperative each VASP is. Grade A means fast responses and easy process. Grade F means expect challenges.",
-      target: '[data-tour="vasp-card"] .bg-green-100, [data-tour="vasp-card"] .bg-yellow-100, [data-tour="vasp-card"] .bg-red-100',
+      target: '[data-tour="vasp-card"] .flex.justify-end button',
       position: 'bottom',
       page: '/search'
     },
@@ -45,7 +45,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "Required Documents at a Glance 📋",
       content: "Color coding shows what each VASP requires: Green (Letterhead) = Easy, Yellow (Subpoena) = Medium, Orange (Search Warrant) = Hard, Red (MLAT) = Complex. Know before you submit!",
-      target: '[data-tour="vasp-card"] .grid.grid-cols-2',
+      target: '[data-tour="vasp-card"] .bg-white.rounded-b-lg',
       position: 'bottom',
       page: '/search'
     },
@@ -87,7 +87,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "Track Your Results 📈",
       content: "See community response stats here! After sending requests, contribute your outcomes to help others know success rates, turnaround times, and tips for each VASP.",
-      target: '[data-tour="vasp-card"] .text-gray-600',
+      target: '[data-tour="vasp-card"] .flex.items-center.flex-wrap.gap-2.mt-2',
       position: 'bottom',
       page: '/search'
     },
@@ -101,7 +101,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "Earn Recognition Points 🏆",
       content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the leaderboard to see top contributors.",
-      target: '[data-tour="leaderboard"] .text-sm.text-gray-600',
+      target: '[data-tour="leaderboard"]',
       position: 'left',
       page: '/'
     },
@@ -229,7 +229,14 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
             updatePositions();
           }, 500);
         } else {
-          updatePositions();
+          // Add a delay for step 9 to prevent arrow covering the element
+          if (currentStep === 8) {  // Step 9 is index 8
+            setTimeout(() => {
+              updatePositions();
+            }, 1000);
+          } else {
+            updatePositions();
+          }
         }
       } else {
         updatePositions();

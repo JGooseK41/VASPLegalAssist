@@ -28,6 +28,29 @@ const requireAdminAccess = (req, res, next) => {
   next();
 };
 
+// Debug endpoint to check visitor data
+router.get('/debug', requireAuth, requireAdminAccess, async (req, res) => {
+  try {
+    const visitorCount = await prisma.visitorSession.count();
+    const pageViewCount = await prisma.pageView.count();
+    const recentVisitors = await prisma.visitorSession.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: { pageViews: true }
+    });
+    
+    res.json({
+      visitorCount,
+      pageViewCount,
+      recentVisitors,
+      message: visitorCount === 0 ? 'No visitor data yet. The tracking may not be working or no visitors have been tracked.' : 'Data found'
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get analytics summary
 router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
   try {
@@ -141,15 +164,22 @@ router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
     });
     
     // Get daily visitor counts
-    const dailyVisitors = await prisma.$queryRaw`
-      SELECT 
-        DATE(created_at) as date,
-        COUNT(*) as visitors
-      FROM "VisitorSession"
-      WHERE created_at >= ${start} AND created_at <= ${end}
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `;
+    let dailyVisitors = [];
+    try {
+      dailyVisitors = await prisma.$queryRaw`
+        SELECT 
+          DATE("createdAt") as date,
+          COUNT(*)::int as visitors
+        FROM "VisitorSession"
+        WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
+        GROUP BY DATE("createdAt")
+        ORDER BY date ASC
+      `;
+    } catch (error) {
+      console.error('Daily visitors query error:', error);
+      // Return empty array if query fails
+      dailyVisitors = [];
+    }
     
     res.json({
       summary: {
