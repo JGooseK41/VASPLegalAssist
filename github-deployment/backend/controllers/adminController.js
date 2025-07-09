@@ -450,6 +450,8 @@ const processUpdateRequest = async (req, res) => {
     // If approved, apply the changes
     if (action === 'APPROVED') {
       const changes = updateRequest.proposedChanges;
+      
+      // Update VASP
       await prisma.vasp.update({
         where: { id: updateRequest.vaspId },
         data: {
@@ -465,6 +467,9 @@ const processUpdateRequest = async (req, res) => {
           freeze_required_document: changes.freeze_required_document
         }
       });
+      
+      // Points are awarded automatically through the leaderboard calculation
+      // which counts approved update requests
     }
     
     // Update request status

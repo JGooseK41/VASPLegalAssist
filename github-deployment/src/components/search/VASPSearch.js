@@ -41,46 +41,48 @@ const VASPCard = ({ vasp, onSelect }) => {
               </p>
             )}
             
-            {/* Service Type Badges - Moved under title */}
-            {vasp.service_types && vasp.service_types.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {vasp.service_types.map((type) => {
-                  const config = SERVICE_TYPE_DEFINITIONS[type];
-                  if (!config) return null;
-                  
-                  return (
-                    <div key={type} className="relative group">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-help transition-all hover:shadow-md`}
-                      >
-                        {config.label}
-                      </span>
-                      
-                      {/* Hover tooltip */}
-                      <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-xs rounded-lg py-2 px-3 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap max-w-xs">
-                        <div className="font-semibold mb-1">{config.fullName}</div>
-                        <div className="text-gray-300">{config.shortDescription}</div>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                          <div className="border-4 border-transparent border-t-gray-900"></div>
+            {/* Service Type Badges and Info */}
+            <div className="mt-2 flex flex-wrap gap-1">
+              {vasp.service_types && vasp.service_types.length > 0 && (
+                <>
+                  {vasp.service_types.map((type) => {
+                    const config = SERVICE_TYPE_DEFINITIONS[type];
+                    if (!config) return null;
+                    
+                    return (
+                      <div key={type} className="relative group">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-help transition-all hover:shadow-md`}
+                        >
+                          {config.label}
+                        </span>
+                        
+                        {/* Hover tooltip */}
+                        <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-xs rounded-lg py-2 px-3 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap max-w-xs">
+                          <div className="font-semibold mb-1">{config.fullName}</div>
+                          <div className="text-gray-300">{config.shortDescription}</div>
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-                
-                {/* Info button for full details */}
-                <button
-                  onClick={() => setShowServiceTypeModal(true)}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-                  title="View all service type details"
-                >
-                  <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>View Details</span>
-                </button>
-              </div>
-            )}
+                    );
+                  })}
+                </>
+              )}
+              
+              {/* Info button for full details - Always visible */}
+              <button
+                onClick={() => setShowServiceTypeModal(true)}
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors border border-purple-200"
+                title="View all service type details"
+              >
+                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-semibold">Service Type Guide</span>
+              </button>
+            </div>
           </div>
           <span className="text-sm text-gray-600 flex items-center ml-3 bg-white px-2 py-1 rounded-full shadow-sm">
             <MapPin className="h-3 w-3 mr-1 text-gray-500" />

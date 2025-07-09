@@ -41,6 +41,15 @@ const getTopContributor = async (req, res) => {
           select: {
             id: true
           }
+        },
+        // Get approved VASP update requests
+        vaspUpdateRequests: {
+          where: {
+            status: 'APPROVED'
+          },
+          select: {
+            id: true
+          }
         }
       }
     });
@@ -61,7 +70,10 @@ const getTopContributor = async (req, res) => {
       // 5 points per VASP response logged
       const vaspResponsePoints = user.vaspResponses.length * 5;
       
-      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints;
+      // 10 points per approved VASP update request
+      const updatePoints = user.vaspUpdateRequests.length * 10;
+      
+      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints + updatePoints;
       
       return {
         userId: user.id,
@@ -77,7 +89,9 @@ const getTopContributor = async (req, res) => {
           commentsCount: user.comments.length,
           commentPoints,
           vaspResponses: user.vaspResponses.length,
-          vaspResponsePoints
+          vaspResponsePoints,
+          approvedUpdates: user.vaspUpdateRequests.length,
+          updatePoints
         }
       };
     });
@@ -133,6 +147,15 @@ const getLeaderboard = async (req, res) => {
           select: {
             id: true
           }
+        },
+        // Get approved VASP update requests
+        vaspUpdateRequests: {
+          where: {
+            status: 'APPROVED'
+          },
+          select: {
+            id: true
+          }
         }
       }
     });
@@ -153,7 +176,10 @@ const getLeaderboard = async (req, res) => {
       // 5 points per VASP response logged
       const vaspResponsePoints = user.vaspResponses.length * 5;
       
-      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints;
+      // 10 points per approved VASP update request
+      const updatePoints = user.vaspUpdateRequests.length * 10;
+      
+      const totalScore = vaspPoints + upvotePoints + commentPoints + vaspResponsePoints + updatePoints;
       
       return {
         userId: user.id,
@@ -169,7 +195,9 @@ const getLeaderboard = async (req, res) => {
           commentsCount: user.comments.length,
           commentPoints,
           vaspResponses: user.vaspResponses.length,
-          vaspResponsePoints
+          vaspResponsePoints,
+          approvedUpdates: user.vaspUpdateRequests.length,
+          updatePoints
         }
       };
     });
@@ -208,6 +236,10 @@ const getUserScore = async (req, res) => {
         },
         vaspResponses: {
           select: { id: true }
+        },
+        vaspUpdateRequests: {
+          where: { status: 'APPROVED' },
+          select: { id: true }
         }
       }
     });
@@ -221,7 +253,8 @@ const getUserScore = async (req, res) => {
     const commentPoints = user.comments.length * 1;
     const upvotePoints = user.comments.reduce((sum, comment) => sum + (comment.voteScore > 0 ? comment.voteScore * 5 : 0), 0);
     const responsePoints = user.vaspResponses.length * 5;
-    const totalPoints = submissionPoints + commentPoints + upvotePoints + responsePoints;
+    const updatePoints = user.vaspUpdateRequests.length * 10;
+    const totalPoints = submissionPoints + commentPoints + upvotePoints + responsePoints + updatePoints;
     
     res.json({
       userId,
@@ -231,7 +264,8 @@ const getUserScore = async (req, res) => {
         submissions: submissionPoints,
         comments: commentPoints,
         upvotes: upvotePoints,
-        responses: responsePoints
+        responses: responsePoints,
+        updates: updatePoints
       }
     });
   } catch (error) {
