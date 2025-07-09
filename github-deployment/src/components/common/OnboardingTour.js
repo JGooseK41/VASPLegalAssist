@@ -31,7 +31,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "LEO Friendly Score System 📊",
       content: "See the green/yellow/red grades? That's our LEO Friendly Score - showing how cooperative each VASP is. Grade A means fast responses and easy process. Grade F means expect challenges.",
-      target: '[data-tour="vasp-card"] .text-xs.font-semibold',
+      target: '[data-tour="vasp-card"] .bg-green-100, [data-tour="vasp-card"] .bg-yellow-100, [data-tour="vasp-card"] .bg-red-100',
       position: 'bottom',
       page: '/search'
     },
@@ -45,7 +45,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "Required Documents at a Glance 📋",
       content: "Color coding shows what each VASP requires: Green (Letterhead) = Easy, Yellow (Subpoena) = Medium, Orange (Search Warrant) = Hard, Red (MLAT) = Complex. Know before you submit!",
-      target: '[data-tour="vasp-card"] .grid.grid-cols-2.gap-4',
+      target: '[data-tour="vasp-card"] .grid.grid-cols-2',
       position: 'bottom',
       page: '/search'
     },
@@ -86,29 +86,29 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     },
     {
       title: "Track Your Results 📈",
-      content: "After sending requests, track responses through the community comments. Share what worked, turnaround times, and tips to help improve LEO scores for everyone.",
-      target: '[data-tour="vasp-card"]',
+      content: "See community response stats here! After sending requests, contribute your outcomes to help others know success rates, turnaround times, and tips for each VASP.",
+      target: '[data-tour="vasp-card"] .text-gray-600',
       position: 'bottom',
       page: '/search'
     },
     {
       title: "Community Comments 💬",
       content: "Check comments on each VASP for insider tips. 'Use badge number in subject line' or 'Requires notarization' - learn from others' experiences before you submit!",
-      target: '[data-tour="vasp-card"]',
-      position: 'bottom',
+      target: '.border-t.border-gray-200',
+      position: 'top',
       page: '/search'
     },
     {
       title: "Earn Recognition Points 🏆",
       content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the leaderboard to see top contributors.",
-      target: '[data-tour="leaderboard"]',
+      target: '[data-tour="leaderboard"] .text-sm.text-gray-600',
       position: 'left',
       page: '/'
     },
     {
       title: "Update VASP Information 🔄",
       content: "Found a new compliance email? Required document changed? Click 'Update Info' to submit changes. Admin-verified updates keep our database accurate for all users.",
-      target: '[data-tour="vasp-card"]',
+      target: '[data-tour="vasp-card"] button.bg-gray-600',
       position: 'bottom',
       page: '/search'
     },
@@ -426,29 +426,43 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
                 zIndex: 42,
                 top: currentStepData.position === 'top' ? 
                   highlightBounds.bottom + 10 : 
-                  highlightBounds.top - 50,
-                left: highlightBounds.left + (highlightBounds.width / 2) - 20,
-                transform: currentStepData.position === 'top' ? 'rotate(0deg)' : 'rotate(180deg)'
+                  highlightBounds.top - 70,
+                left: highlightBounds.left + (highlightBounds.width / 2) - 30,
+                transform: currentStepData.position === 'top' ? 'rotate(180deg)' : 'rotate(0deg)'
               }}
             >
               <svg
-                width="40"
-                height="40"
-                viewBox="0 0 40 40"
+                width="60"
+                height="60"
+                viewBox="0 0 60 60"
               >
+                <defs>
+                  <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#60A5FA', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
                 <path
-                  d="M20 5 L35 25 L25 25 L25 35 L15 35 L15 25 L5 25 Z"
-                  fill="#3B82F6"
-                  stroke="#2563EB"
+                  d="M30 10 Q30 5 30 5 Q30 5 35 10 L50 30 Q52 33 50 35 Q48 35 45 35 L38 35 L38 45 Q38 50 33 50 L27 50 Q22 50 22 45 L22 35 L15 35 Q12 35 10 35 Q8 33 10 30 L25 10 Q30 5 30 5"
+                  fill="url(#arrowGradient)"
+                  stroke="#1E40AF"
                   strokeWidth="2"
+                  filter="url(#glow)"
                   style={{
-                    filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.3))'
+                    filter: 'drop-shadow(0 8px 16px rgba(59, 130, 246, 0.5))'
                   }}
                 />
                 <animateTransform
                   attributeName="transform"
                   type="translate"
-                  values="0 0; 0 -10; 0 0"
+                  values="0 0; 0 -15; 0 0"
                   dur="1.5s"
                   repeatCount="indefinite"
                 />
