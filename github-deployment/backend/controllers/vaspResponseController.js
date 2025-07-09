@@ -171,8 +171,8 @@ const getVaspAggregatedData = async (req, res) => {
       : null;
       
     // Calculate effectiveness by document type
-    const recordsResponses = responses.filter(r => r.documentType === 'records_request');
-    const freezeResponses = responses.filter(r => r.documentType === 'freeze_request');
+    const recordsTypeResponses = responses.filter(r => r.documentType === 'records_request');
+    const freezeTypeResponses = responses.filter(r => r.documentType === 'freeze_request');
     
     const calculateTypeEffectiveness = (typeResponses) => {
       const worked = typeResponses.filter(r => r.documentWorked === true).length;
@@ -207,8 +207,8 @@ const getVaspAggregatedData = async (req, res) => {
       };
     };
     
-    const recordsEffectiveness = calculateTypeEffectiveness(recordsResponses);
-    const freezeEffectiveness = calculateTypeEffectiveness(freezeResponses);
+    const recordsEffectiveness = calculateTypeEffectiveness(recordsTypeResponses);
+    const freezeEffectiveness = calculateTypeEffectiveness(freezeTypeResponses);
     
     // Collect direct contacts before calculating score
     const directContacts = responses
