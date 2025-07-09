@@ -31,21 +31,21 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "LEO Friendly Score System 📊",
       content: "See the green/yellow/red grades? That's our LEO Friendly Score - showing how cooperative each VASP is. Grade A means fast responses and easy process. Grade F means expect challenges.",
-      target: '[data-tour="vasp-card"]',
+      target: '[data-tour="vasp-card"] .text-xs.font-semibold',
       position: 'bottom',
       page: '/search'
     },
     {
       title: "Service Type Intelligence 🏷️",
       content: "Click any service badge (CEX, DEX, P2P) to see what evidence is available. CEX has full KYC, DEX has limited data, P2P varies. Hover for quick info, click for full guide!",
-      target: '[data-tour="vasp-card"]',
+      target: '[data-tour="vasp-card"] .flex.flex-wrap.gap-1',
       position: 'bottom',
       page: '/search'
     },
     {
       title: "Required Documents at a Glance 📋",
       content: "Color coding shows what each VASP requires: Green (Letterhead) = Easy, Yellow (Subpoena) = Medium, Orange (Search Warrant) = Hard, Red (MLAT) = Complex. Know before you submit!",
-      target: '[data-tour="vasp-card"]',
+      target: '[data-tour="vasp-card"] .grid.grid-cols-2.gap-4',
       position: 'bottom',
       page: '/search'
     },
@@ -267,97 +267,48 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
 
   const calculateTooltipPosition = (elementRect, position) => {
     const tooltipWidth = 400;
-    const tooltipHeight = 350; // Approximate height
+    const tooltipHeight = 350;
     const padding = 20;
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    let styles = { position: 'fixed' };
     
-    // First, check if element is in viewport and adjust position if needed
-    const elementInViewport = elementRect.top >= 0 && 
-                             elementRect.bottom <= viewportHeight &&
-                             elementRect.left >= 0 && 
-                             elementRect.right <= viewportWidth;
+    // Always use a safe centered position that will stay on screen
+    let styles = { 
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)'
+    };
     
-    // If element is below viewport, position tooltip at top of screen
-    if (elementRect.top > viewportHeight - 100) {
-      styles.top = `${padding}px`;
-      styles.left = '50%';
-      styles.transform = 'translateX(-50%)';
-      return styles;
+    // Try to position near the element if there's enough space
+    const elementCenterY = elementRect.top + elementRect.height / 2;
+    const elementCenterX = elementRect.left + elementRect.width / 2;
+    
+    // Check if we can fit the tooltip below the element
+    if (elementRect.bottom + tooltipHeight + padding < viewportHeight) {
+      styles = {
+        position: 'fixed',
+        top: `${Math.min(elementRect.bottom + padding, viewportHeight - tooltipHeight - padding)}px`,
+        left: `${padding}px`,
+        right: `${padding}px`,
+        transform: 'none',
+        margin: '0 auto',
+        maxWidth: `${tooltipWidth}px`
+      };
     }
-    
-    // If element is above viewport, position tooltip at bottom of screen
-    if (elementRect.bottom < 100) {
-      styles.bottom = `${padding}px`;
-      styles.left = '50%';
-      styles.transform = 'translateX(-50%)';
-      return styles;
+    // Check if we can fit above
+    else if (elementRect.top - tooltipHeight - padding > 0) {
+      styles = {
+        position: 'fixed',
+        bottom: `${Math.max(viewportHeight - elementRect.top + padding, padding)}px`,
+        left: `${padding}px`,
+        right: `${padding}px`,
+        transform: 'none',
+        margin: '0 auto',
+        maxWidth: `${tooltipWidth}px`
+      };
     }
-    
-    // Normal positioning logic
-    switch (position) {
-      case 'bottom':
-        // Check if tooltip would go below viewport
-        if (elementRect.bottom + padding + tooltipHeight > viewportHeight) {
-          // Position above element instead
-          styles.bottom = `${viewportHeight - elementRect.top + padding}px`;
-        } else {
-          styles.top = `${elementRect.bottom + padding}px`;
-        }
-        styles.left = `${elementRect.left + elementRect.width / 2}px`;
-        styles.transform = 'translateX(-50%)';
-        break;
-      case 'top':
-        // Check if tooltip would go above viewport
-        if (elementRect.top - padding - tooltipHeight < 0) {
-          // Position below element instead
-          styles.top = `${elementRect.bottom + padding}px`;
-        } else {
-          styles.bottom = `${viewportHeight - elementRect.top + padding}px`;
-        }
-        styles.left = `${elementRect.left + elementRect.width / 2}px`;
-        styles.transform = 'translateX(-50%)';
-        break;
-      case 'left':
-        styles.top = `${Math.max(padding, Math.min(elementRect.top + elementRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - padding))}px`;
-        styles.right = `${viewportWidth - elementRect.left + padding}px`;
-        break;
-      case 'right':
-        styles.top = `${Math.max(padding, Math.min(elementRect.top + elementRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - padding))}px`;
-        styles.left = `${elementRect.right + padding}px`;
-        break;
-      default:
-        styles.top = `${elementRect.bottom + padding}px`;
-        styles.left = `${elementRect.left + elementRect.width / 2}px`;
-        styles.transform = 'translateX(-50%)';
-    }
-    
-    // Ensure tooltip stays within horizontal viewport bounds
-    if (styles.left && styles.transform === 'translateX(-50%)') {
-      const leftValue = parseInt(styles.left);
-      const transformedLeft = leftValue - (tooltipWidth / 2);
-      
-      if (transformedLeft < padding) {
-        styles.left = `${padding}px`;
-        styles.transform = 'translateX(0)';
-      } else if (transformedLeft + tooltipWidth > viewportWidth - padding) {
-        styles.left = `${viewportWidth - tooltipWidth - padding}px`;
-        styles.transform = 'translateX(0)';
-      }
-    }
-    
-    // Final check to ensure tooltip is visible
-    if (styles.top) {
-      const topValue = parseInt(styles.top);
-      if (topValue < padding) {
-        styles.top = `${padding}px`;
-      } else if (topValue + tooltipHeight > window.innerHeight - padding) {
-        // Position above the element instead
-        styles.bottom = `${window.innerHeight - elementRect.top + padding}px`;
-        delete styles.top;
-      }
-    }
+    // Otherwise center it on screen
     
     return styles;
   };
@@ -468,29 +419,38 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
             }}
           />
           {/* Pulsing arrow pointing to highlighted element */}
-          {tooltipPosition.top && highlightBounds && (
+          {highlightBounds && (
             <div
               className="fixed pointer-events-none"
               style={{
                 zIndex: 42,
-                top: tooltipPosition.bottom ? highlightBounds.top - 40 : highlightBounds.top + highlightBounds.height + 10,
+                top: currentStepData.position === 'top' ? 
+                  highlightBounds.bottom + 10 : 
+                  highlightBounds.top - 50,
                 left: highlightBounds.left + (highlightBounds.width / 2) - 20,
-                transform: tooltipPosition.bottom ? 'rotate(180deg)' : 'rotate(0deg)'
+                transform: currentStepData.position === 'top' ? 'rotate(0deg)' : 'rotate(180deg)'
               }}
             >
               <svg
                 width="40"
                 height="40"
                 viewBox="0 0 40 40"
-                style={{
-                  animation: 'arrow-pulse 1.5s ease-in-out infinite'
-                }}
               >
                 <path
                   d="M20 5 L35 25 L25 25 L25 35 L15 35 L15 25 L5 25 Z"
                   fill="#3B82F6"
-                  stroke="#1E40AF"
+                  stroke="#2563EB"
                   strokeWidth="2"
+                  style={{
+                    filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.3))'
+                  }}
+                />
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values="0 0; 0 -10; 0 0"
+                  dur="1.5s"
+                  repeatCount="indefinite"
                 />
               </svg>
             </div>
@@ -503,10 +463,13 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
       
       {/* Tour tooltip */}
       <div 
-        className={`bg-white rounded-lg shadow-2xl p-6 ${isMobile ? 'max-w-sm' : 'max-w-md'} mx-4 pointer-events-auto`}
+        className={`fixed bg-white rounded-lg shadow-2xl p-6 ${isMobile ? 'max-w-sm' : 'max-w-md'} pointer-events-auto`}
         style={{
           ...tooltipPosition,
-          zIndex: 50
+          zIndex: 50,
+          maxWidth: isMobile ? '90vw' : '400px',
+          maxHeight: '80vh',
+          overflow: 'auto'
         }}
       >
         {/* Header */}
