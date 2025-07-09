@@ -433,9 +433,13 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
                 zIndex: 42,
                 top: currentStepData.position === 'top' ? 
                   highlightBounds.bottom + 10 : 
+                  currentStepData.position === 'left' ?
+                  highlightBounds.top + (highlightBounds.height / 2) - 30 :
                   highlightBounds.top - 70,
-                left: highlightBounds.left + (highlightBounds.width / 2) - 30,
-                transform: currentStepData.position === 'top' ? 'rotate(180deg)' : 'rotate(0deg)'
+                left: currentStepData.position === 'left' ?
+                  highlightBounds.right + 10 :
+                  highlightBounds.left + (highlightBounds.width / 2) - 30,
+                transform: currentStepData.position === 'top' ? 'rotate(180deg)' : currentStepData.position === 'left' ? 'rotate(270deg)' : 'rotate(0deg)'
               }}
             >
               <svg
