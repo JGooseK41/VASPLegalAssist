@@ -62,23 +62,23 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : (isRecords ? vasp.accepts_us_service : false);
     
     return (
-      <div className="bg-white p-4 rounded-b-lg border border-gray-200 shadow-sm -mt-1 text-xs">
-        {/* Required Document - Most Important */}
-        <div className="mb-3 text-center">
-          <p className="text-xs text-gray-500 mb-1">Required Document:</p>
-          <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${
-            !displayRequiredDoc || displayRequiredDoc === 'Unknown' || displayRequiredDoc === 'Not specified' ? 'bg-gray-100 text-gray-600' :
-            displayRequiredDoc.toLowerCase().includes('letterhead') ? 'bg-green-100 text-green-800' :
-            displayRequiredDoc.toLowerCase().includes('subpoena') ? 'bg-yellow-100 text-yellow-800' :
-            displayRequiredDoc.toLowerCase().includes('warrant') ? 'bg-orange-100 text-orange-800' :
-            displayRequiredDoc.toLowerCase().includes('mlat') ? 'bg-red-100 text-red-800' :
-            displayRequiredDoc.toLowerCase().includes('no capability') ? 'bg-gray-100 text-gray-700' :
-            displayRequiredDoc.toLowerCase().includes('non-compliant') ? 'bg-red-100 text-red-800' :
-            'bg-gray-100 text-gray-700'
-          }`}>
-            {displayRequiredDoc || 'Unknown'}
-          </div>
+      <div className="bg-white rounded-b-lg border border-gray-200 shadow-sm -mt-1 text-xs overflow-hidden">
+        {/* Required Document Banner */}
+        <div className={`py-2 px-4 text-center ${
+          !displayRequiredDoc || displayRequiredDoc === 'Unknown' || displayRequiredDoc === 'Not specified' ? 'bg-gray-100 text-gray-600' :
+          displayRequiredDoc.toLowerCase().includes('letterhead') ? 'bg-green-100 text-green-800' :
+          displayRequiredDoc.toLowerCase().includes('subpoena') ? 'bg-yellow-100 text-yellow-800' :
+          displayRequiredDoc.toLowerCase().includes('warrant') ? 'bg-orange-100 text-orange-800' :
+          displayRequiredDoc.toLowerCase().includes('mlat') ? 'bg-red-100 text-red-800' :
+          displayRequiredDoc.toLowerCase().includes('no capability') ? 'bg-gray-100 text-gray-700' :
+          displayRequiredDoc.toLowerCase().includes('non-compliant') ? 'bg-red-100 text-red-800' :
+          'bg-gray-100 text-gray-700'
+        }`}>
+          <span className="text-xs font-medium uppercase tracking-wider opacity-75">Required: </span>
+          <span className="text-sm font-semibold">{displayRequiredDoc || 'Unknown'}</span>
         </div>
+        
+        <div className="p-4">
         
         {/* Additional Info Grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -128,6 +128,7 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
             ))}
           </div>
         )}
+        </div>
       </div>
     );
   };

@@ -53,34 +53,26 @@ const VASPCard = ({ vasp, onSelect }) => {
                       <div key={type} className="relative group">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-help transition-all hover:shadow-md`}
+                          title={config.shortDescription}
                         >
                           {config.label}
                         </span>
-                        
-                        {/* Hover tooltip */}
-                        <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-xs rounded-lg py-2 px-3 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap max-w-xs">
-                          <div className="font-semibold mb-1">{config.fullName}</div>
-                          <div className="text-gray-300">{config.shortDescription}</div>
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                            <div className="border-4 border-transparent border-t-gray-900"></div>
-                          </div>
-                        </div>
                       </div>
                     );
                   })}
                 </>
               )}
               
-              {/* Info button for full details - Always visible */}
+              {/* Service Type Guide link - Always visible */}
               <button
                 onClick={() => setShowServiceTypeModal(true)}
-                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors border border-purple-200"
+                className="ml-2 inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
                 title="View all service type details"
               >
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="font-semibold">Service Type Guide</span>
+                <span className="underline">Service Type Guide</span>
               </button>
             </div>
           </div>
