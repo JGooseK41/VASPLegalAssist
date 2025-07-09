@@ -245,22 +245,22 @@ const VaspComments = ({ vaspId, vaspName }) => {
   };
   
   return (
-    <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm">
+    <div className="bg-gray-50 p-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left hover:bg-gray-100 p-2 rounded-md transition-colors -m-2 mb-2"
+        className="w-full flex items-center justify-between text-left hover:bg-gray-100 p-2 rounded-md transition-colors -m-2"
       >
         <div className="flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-gray-400" />
-          <span className="font-medium text-gray-700">Member Comments</span>
+          <MessageSquare className="w-4 h-4 text-gray-400" />
+          <span className="text-sm font-medium text-gray-700">Community Comments</span>
           {comments.length > 0 && !isExpanded && (
-            <span className="text-sm text-gray-500">({comments.length})</span>
+            <span className="text-xs text-gray-500">({comments.length})</span>
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-gray-400" />
+          <ChevronUp className="w-4 h-4 text-gray-400" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400" />
+          <ChevronDown className="w-4 h-4 text-gray-400" />
         )}
       </button>
       

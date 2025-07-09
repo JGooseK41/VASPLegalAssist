@@ -15,115 +15,126 @@ import { extractDbaFromNames } from '../../utils/parseVaspNames';
 const VASPCard = ({ vasp, onSelect }) => {
   const { legalName, dba } = extractDbaFromNames(vasp.name, vasp.legal_name);
   const [stats, setStats] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   
   return (
-    <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow border border-gray-200">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 truncate">{legalName}</h3>
-          {dba && (
-            <p className="text-sm text-gray-600 truncate">
-              <span className="text-gray-500">DBA:</span> {dba}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center space-x-1 ml-4">
-          <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-sm text-gray-500 truncate">{vasp.jurisdiction}</span>
+    <div className="bg-white shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200 overflow-hidden">
+      {/* Header Section - Keep this prominent */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 truncate">{legalName}</h3>
+            {dba && (
+              <p className="text-sm text-gray-600 truncate">
+                <span className="text-gray-500">DBA:</span> {dba}
+              </p>
+            )}
+          </div>
+          <span className="text-sm text-gray-500 flex items-center ml-3">
+            <MapPin className="h-3 w-3 mr-1" />
+            {vasp.jurisdiction}
+          </span>
         </div>
       </div>
-      
-      {/* LEO Friendly Score - Display if available */}
-      {stats?.leoScore && (
-        <div className="mb-3">
-          <LEOFriendlyScore leoScore={stats.leoScore} compact={true} />
-        </div>
-      )}
-      
-      {/* Request Type Indicators - Quick view of what's accepted */}
-      <RequestTypeIndicators vasp={vasp} />
 
-      <div className="space-y-2 mb-4">
-        {vasp.compliance_email && (
-          <div className="flex items-center space-x-2">
-            <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <span className="text-sm text-gray-600 truncate">{vasp.compliance_email}</span>
+      {/* Key Info Section */}
+      <div className="p-4 space-y-3">
+        {/* Top Priority: LEO Score and Request Type Indicators */}
+        <div className="flex items-center justify-between">
+          <RequestTypeIndicators vasp={vasp} />
+          {stats?.leoScore && (
+            <LEOFriendlyScore leoScore={stats.leoScore} compact={true} />
+          )}
+        </div>
+
+        {/* Essential Contact Info */}
+        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+          {vasp.compliance_email && (
+            <div className="flex items-center text-sm">
+              <Mail className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+              <span className="text-gray-700 truncate">{vasp.compliance_email}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">
+              Preferred: <span className="font-medium capitalize">{vasp.preferred_method}</span>
+            </span>
+            {vasp.has_own_portal && (
+              <span className="text-blue-600 flex items-center">
+                <Globe className="h-3 w-3 mr-1" />
+                Portal
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Request Type Tabs - Keep these prominent */}
+        <VaspRequestTypeInfo vasp={vasp} stats={stats} />
+
+        {/* Collapsible Details Section */}
+        {showDetails && (
+          <div className="space-y-3 animate-fadeIn">
+            {/* Data Types */}
+            {vasp.info_types && vasp.info_types.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1">Available Data Types</p>
+                <div className="flex flex-wrap gap-1">
+                  {vasp.info_types.map((type, index) => (
+                    <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stats Badge */}
+            <VaspResponseStats 
+              vaspId={vasp.id} 
+              displayMode="badge" 
+              onStatsLoaded={setStats}
+            />
+
+            {/* Direct Contacts */}
+            {stats?.contactInfo?.directContacts && stats.contactInfo.directContacts.length > 0 && (
+              <DirectContactDisplay contacts={stats.contactInfo.directContacts} />
+            )}
           </div>
         )}
-        <div className="flex items-center space-x-2">
-          <Globe className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-sm text-gray-600 capitalize">
-            Method: {vasp.preferred_method}
-          </span>
-        </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {vasp.info_types && vasp.info_types.slice(0, 3).map((type, index) => (
-          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {type}
-          </span>
-        ))}
-        {vasp.info_types && vasp.info_types.length > 3 && (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            +{vasp.info_types.length - 3} more
-          </span>
+        {/* Email Update Alert - Only show when needed */}
+        {stats?.contactInfo?.emailUpdatesSuggested && (
+          <EmailUpdateSuggestion
+            vaspId={vasp.id}
+            currentEmail={vasp.compliance_email}
+            suggestedEmails={stats.contactInfo.suggestedEmails}
+            onSuccess={() => {
+              window.location.reload();
+            }}
+          />
         )}
-      </div>
-      
-      {/* Request Type Requirements */}
-      <VaspRequestTypeInfo vasp={vasp} stats={stats} />
-      
-      {/* VASP Response Statistics */}
-      <VaspResponseStats 
-        vaspId={vasp.id} 
-        displayMode="badge" 
-        onStatsLoaded={setStats}
-      />
-      
-      {/* Email Update Suggestion - Show when email issues detected */}
-      {stats?.contactInfo?.emailUpdatesSuggested && (
-        <EmailUpdateSuggestion
-          vaspId={vasp.id}
-          currentEmail={vasp.compliance_email}
-          suggestedEmails={stats.contactInfo.suggestedEmails}
-          onSuccess={() => {
-            // Refresh stats after email update
-            window.location.reload();
-          }}
-        />
-      )}
-      
-      {/* Direct Contacts Display */}
-      {stats?.contactInfo?.directContacts && stats.contactInfo.directContacts.length > 0 && (
-        <DirectContactDisplay contacts={stats.contactInfo.directContacts} />
-      )}
 
-      <div className="flex justify-between items-center">
-        <div className="flex space-x-2">
-          {vasp.has_own_portal && (
-            <span className="inline-flex items-center text-xs text-blue-600">
-              <Globe className="h-3 w-3 mr-1" />
-              Portal
-            </span>
-          )}
-          {vasp.preferred_method === 'kodex' && (
-            <span className="inline-flex items-center text-xs text-purple-600">
-              <Shield className="h-3 w-3 mr-1" />
-              Kodex
-            </span>
-          )}
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {showDetails ? 'Less details' : 'More details'}
+          </button>
+          <button
+            onClick={() => onSelect(vasp)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+          >
+            Generate Request
+          </button>
         </div>
-        <button
-          onClick={() => onSelect(vasp)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
-        >
-          Select VASP
-        </button>
       </div>
 
-      {/* Comments Section - User-generated content with voting */}
-      <VaspComments vaspId={vasp.id} vaspName={vasp.name} />
+      {/* Comments Section - Separated visually */}
+      <div className="border-t border-gray-200">
+        <VaspComments vaspId={vasp.id} vaspName={vasp.name} />
+      </div>
     </div>
   );
 };

@@ -28,16 +28,16 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     return (
       <button
         onClick={onClick}
-        className={`flex-1 py-2 px-3 text-sm font-medium rounded-t-lg transition-colors flex items-center justify-center gap-2 ${
+        className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-t-lg transition-colors flex items-center justify-center gap-2 ${
           isActive 
             ? 'bg-white text-gray-900 border-t border-l border-r border-gray-200' 
             : 'bg-gray-100 text-gray-600 hover:text-gray-900 border-b border-gray-200'
         }`}
       >
-        <FileText className="h-4 w-4" />
+        {type === 'records' ? <FileText className="h-3.5 w-3.5" /> : <Shield className="h-3.5 w-3.5" />}
         {label}
         {effectiveness && (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium
             ${color === 'green' ? 'bg-green-100 text-green-800' :
               color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
               color === 'red' ? 'bg-red-100 text-red-800' :
@@ -64,90 +64,66 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : vasp.accepts_us_service;
     
     return (
-      <div className="bg-white p-4 rounded-b-lg border-l border-r border-b border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          {/* Processing Time */}
-          <div>
-            <div className="flex items-center text-gray-600 mb-1">
-              <Clock className="h-4 w-4 mr-1" />
-              <span className="font-medium">Processing Time</span>
-            </div>
-            <p className="text-gray-900">{displayProcessingTime}</p>
-          </div>
-          
+      <div className="bg-white p-3 rounded-b-lg border-l border-r border-b border-gray-200 text-xs">
+        {/* Compact Info Grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           {/* Required Document */}
-          <div>
-            <div className="flex items-center text-gray-600 mb-1">
-              <Shield className="h-4 w-4 mr-1" />
-              <span className="font-medium">Required Document</span>
-            </div>
-            <p className="text-gray-900">{displayRequiredDoc}</p>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Required:</span>
+            <span className="font-medium text-gray-900">{displayRequiredDoc}</span>
           </div>
           
-          {/* Accepts US Service */}
-          <div>
-            <div className="flex items-center text-gray-600 mb-1">
-              <Globe className="h-4 w-4 mr-1" />
-              <span className="font-medium">Accepts US Service</span>
-            </div>
-            <div className="flex items-center">
-              {displayAcceptsUS ? (
-                <span className="flex items-center text-green-600">
-                  <Check className="h-4 w-4 mr-1" />
-                  Yes
-                </span>
-              ) : (
-                <span className="flex items-center text-red-600">
-                  <X className="h-4 w-4 mr-1" />
-                  No
-                </span>
-              )}
-            </div>
+          {/* Processing Time */}
+          <div className="flex justify-between">
+            <span className="text-gray-600">Time:</span>
+            <span className="font-medium text-gray-900">{displayProcessingTime.replace('business days', 'days')}</span>
           </div>
           
-          {/* Effectiveness (if data available) */}
+          {/* US Service */}
+          <div className="flex justify-between">
+            <span className="text-gray-600">US Service:</span>
+            {displayAcceptsUS ? (
+              <span className="flex items-center text-green-700 font-medium">
+                <Check className="h-3 w-3 mr-0.5" />
+                Yes
+              </span>
+            ) : (
+              <span className="flex items-center text-red-700 font-medium">
+                <X className="h-3 w-3 mr-0.5" />
+                No
+              </span>
+            )}
+          </div>
+          
+          {/* Success Rate */}
           {effectiveness && (
-            <div>
-              <div className="flex items-center text-gray-600 mb-1">
-                {getEffectivenessIcon(effectiveness.rate)}
-                <span className="font-medium ml-1">Success Rate</span>
-              </div>
-              <p className="text-gray-900">
-                {effectiveness.rate}% ({effectiveness.worked}/{effectiveness.total})
-              </p>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Success:</span>
+              <span className={`font-medium ${
+                effectiveness.rate >= 75 ? 'text-green-700' :
+                effectiveness.rate >= 50 ? 'text-yellow-700' : 'text-red-700'
+              }`}>
+                {effectiveness.rate}%
+              </span>
             </div>
           )}
         </div>
         
-        {/* Jurisdictions */}
-        {jurisdictions && jurisdictions.length > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center text-gray-600 mb-1">
-              <Globe className="h-4 w-4 mr-1" />
-              <span className="font-medium text-sm">Accepted Jurisdictions</span>
-            </div>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {jurisdictions.map((jurisdiction, index) => (
-                <span 
-                  key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
-                >
-                  {jurisdiction}
-                </span>
-              ))}
-            </div>
+        {/* Jurisdictions - Only show if limited */}
+        {jurisdictions && jurisdictions.length > 0 && jurisdictions.length < 5 && (
+          <div className="mt-2 text-gray-600">
+            <span>Jurisdictions: </span>
+            <span className="text-gray-900">{jurisdictions.join(', ')}</span>
           </div>
         )}
         
-        {/* Common Failure Reasons (if data available) */}
+        {/* Common Issues - Compact */}
         {effectiveness?.topFailureReasons && effectiveness.topFailureReasons.length > 0 && (
-          <div className="mt-4 p-3 bg-amber-50 rounded-lg">
-            <p className="text-xs font-medium text-amber-900 mb-1">Common Issues:</p>
-            <ul className="text-xs text-amber-800 space-y-1">
-              {effectiveness.topFailureReasons.map((reason, index) => (
-                <li key={index}>• {reason.label} ({reason.count} reports)</li>
-              ))}
-            </ul>
+          <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-100">
+            <p className="font-medium text-amber-900">Common Issues:</p>
+            {effectiveness.topFailureReasons.slice(0, 2).map((reason, index) => (
+              <p key={index} className="text-amber-800 mt-0.5">• {reason.label}</p>
+            ))}
           </div>
         )}
       </div>
@@ -155,18 +131,18 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
   };
   
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       <div className="flex border-gray-200">
         <RequestTypeTab
           type="records"
-          label="Records Request"
+          label="Records"
           isActive={activeTab === 'records'}
           onClick={() => setActiveTab('records')}
           effectiveness={recordsEffectiveness}
         />
         <RequestTypeTab
           type="freeze"
-          label="Freeze Request"
+          label="Freeze"
           isActive={activeTab === 'freeze'}
           onClick={() => setActiveTab('freeze')}
           effectiveness={freezeEffectiveness}
