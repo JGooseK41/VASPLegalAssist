@@ -7,6 +7,7 @@ import { contributorAPI } from '../../services/api';
 import { ToastContainer } from './Toast';
 import SurveyReminderPopup from './SurveyReminderPopup';
 import { isAdmin } from '../../utils/auth';
+import OnboardingTour from './OnboardingTour';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -15,6 +16,7 @@ const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [userPoints, setUserPoints] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const userMenuRef = useRef(null);
 
   const navigation = [
@@ -59,9 +61,40 @@ const Layout = () => {
         .catch(() => setUserPoints(null));
     }
   }, [user, location]); // Refetch on route change
+  
+  // Check for onboarding
+  useEffect(() => {
+    // Check if tutorial restart was requested
+    const restartRequested = localStorage.getItem('restartTutorial');
+    if (restartRequested) {
+      localStorage.removeItem('restartTutorial');
+      // Add a small delay to ensure page is fully loaded
+      setTimeout(() => setShowOnboarding(true), 500);
+      return;
+    }
+    
+    // Check if user needs onboarding
+    const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
+    const onboardingInProgress = sessionStorage.getItem('onboardingInProgress');
+    
+    // Only show onboarding if not completed, not in progress, and user is not demo
+    if (!hasCompletedOnboarding && !onboardingInProgress && user?.role !== 'DEMO') {
+      sessionStorage.setItem('onboardingInProgress', 'true');
+      // Add a small delay to ensure page is fully loaded
+      setTimeout(() => setShowOnboarding(true), 500);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour onComplete={() => {
+          setShowOnboarding(false);
+          sessionStorage.removeItem('onboardingInProgress');
+        }} />
+      )}
+      
       {/* Navigation */}
       <header className="bg-blue-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
