@@ -104,18 +104,19 @@ const loginLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 500, // Increased from 100 to 500
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip rate limiting for certain IPs if needed
+  skip: (req) => {
+    // You can add IP whitelist logic here if needed
+    return false;
+  }
 });
 
-// Apply rate limiting
-app.use('/api/', apiLimiter);
-app.use('/api/auth/login', loginLimiter);
-app.use('/api/auth/register', loginLimiter);
-
-// CORS Configuration - Temporary fix for production
+// CORS Configuration - MUST come before rate limiting to ensure headers are always set
+// Temporary fix for production
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [];
 const clientUrl = process.env.CLIENT_URL?.trim();
 const allowedOrigins = [
@@ -151,10 +152,18 @@ const corsOptions = {
   preflightContinue: false
 };
 
+// Apply CORS before anything else to ensure headers are always set
 app.use(cors(corsOptions));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET));
+
+// Apply rate limiting AFTER CORS
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', loginLimiter);
 
 // Analytics tracking middleware
 app.use(trackVisitor);
