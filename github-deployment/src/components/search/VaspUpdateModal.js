@@ -13,6 +13,8 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
     jurisdiction: vasp.jurisdiction || '',
     service_types: vasp.service_types || [],
     law_enforcement_url: vasp.law_enforcement_url || '',
+    records_required_document: vasp.records_required_document || '',
+    freeze_required_document: vasp.freeze_required_document || '',
     notes: '',
     user_comments: ''
   });
@@ -190,6 +192,50 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
                   <span className="text-sm text-gray-700">{def.label}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* Document Requirements */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Document Requirements</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Required Document for Records Request
+                </label>
+                <select
+                  value={formData.records_required_document}
+                  onChange={(e) => setFormData({...formData, records_required_document: e.target.value})}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Unknown</option>
+                  <option value="Letterhead">Letterhead</option>
+                  <option value="Subpoena">Subpoena</option>
+                  <option value="Search Warrant">Search Warrant</option>
+                  <option value="MLAT">MLAT</option>
+                  <option value="No Capability">No Capability by VASP</option>
+                  <option value="Non-Compliant">Non-Compliant</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Required Document for Freeze/Seizure
+                </label>
+                <select
+                  value={formData.freeze_required_document}
+                  onChange={(e) => setFormData({...formData, freeze_required_document: e.target.value})}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Unknown</option>
+                  <option value="Letterhead">Letterhead</option>
+                  <option value="Subpoena">Subpoena</option>
+                  <option value="Search Warrant">Search Warrant</option>
+                  <option value="MLAT">MLAT</option>
+                  <option value="No Capability">No Capability by VASP</option>
+                  <option value="Non-Compliant">Non-Compliant</option>
+                </select>
+              </div>
             </div>
           </div>
 

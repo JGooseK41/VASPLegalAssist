@@ -460,7 +460,9 @@ const processUpdateRequest = async (req, res) => {
           service_address: changes.service_address,
           jurisdiction: changes.jurisdiction,
           service_types: changes.service_types,
-          law_enforcement_url: changes.law_enforcement_url
+          law_enforcement_url: changes.law_enforcement_url,
+          records_required_document: changes.records_required_document,
+          freeze_required_document: changes.freeze_required_document
         }
       });
     }
