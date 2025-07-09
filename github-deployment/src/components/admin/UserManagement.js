@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle, XCircle, Shield, User, AlertCircle } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown } from 'lucide-react';
 import { adminAPI } from '../../services/api';
+import { isMasterAdmin } from '../../utils/auth';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -107,6 +108,7 @@ const UserManagement = () => {
               <option value="">All Roles</option>
               <option value="USER">User</option>
               <option value="ADMIN">Admin</option>
+              <option value="MASTER_ADMIN">Master Admin</option>
             </select>
           </div>
           
@@ -176,13 +178,16 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'ADMIN' 
+                        user.role === 'MASTER_ADMIN'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : user.role === 'ADMIN' 
                           ? 'bg-purple-100 text-purple-800' 
                           : 'bg-gray-100 text-gray-800'
                       }`}>
+                        {user.role === 'MASTER_ADMIN' && <Crown className="w-3 h-3 mr-1" />}
                         {user.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
                         {user.role === 'USER' && <User className="w-3 h-3 mr-1" />}
-                        {user.role}
+                        {user.role === 'MASTER_ADMIN' ? 'Master Admin' : user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -222,15 +227,21 @@ const UserManagement = () => {
                             </button>
                           </>
                         )}
-                        {user.isApproved && (
+                        {user.isApproved && isMasterAdmin() && user.role !== 'MASTER_ADMIN' && (
                           <select
                             value={user.role}
                             onChange={(e) => handleUpdateRole(user.id, e.target.value)}
                             className="text-sm border border-gray-300 rounded px-2 py-1"
+                            title="Change user role"
                           >
                             <option value="USER">User</option>
                             <option value="ADMIN">Admin</option>
                           </select>
+                        )}
+                        {user.isApproved && !isMasterAdmin() && (
+                          <span className="text-xs text-gray-500">
+                            {user.role === 'MASTER_ADMIN' ? '-' : 'Role locked'}
+                          </span>
                         )}
                       </div>
                     </td>

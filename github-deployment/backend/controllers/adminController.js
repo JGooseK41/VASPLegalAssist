@@ -241,8 +241,23 @@ const updateUserRole = async (req, res) => {
     const { userId } = req.params;
     const { role } = req.body;
     
+    // Only MASTER_ADMIN can update roles
+    if (req.userRole !== 'MASTER_ADMIN') {
+      return res.status(403).json({ error: 'Only master admin can update user roles' });
+    }
+    
     if (!['USER', 'ADMIN'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
+    }
+    
+    // Prevent changing MASTER_ADMIN role
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, email: true }
+    });
+    
+    if (targetUser.role === 'MASTER_ADMIN') {
+      return res.status(403).json({ error: 'Cannot modify master admin role' });
     }
     
     const user = await prisma.user.update({
