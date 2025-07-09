@@ -51,6 +51,12 @@ const VASPCard = ({ vasp, onSelect }) => {
               <span className="text-gray-700 truncate">{vasp.compliance_email}</span>
             </div>
           )}
+          {vasp.service_address && (
+            <div className="flex items-start text-sm">
+              <MapPin className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
+              <span className="text-gray-700">{vasp.service_address}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">
               Preferred service method: {' '}
