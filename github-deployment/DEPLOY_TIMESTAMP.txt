@@ -1,0 +1,8 @@
+Deploy timestamp: 2025-07-09 19:20:00
+This file forces a rebuild on deployment services.
+
+Recent changes:
+- Fixed tutorial arrow directions
+- Fixed tutorial element selectors  
+- Fixed analytics SQL queries
+- Added MASTER_ADMIN access to analytics
