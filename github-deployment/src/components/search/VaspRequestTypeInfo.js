@@ -26,14 +26,20 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     return (
       <button
         onClick={onClick}
-        className={`flex-1 py-1.5 px-3 text-xs font-medium rounded-t-lg transition-colors flex items-center justify-center gap-2 ${
+        className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-t-lg transition-all duration-200 flex items-center justify-center gap-2 relative ${
           isActive 
-            ? 'bg-white text-gray-900 border-t border-l border-r border-gray-200' 
-            : 'bg-gray-100 text-gray-600 hover:text-gray-900 border-b border-gray-200'
+            ? 'bg-blue-600 text-white shadow-lg transform -translate-y-0.5' 
+            : 'bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800'
         }`}
+        style={isActive ? {
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+        } : {}}
       >
-        {type === 'records' ? <FileText className="h-3.5 w-3.5" /> : <Shield className="h-3.5 w-3.5" />}
+        {type === 'records' ? <FileText className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
         {label}
+        {isActive && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-700 rounded-t-full"></div>
+        )}
       </button>
     );
   };
@@ -56,7 +62,7 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : (isRecords ? vasp.accepts_us_service : false);
     
     return (
-      <div className="bg-white p-3 rounded-b-lg border-l border-r border-b border-gray-200 text-xs">
+      <div className="bg-white p-4 rounded-b-lg border border-gray-200 shadow-sm -mt-1 text-xs">
         {/* Required Document - Most Important */}
         <div className="mb-3 text-center">
           <p className="text-xs text-gray-500 mb-1">Required Document:</p>
@@ -127,17 +133,17 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
   };
   
   return (
-    <div className="mt-2">
-      <div className="flex border-gray-200">
+    <div className="mt-3">
+      <div className="flex gap-1 mb-0">
         <RequestTypeTab
           type="records"
-          label="Records"
+          label="Records Request"
           isActive={activeTab === 'records'}
           onClick={() => setActiveTab('records')}
         />
         <RequestTypeTab
           type="freeze"
-          label="Freeze"
+          label="Freeze/Seizure"
           isActive={activeTab === 'freeze'}
           onClick={() => setActiveTab('freeze')}
         />

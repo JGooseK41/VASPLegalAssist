@@ -180,25 +180,30 @@ const VASPCard = ({ vasp, onSelect }) => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="pt-2 space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUpdateModal(true)}
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Update Info
+            </button>
+            <button
+              onClick={() => onSelect(vasp)}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+              data-tour="generate-request"
+            >
+              Generate Request
+            </button>
+          </div>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="w-full text-sm text-gray-500 hover:text-gray-700 transition-colors text-center"
           >
-            {showDetails ? 'Less details' : 'More details'}
-          </button>
-          <button
-            onClick={() => setShowUpdateModal(true)}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
-          >
-            Update Info
-          </button>
-          <button
-            onClick={() => onSelect(vasp)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
-            data-tour="generate-request"
-          >
-            Generate Request
+            {showDetails ? '▲ Less details' : '▼ More details'}
           </button>
         </div>
       </div>
