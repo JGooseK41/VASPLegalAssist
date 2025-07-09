@@ -6,6 +6,7 @@ import DemoBanner from './DemoBanner';
 import { contributorAPI } from '../../services/api';
 import { ToastContainer } from './Toast';
 import SurveyReminderPopup from './SurveyReminderPopup';
+import { isAdmin } from '../../utils/auth';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -144,7 +145,7 @@ const Layout = () => {
                       );
                     })}
                     
-                    {user?.role === 'ADMIN' && (
+                    {isAdmin() && (
                       <div className="border-t border-gray-100">
                         <Link
                           to="/admin"
@@ -226,7 +227,7 @@ const Layout = () => {
                   })}
                   
                   {/* Admin Portal Button */}
-                  {user?.role === 'ADMIN' && (
+                  {isAdmin() && (
                     <Link
                       to="/admin"
                       onClick={() => setMobileMenuOpen(false)}

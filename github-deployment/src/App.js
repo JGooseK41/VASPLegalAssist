@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
+import AdminRoute from './components/common/AdminRoute';
 import Layout from './components/common/Layout';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
@@ -56,7 +57,10 @@ function App() {
               <Route path="/submissions/my" element={<MySubmissions />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
             </Route>
-            {/* Admin Portal - outside of main layout */}
+          </Route>
+          
+          {/* Admin Portal - requires admin role */}
+          <Route element={<AdminRoute />}>
             <Route path="/admin/*" element={<AdminPortal />} />
           </Route>
           
