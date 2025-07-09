@@ -22,7 +22,7 @@ const VASPCard = ({ vasp, onSelect }) => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   
   return (
-    <div className="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden" data-tour="vasp-card">
+    <div className="bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-200 border-2 border-gray-300 hover:border-blue-400 overflow-hidden" data-tour="vasp-card">
       {/* Header Section - More prominent with color */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
@@ -341,7 +341,7 @@ const VASPSearch = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
         <div className="mb-4">
@@ -372,7 +372,7 @@ const VASPSearch = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="bg-white shadow-md rounded-lg p-6 mb-8 border-2 border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -477,7 +477,7 @@ const VASPSearch = () => {
         </div>
 
         {/* Results */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredVASPs.map((vasp) => (
             <VASPCard key={vasp.id} vasp={vasp} onSelect={handleVASPSelect} />
           ))}
