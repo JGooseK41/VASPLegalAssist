@@ -28,14 +28,20 @@ const Dashboard = () => {
     const restartRequested = localStorage.getItem('restartTutorial');
     if (restartRequested) {
       localStorage.removeItem('restartTutorial');
-      setShowOnboarding(true);
+      // Add a small delay to ensure page is fully loaded
+      setTimeout(() => setShowOnboarding(true), 500);
       return;
     }
     
     // Check if user needs onboarding
     const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
-    if (!hasCompletedOnboarding && user?.role !== 'DEMO') {
-      setShowOnboarding(true);
+    const onboardingInProgress = sessionStorage.getItem('onboardingInProgress');
+    
+    // Only show onboarding if not completed, not in progress, and user is not demo
+    if (!hasCompletedOnboarding && !onboardingInProgress && user?.role !== 'DEMO') {
+      sessionStorage.setItem('onboardingInProgress', 'true');
+      // Add a small delay to ensure page is fully loaded
+      setTimeout(() => setShowOnboarding(true), 500);
     }
   }, [user]);
 
@@ -135,7 +141,10 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {showOnboarding && (
-        <OnboardingTour onComplete={() => setShowOnboarding(false)} />
+        <OnboardingTour onComplete={() => {
+          setShowOnboarding(false);
+          sessionStorage.removeItem('onboardingInProgress');
+        }} />
       )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section with Top Contributor */}

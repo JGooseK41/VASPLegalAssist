@@ -10,6 +10,7 @@ const OnboardingTour = ({ onComplete }) => {
   const [tooltipPosition, setTooltipPosition] = useState({});
   const [highlightBounds, setHighlightBounds] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const navigationCountRef = useRef(0);
 
   const steps = [
     {
@@ -17,7 +18,7 @@ const OnboardingTour = ({ onComplete }) => {
       content: "The world's first crowdsourced platform for cryptocurrency legal requests. Built by investigators, for investigators. Let's walk through how to use the platform effectively.",
       target: null,
       position: 'center',
-      page: '/dashboard'
+      page: '/'
     },
     {
       title: "Step 1: Start Your Investigation 🔍",
@@ -80,7 +81,7 @@ const OnboardingTour = ({ onComplete }) => {
       content: "Your templates and documents are encrypted in your browser before storage. Only you have the key - even admins can't see your data. Download backups anytime for agency records.",
       target: '[data-tour="recent-documents"]',
       position: 'top',
-      page: '/dashboard'
+      page: '/'
     },
     {
       title: "Track Your Results 📈",
@@ -101,7 +102,7 @@ const OnboardingTour = ({ onComplete }) => {
       content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the leaderboard to see top contributors.",
       target: '[data-tour="leaderboard"]',
       position: 'left',
-      page: '/dashboard'
+      page: '/'
     },
     {
       title: "Update VASP Information 🔄",
@@ -115,7 +116,7 @@ const OnboardingTour = ({ onComplete }) => {
       content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. The crowdsourced data helps streamline the legal request process.",
       target: '[data-tour="quick-links"]',
       position: 'top',
-      page: '/dashboard'
+      page: '/'
     }
   ];
 
@@ -123,11 +124,33 @@ const OnboardingTour = ({ onComplete }) => {
 
   // Navigate to the correct page when step changes
   useEffect(() => {
-    if (currentStepData.page && location.pathname !== currentStepData.page) {
+    // Only navigate if we're actually on a different page
+    // and add a flag to prevent re-navigation during the same step
+    const navigationKey = `onboarding_nav_${currentStep}_${currentStepData.page}`;
+    const hasNavigated = sessionStorage.getItem(navigationKey);
+    
+    if (currentStepData.page && location.pathname !== currentStepData.page && !hasNavigated) {
+      // Safety check to prevent infinite navigation
+      navigationCountRef.current += 1;
+      if (navigationCountRef.current > 50) {
+        console.error('OnboardingTour: Too many navigations, aborting to prevent infinite loop');
+        handleComplete();
+        return;
+      }
+      
       console.log('OnboardingTour: Navigating from', location.pathname, 'to', currentStepData.page);
+      sessionStorage.setItem(navigationKey, 'true');
       navigate(currentStepData.page);
     }
-  }, [currentStep, currentStepData.page, location.pathname, navigate]);
+    
+    // Clean up navigation flags when step changes
+    return () => {
+      if (currentStep > 0) {
+        const prevKey = `onboarding_nav_${currentStep - 1}_${steps[currentStep - 1].page}`;
+        sessionStorage.removeItem(prevKey);
+      }
+    };
+  }, [currentStep]);
 
   // Update positions when step changes, window resizes, or user scrolls
   useEffect(() => {
@@ -311,6 +334,14 @@ const OnboardingTour = ({ onComplete }) => {
     setIsVisible(false);
     localStorage.setItem('onboardingCompleted', 'true');
     localStorage.setItem('onboardingCompletedTime', Date.now().toString());
+    
+    // Clear all navigation flags and in-progress flag from sessionStorage
+    sessionStorage.removeItem('onboardingInProgress');
+    for (let i = 0; i < steps.length; i++) {
+      const key = `onboarding_nav_${i}_${steps[i].page}`;
+      sessionStorage.removeItem(key);
+    }
+    
     if (onComplete) onComplete();
   };
 
