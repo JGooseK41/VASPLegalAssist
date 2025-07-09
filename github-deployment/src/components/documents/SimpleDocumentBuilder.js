@@ -95,9 +95,9 @@ const SimpleDocumentBuilder = () => {
         
         // VASP Information (auto-filled)
         vaspId: selectedVASP.id,
-        vaspName: selectedVASP.name,
-        vaspEmail: selectedVASP.email || '',
-        vaspAddress: selectedVASP.address || '',
+        vaspName: selectedVASP.name || selectedVASP.service_name,
+        vaspEmail: selectedVASP.compliance_email || selectedVASP.legal_contact_email || '',
+        vaspAddress: selectedVASP.service_address || '',
         vaspJurisdiction: selectedVASP.jurisdiction || '',
         
         // User/Agency Information (auto-filled from profile)
@@ -201,9 +201,52 @@ const SimpleDocumentBuilder = () => {
       )}
 
       <form onSubmit={handleGenerateDocument} className="space-y-6">
+        {/* VASP Selection - Moved to top */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Step 1: Select VASP
+            <span className="text-sm text-gray-500 ml-2 font-normal">Choose the Virtual Asset Service Provider</span>
+          </h2>
+          {selectedVASP ? (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium text-gray-900">{selectedVASP.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{selectedVASP.jurisdiction}</p>
+                  {selectedVASP.compliance_email && (
+                    <p className="text-sm text-gray-600">{selectedVASP.compliance_email}</p>
+                  )}
+                  {selectedVASP.service_address && (
+                    <p className="text-sm text-gray-600">{selectedVASP.service_address}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSelectVASP}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSelectVASP}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Select VASP
+            </button>
+          )}
+        </div>
+
         {/* Document Type Selection */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Document Type</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Step 2: Document Type
+            <span className="text-sm text-gray-500 ml-2 font-normal">Choose the type of legal request</span>
+          </h2>
           <div className="space-y-3">
             <label className="flex items-center">
               <input
@@ -240,46 +283,12 @@ const SimpleDocumentBuilder = () => {
           </div>
         </div>
 
-        {/* VASP Selection */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">VASP Information</h2>
-          {selectedVASP ? (
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium text-gray-900">{selectedVASP.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{selectedVASP.jurisdiction}</p>
-                  {selectedVASP.email && (
-                    <p className="text-sm text-gray-600">{selectedVASP.email}</p>
-                  )}
-                  {selectedVASP.address && (
-                    <p className="text-sm text-gray-600">{selectedVASP.address}</p>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSelectVASP}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Change
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSelectVASP}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <Search className="h-4 w-4 mr-2" />
-              Select VASP
-            </button>
-          )}
-        </div>
-
         {/* Case Information */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Case Information</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Step 3: Case Information
+            <span className="text-sm text-gray-500 ml-2 font-normal">Provide case details</span>
+          </h2>
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -324,7 +333,10 @@ const SimpleDocumentBuilder = () => {
 
         {/* Transaction Information */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Transaction Information (Optional)</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Step 4: Transaction Information
+            <span className="text-sm text-gray-500 ml-2 font-normal">Optional - Add specific transaction details</span>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">

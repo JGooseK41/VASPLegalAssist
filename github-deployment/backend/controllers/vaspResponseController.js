@@ -12,7 +12,21 @@ const createVaspResponse = async (req, res) => {
       recordsRequestMethod,
       freezeRequestMethod,
       turnaroundTime,
-      additionalNotes
+      additionalNotes,
+      // New fields
+      documentWorked,
+      failureReasons,
+      requiredDocuments,
+      contactEmailUsed,
+      contactEmailWorked,
+      suggestedEmailUpdate,
+      directContactName,
+      directContactEmail,
+      directContactTitle,
+      responseQuality,
+      dataFormat,
+      fees,
+      additionalRequirements
     } = req.body;
 
     // Validate required fields
@@ -55,7 +69,21 @@ const createVaspResponse = async (req, res) => {
         recordsRequestMethod,
         freezeRequestMethod,
         turnaroundTime,
-        additionalNotes
+        additionalNotes,
+        // New fields
+        documentWorked,
+        failureReasons: failureReasons || [],
+        requiredDocuments: requiredDocuments || [],
+        contactEmailUsed,
+        contactEmailWorked,
+        suggestedEmailUpdate,
+        directContactName,
+        directContactEmail,
+        directContactTitle,
+        responseQuality,
+        dataFormat,
+        fees,
+        additionalRequirements
       }
     });
 
@@ -115,10 +143,65 @@ const getVaspAggregatedData = async (req, res) => {
     const mostCommonTurnaround = Object.entries(turnaroundCounts)
       .sort(([,a], [,b]) => b - a)[0]?.[0];
 
+    // Calculate document effectiveness
+    const documentsWorked = responses.filter(r => r.documentWorked === true).length;
+    const documentsFailed = responses.filter(r => r.documentWorked === false).length;
+    const documentsUnknown = responses.filter(r => r.documentWorked === null).length;
+    const effectivenessRate = documentsWorked + documentsFailed > 0 
+      ? Math.round((documentsWorked / (documentsWorked + documentsFailed)) * 100)
+      : null;
+
+    // Aggregate failure reasons
+    const allFailureReasons = responses
+      .filter(r => r.failureReasons && r.failureReasons.length > 0)
+      .flatMap(r => r.failureReasons);
+    
+    const failureReasonCounts = allFailureReasons.reduce((acc, reason) => {
+      acc[reason] = (acc[reason] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Check for email updates
+    const emailUpdates = responses
+      .filter(r => r.suggestedEmailUpdate && r.contactEmailWorked === false)
+      .map(r => r.suggestedEmailUpdate);
+      
+    // Collect direct contacts
+    const directContacts = responses
+      .filter(r => r.directContactEmail && r.directContactName)
+      .map(r => ({
+        name: r.directContactName,
+        email: r.directContactEmail,
+        title: r.directContactTitle || 'Unknown'
+      }))
+      .reduce((acc, contact) => {
+        // De-duplicate by email
+        if (!acc.find(c => c.email === contact.email)) {
+          acc.push(contact);
+        }
+        return acc;
+      }, []);
+
     res.json({
       vaspId: parseInt(vaspId),
       responseCount: totalResponses,
       hasData: true,
+      effectiveness: {
+        rate: effectivenessRate,
+        worked: documentsWorked,
+        failed: documentsFailed,
+        unknown: documentsUnknown,
+        failureReasons: failureReasonCounts,
+        topFailureReasons: Object.entries(failureReasonCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 3)
+          .map(([reason, count]) => ({ reason, count }))
+      },
+      contactInfo: {
+        emailUpdatesSuggested: emailUpdates.length > 0,
+        suggestedEmails: [...new Set(emailUpdates)],
+        directContacts: directContacts
+      },
       usCompliant: {
         percentage: usCompliantPercentage,
         count: usCompliantCount,

@@ -180,9 +180,10 @@ model Vasp {
 
 model VaspSubmission {
   id                  String    @id @default(uuid())
-  userId              String
+  userId              String?   // Optional for self-registration
   status              String    @default("PENDING") // PENDING, APPROVED, REJECTED
   rejectionReason     String?
+  submissionType      String    @default("USER") // USER, SELF_REGISTRATION
   
   // VASP data fields
   name                String
@@ -201,12 +202,21 @@ model VaspSubmission {
   law_enforcement_url String?
   notes               String?
   
+  // Self-registration fields
+  submitterName       String?
+  submitterEmail      String?
+  submitterTitle      String?
+  submitterPhone      String?
+  templateUrls        String[]  // URLs to custom templates
+  verificationCode    String?   // For email verification
+  isVerified          Boolean   @default(false)
+  
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   reviewedAt          DateTime?
   reviewedBy          String?
   
-  user                User      @relation(fields: [userId], references: [id])
+  user                User?     @relation(fields: [userId], references: [id])
 }
 
 model PasswordResetToken {
@@ -228,11 +238,37 @@ model VaspResponse {
   vaspId                Int
   documentId            String
   documentType          String
+  
+  // Core effectiveness fields
+  documentWorked        Boolean?  // Did the document achieve its purpose?
+  failureReasons        String[]  // ['missing_info', 'wrong_format', 'requires_mlat', etc.]
+  requiredDocuments     String[]  // Additional docs they required
+  
+  // Contact verification
+  contactEmailUsed      String?   // Which email was actually used
+  contactEmailWorked    Boolean?  // Did that email work?
+  suggestedEmailUpdate  String?   // User-suggested correct email
+  
+  // Direct contact information
+  directContactName     String?   // Name of helpful contact
+  directContactEmail    String?   // Direct email that worked
+  directContactTitle    String?   // Title/role of contact
+  
+  // Response quality
+  turnaroundTime        String    // 'less_than_24h', '2_3_days', '1_week_or_less', '1_4_weeks', 'more_than_4_weeks'
+  responseQuality       String?   // 'complete', 'partial', 'redacted', 'minimal'
+  dataFormat           String?   // 'pdf', 'csv', 'json', 'screenshot', 'other'
+  
+  // Legacy fields (keeping for backward compatibility)
   isUsCompliant         Boolean
   recordsRequestMethod  String?   // 'letterhead', 'subpoena', 'search_warrant', 'mlat'
   freezeRequestMethod   String?   // 'letterhead', 'search_warrant', 'mlat'
-  turnaroundTime        String    // 'less_than_24h', '2_3_days', '1_week_or_less', '1_4_weeks', 'more_than_4_weeks'
-  additionalNotes       String?
+  
+  // Additional info
+  fees                  String?   // Any fees charged
+  additionalRequirements String?  // Other requirements noted
+  additionalNotes       String?   // General notes (will become a comment)
+  
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   
@@ -243,6 +279,8 @@ model VaspResponse {
   @@index([vaspId])
   @@index([userId])
   @@index([documentId])
+  @@index([documentWorked])
+  @@index([vaspId, documentWorked])
 }
 
 model VisitorSession {

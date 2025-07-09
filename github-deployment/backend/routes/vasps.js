@@ -83,7 +83,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const vasp = await prisma.vasp.findUnique({
-      where: { id: req.params.id }
+      where: { id: parseInt(req.params.id) }
     });
     
     if (!vasp) {
@@ -94,29 +94,113 @@ router.get('/:id', async (req, res) => {
     const formattedVasp = {
       id: vasp.id,
       name: vasp.name || "Unknown",
-      legal_name: vasp.legalName || vasp.name || "Unknown",
+      legal_name: vasp.legal_name || vasp.name || "Unknown",
       service_name: vasp.name || "Unknown",
-      jurisdiction: extractJurisdiction(vasp),
-      service_address: formatAddress(vasp),
-      legal_contact_email: vasp.complianceEmail || vasp.supportEmail || "",
-      compliance_email: vasp.complianceEmail || vasp.supportEmail || "",
+      jurisdiction: vasp.jurisdiction || "Unknown",
+      service_address: vasp.service_address || "Unknown",
+      legal_contact_email: vasp.compliance_email || "",
+      compliance_email: vasp.compliance_email || "",
       phone: vasp.phone || "",
-      preferred_method: vasp.serviceMethod || "email",
-      processing_time: vasp.processingTime || "5-10 business days",
-      accepts_international: vasp.acceptsInternational !== false,
-      accepts_us_service: vasp.jurisdiction === "United States" || vasp.country === "United States",
-      has_own_portal: vasp.serviceMethod === "portal" || vasp.serviceMethod === "kodex" || !!vasp.serviceUrl,
-      law_enforcement_url: vasp.serviceUrl || "",
-      info_types: vasp.informationAvailable ? vasp.informationAvailable.split(',').map(s => s.trim()) : ["KYC", "Transaction History", "Account Balance", "Login Records"],
+      preferred_method: vasp.preferred_method || "email",
+      processing_time: vasp.processing_time || "5-10 business days",
+      accepts_international: true,
+      accepts_us_service: vasp.accepts_us_service || false,
+      has_own_portal: vasp.has_own_portal || false,
+      law_enforcement_url: vasp.law_enforcement_url || "",
+      info_types: Array.isArray(vasp.info_types) ? vasp.info_types : ["KYC", "Transaction History"],
       last_updated: vasp.updatedAt ? new Date(vasp.updatedAt).toISOString().split('T')[0] : "2024-01-01",
-      required_document: vasp.requiredDocuments || "Letterhead",
-      notes: vasp.additionalInfo || ""
+      required_document: vasp.required_document || "Letterhead",
+      notes: vasp.notes || ""
     };
     
     res.json(formattedVasp);
   } catch (error) {
     console.error('Error getting VASP:', error);
     res.status(500).json({ error: 'Failed to load VASP data' });
+  }
+});
+
+// POST /api/vasps/:id/suggest-email - Suggest email update for VASP
+router.post('/:id/suggest-email', async (req, res) => {
+  try {
+    const { suggestedEmail, reason } = req.body;
+    const vaspId = parseInt(req.params.id);
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(suggestedEmail)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
+    // Check if VASP exists
+    const vasp = await prisma.vasp.findUnique({
+      where: { id: vaspId }
+    });
+    
+    if (!vasp) {
+      return res.status(404).json({ error: 'VASP not found' });
+    }
+    
+    // Create an email update suggestion (stored as a special comment)
+    const comment = await prisma.vaspComment.create({
+      data: {
+        userId: req.userId,
+        vaspId: vaspId,
+        content: `📧 Email Update Suggestion: ${suggestedEmail}${reason ? ` - ${reason}` : ''}`,
+        isUpdate: true
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+    
+    // Check if we have enough confirmations to update the email
+    // (e.g., 3 users suggesting the same email)
+    const emailSuggestions = await prisma.vaspComment.findMany({
+      where: {
+        vaspId: vaspId,
+        isUpdate: true,
+        content: {
+          contains: suggestedEmail
+        }
+      }
+    });
+    
+    // If 3 or more users have suggested the same email, update the VASP
+    if (emailSuggestions.length >= 3) {
+      await prisma.vasp.update({
+        where: { id: vaspId },
+        data: {
+          compliance_email: suggestedEmail,
+          notes: `${vasp.notes || ''}\n[Auto-updated based on user confirmations]`
+        }
+      });
+      
+      // Create a notification comment
+      await prisma.vaspComment.create({
+        data: {
+          userId: req.userId,
+          vaspId: vaspId,
+          content: `✅ Email automatically updated to ${suggestedEmail} based on multiple user confirmations`,
+          isUpdate: true
+        }
+      });
+    }
+    
+    res.json({
+      message: 'Email suggestion submitted successfully',
+      comment: comment,
+      autoUpdated: emailSuggestions.length >= 3
+    });
+  } catch (error) {
+    console.error('Error suggesting email update:', error);
+    res.status(500).json({ error: 'Failed to submit email suggestion' });
   }
 });
 

@@ -5,10 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
 import VaspSubmissionModal from './VaspSubmissionModal';
 import VaspResponseStats from './VaspResponseStats';
+import EmailUpdateSuggestion from './EmailUpdateSuggestion';
+import DirectContactDisplay from './DirectContactDisplay';
 import { extractDbaFromNames } from '../../utils/parseVaspNames';
 
 const VASPCard = ({ vasp, onSelect }) => {
   const { legalName, dba } = extractDbaFromNames(vasp.name, vasp.legal_name);
+  const [stats, setStats] = useState(null);
   
   return (
     <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow border border-gray-200">
@@ -66,7 +69,29 @@ const VASPCard = ({ vasp, onSelect }) => {
       </div>
       
       {/* VASP Response Statistics */}
-      <VaspResponseStats vaspId={vasp.id} displayMode="badge" />
+      <VaspResponseStats 
+        vaspId={vasp.id} 
+        displayMode="badge" 
+        onStatsLoaded={setStats}
+      />
+      
+      {/* Email Update Suggestion - Show when email issues detected */}
+      {stats?.contactInfo?.emailUpdatesSuggested && (
+        <EmailUpdateSuggestion
+          vaspId={vasp.id}
+          currentEmail={vasp.compliance_email}
+          suggestedEmails={stats.contactInfo.suggestedEmails}
+          onSuccess={() => {
+            // Refresh stats after email update
+            window.location.reload();
+          }}
+        />
+      )}
+      
+      {/* Direct Contacts Display */}
+      {stats?.contactInfo?.directContacts && stats.contactInfo.directContacts.length > 0 && (
+        <DirectContactDisplay contacts={stats.contactInfo.directContacts} />
+      )}
 
       <div className="flex justify-between items-center">
         <div className="flex space-x-2">

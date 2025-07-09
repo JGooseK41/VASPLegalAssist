@@ -4,7 +4,7 @@ import { FileText, Download, Eye, Calendar, Building, Hash, AlertCircle, Plus, L
 import { documentAPI } from '../../services/api';
 import { useEncryption } from '../../hooks/useEncryption';
 import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
-import VaspResponseModal from './VaspResponseModal';
+import VaspResponseModalV2 from './VaspResponseModalV2';
 import axios from 'axios';
 import { downloadFile } from '../../utils/urlHelpers';
 
@@ -482,7 +482,7 @@ const DocumentHistory = () => {
         )}
         
         {/* VASP Response Modal */}
-        <VaspResponseModal
+        <VaspResponseModalV2
           isOpen={responseModal.isOpen}
           onClose={() => setResponseModal({ isOpen: false, document: null })}
           document={responseModal.document}

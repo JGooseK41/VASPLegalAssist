@@ -161,7 +161,10 @@ app.use('/docs', express.static(path.join(__dirname, 'generated-docs'), {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/documents', express.static(path.join(__dirname, 'public/documents')));
 
-// Routes
+// Public routes (no auth required)
+app.use('/api/public/vasp-registration', require('./routes/public/vaspRegistration'));
+
+// Protected routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/templates', templateRoutes);

@@ -22,7 +22,7 @@ const CommentItem = ({ comment, onVote, onEdit, onDelete, currentUserId }) => {
   const isOwner = comment.user.id === currentUserId;
   
   return (
-    <div className="border-l-2 border-gray-200 pl-4 py-3">
+    <div className="border-l-2 border-gray-300 pl-4 py-3 bg-white rounded-r-lg">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -245,10 +245,10 @@ const VaspComments = ({ vaspId, vaspName }) => {
   };
   
   return (
-    <div className="mt-4 border-t border-gray-200 pt-4">
+    <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left hover:bg-gray-50 p-2 rounded-md transition-colors"
+        className="w-full flex items-center justify-between text-left hover:bg-gray-100 p-2 rounded-md transition-colors -m-2 mb-2"
       >
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -265,7 +265,7 @@ const VaspComments = ({ vaspId, vaspName }) => {
       </button>
       
       {isExpanded && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4">
           {/* Check if user is restricted (demo user) */}
           {isRestricted || user?.role === 'DEMO' ? (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -279,7 +279,7 @@ const VaspComments = ({ vaspId, vaspName }) => {
           ) : (
             <>
               {/* New Comment Form */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -311,28 +311,30 @@ const VaspComments = ({ vaspId, vaspName }) => {
               </div>
           
           {/* Comments List */}
-          {loading ? (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            </div>
-          ) : comments.length > 0 ? (
-            <div className="space-y-2">
-              {comments.map(comment => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  onVote={handleVote}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500 py-4">
-              No comments yet. Be the first to share your experience!
-            </p>
-          )}
+          <div className="max-h-80 overflow-y-auto pr-2 scrollbar-thin">
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              </div>
+            ) : comments.length > 0 ? (
+              <div className="space-y-2">
+                {comments.map(comment => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    onVote={handleVote}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    currentUserId={user?.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-4">
+                No comments yet. Be the first to share your experience!
+              </p>
+            )}
+          </div>
             </>
           )}
         </div>
