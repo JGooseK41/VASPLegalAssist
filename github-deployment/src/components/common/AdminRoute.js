@@ -22,6 +22,7 @@ const AdminRoute = () => {
   }
 
   if (!isAdmin()) {
+    console.warn('AdminRoute: User is not admin, redirecting to home');
     return <Navigate to="/" replace />;
   }
 

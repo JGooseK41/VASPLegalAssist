@@ -124,6 +124,7 @@ const OnboardingTour = ({ onComplete }) => {
   // Navigate to the correct page when step changes
   useEffect(() => {
     if (currentStepData.page && location.pathname !== currentStepData.page) {
+      console.log('OnboardingTour: Navigating from', location.pathname, 'to', currentStepData.page);
       navigate(currentStepData.page);
     }
   }, [currentStep, currentStepData.page, location.pathname, navigate]);
@@ -309,6 +310,7 @@ const OnboardingTour = ({ onComplete }) => {
   const handleComplete = () => {
     setIsVisible(false);
     localStorage.setItem('onboardingCompleted', 'true');
+    localStorage.setItem('onboardingCompletedTime', Date.now().toString());
     if (onComplete) onComplete();
   };
 
