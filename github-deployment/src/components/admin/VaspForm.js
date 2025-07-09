@@ -19,7 +19,12 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
     has_own_portal: vasp?.has_own_portal || false,
     law_enforcement_url: vasp?.law_enforcement_url || '',
     notes: vasp?.notes || '',
-    isActive: vasp?.isActive !== undefined ? vasp.isActive : true
+    isActive: vasp?.isActive !== undefined ? vasp.isActive : true,
+    // Request type specific fields
+    records_required_document: vasp?.records_required_document || '',
+    records_processing_time: vasp?.records_processing_time || '',
+    freeze_required_document: vasp?.freeze_required_document || '',
+    freeze_processing_time: vasp?.freeze_processing_time || ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -330,6 +335,92 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
               rows={3}
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+        </div>
+        
+        {/* Request Type Specific Requirements */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Request Type Requirements</h3>
+          <p className="text-sm text-gray-600 mb-4">Specify document requirements for each request type</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Records Request Section */}
+            <div className="border-l-4 border-blue-500 pl-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Records Request</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Required Document
+                  </label>
+                  <select
+                    name="records_required_document"
+                    value={formData.records_required_document}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Unknown</option>
+                    <option value="Letterhead">Letterhead</option>
+                    <option value="Subpoena">Subpoena</option>
+                    <option value="Search Warrant">Search Warrant</option>
+                    <option value="MLAT">MLAT</option>
+                    <option value="No Capability">No Capability by VASP</option>
+                    <option value="Non-Compliant">Non-Compliant</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Processing Time
+                  </label>
+                  <input
+                    type="text"
+                    name="records_processing_time"
+                    value={formData.records_processing_time}
+                    onChange={handleChange}
+                    placeholder="e.g., 5-10 business days"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Freeze Request Section */}
+            <div className="border-l-4 border-orange-500 pl-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Freeze/Seizure Request</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Required Document
+                  </label>
+                  <select
+                    name="freeze_required_document"
+                    value={formData.freeze_required_document}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Unknown</option>
+                    <option value="Letterhead">Letterhead</option>
+                    <option value="Subpoena">Subpoena</option>
+                    <option value="Search Warrant">Search Warrant</option>
+                    <option value="MLAT">MLAT</option>
+                    <option value="No Capability">No Capability by VASP</option>
+                    <option value="Non-Compliant">Non-Compliant</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Processing Time
+                  </label>
+                  <input
+                    type="text"
+                    name="freeze_processing_time"
+                    value={formData.freeze_processing_time}
+                    onChange={handleChange}
+                    placeholder="e.g., 1-2 business days"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         

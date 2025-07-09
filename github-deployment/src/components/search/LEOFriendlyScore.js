@@ -8,10 +8,9 @@ const LEOFriendlyScore = ({ leoScore, compact = false }) => {
   if (!leoScore || leoScore.score === undefined) {
     if (compact) {
       return (
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-gray-300 bg-gray-100 text-gray-600">
-          <Shield className="h-4 w-4 mr-1" />
-          <span className="text-xs">LEO Score: Not enough data</span>
-        </div>
+        <span className="text-xs text-gray-500">
+          LEO Friendly Score: Not enough data
+        </span>
       );
     }
     

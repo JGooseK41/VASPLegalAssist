@@ -42,8 +42,9 @@ router.get('/', async (req, res) => {
           records_accepts_us: vasp.records_accepts_us !== undefined ? vasp.records_accepts_us : null,
           records_jurisdictions: vasp.records_jurisdictions || [],
           
-          freeze_processing_time: vasp.freeze_processing_time || vasp.processing_time || "Unknown",
-          freeze_required_document: vasp.freeze_required_document || vasp.required_document || null,
+          // Freeze requests - always Unknown unless specifically set
+          freeze_processing_time: vasp.freeze_processing_time || "Unknown",
+          freeze_required_document: vasp.freeze_required_document || null, // No fallback to records requirement
           freeze_accepts_us: vasp.freeze_accepts_us !== undefined ? vasp.freeze_accepts_us : null,
           freeze_jurisdictions: vasp.freeze_jurisdictions || [],
           

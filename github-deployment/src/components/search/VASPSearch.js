@@ -8,7 +8,6 @@ import VaspResponseStats from './VaspResponseStats';
 import EmailUpdateSuggestion from './EmailUpdateSuggestion';
 import DirectContactDisplay from './DirectContactDisplay';
 import VaspRequestTypeInfo from './VaspRequestTypeInfo';
-import RequestTypeIndicators from './RequestTypeIndicators';
 import LEOFriendlyScore from './LEOFriendlyScore';
 import { extractDbaFromNames } from '../../utils/parseVaspNames';
 
@@ -18,20 +17,20 @@ const VASPCard = ({ vasp, onSelect }) => {
   const [showDetails, setShowDetails] = useState(false);
   
   return (
-    <div className="bg-white shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200 overflow-hidden">
-      {/* Header Section - Keep this prominent */}
-      <div className="p-4 border-b border-gray-100">
+    <div className="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
+      {/* Header Section - More prominent with color */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">{legalName}</h3>
+            <h3 className="text-xl font-bold text-gray-900 truncate">{legalName}</h3>
             {dba && (
-              <p className="text-sm text-gray-600 truncate">
-                <span className="text-gray-500">DBA:</span> {dba}
+              <p className="text-sm text-gray-700 truncate mt-1">
+                <span className="text-gray-600">DBA:</span> <span className="font-medium">{dba}</span>
               </p>
             )}
           </div>
-          <span className="text-sm text-gray-500 flex items-center ml-3">
-            <MapPin className="h-3 w-3 mr-1" />
+          <span className="text-sm text-gray-600 flex items-center ml-3 bg-white px-2 py-1 rounded-full shadow-sm">
+            <MapPin className="h-3 w-3 mr-1 text-gray-500" />
             {vasp.jurisdiction}
           </span>
         </div>
@@ -39,9 +38,8 @@ const VASPCard = ({ vasp, onSelect }) => {
 
       {/* Key Info Section */}
       <div className="p-4 space-y-3">
-        {/* Top Priority: LEO Score and Request Type Indicators */}
-        <div className="flex items-center justify-between">
-          <RequestTypeIndicators vasp={vasp} />
+        {/* LEO Friendly Score */}
+        <div className="text-right">
           <LEOFriendlyScore leoScore={stats?.leoScore} compact={true} />
         </div>
 
@@ -256,8 +254,9 @@ const VASPSearch = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
         <div className="mb-4">
           <button
             onClick={() => navigate(-1)}
@@ -386,17 +385,18 @@ const VASPSearch = () => {
             </p>
           </div>
         )}
+        </div>
+        
+        {/* VASP Submission Modal */}
+        <VaspSubmissionModal
+          isOpen={showSubmissionModal}
+          onClose={() => setShowSubmissionModal(false)}
+          onSuccess={() => {
+            setShowSubmissionModal(false);
+            loadVASPs(); // Reload the VASP list after successful submission
+          }}
+        />
       </div>
-      
-      {/* VASP Submission Modal */}
-      <VaspSubmissionModal
-        isOpen={showSubmissionModal}
-        onClose={() => setShowSubmissionModal(false)}
-        onSuccess={() => {
-          setShowSubmissionModal(false);
-          loadVASPs(); // Reload the VASP list after successful submission
-        }}
-      />
     </div>
   );
 };
