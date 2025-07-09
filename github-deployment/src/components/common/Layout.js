@@ -73,12 +73,22 @@ const Layout = () => {
       return;
     }
     
-    // Check if user needs onboarding
+    // Demo users always get the tutorial on login
+    if (user?.role === 'DEMO') {
+      const demoTutorialShown = sessionStorage.getItem('demoTutorialShown');
+      if (!demoTutorialShown) {
+        sessionStorage.setItem('demoTutorialShown', 'true');
+        sessionStorage.setItem('onboardingInProgress', 'true');
+        setTimeout(() => setShowOnboarding(true), 500);
+      }
+      return;
+    }
+    
+    // Regular users only get onboarding on first login
     const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
     const onboardingInProgress = sessionStorage.getItem('onboardingInProgress');
     
-    // Only show onboarding if not completed, not in progress, and user is not demo
-    if (!hasCompletedOnboarding && !onboardingInProgress && user?.role !== 'DEMO') {
+    if (!hasCompletedOnboarding && !onboardingInProgress) {
       sessionStorage.setItem('onboardingInProgress', 'true');
       // Add a small delay to ensure page is fully loaded
       setTimeout(() => setShowOnboarding(true), 500);
@@ -89,10 +99,13 @@ const Layout = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Onboarding Tour */}
       {showOnboarding && (
-        <OnboardingTour onComplete={() => {
-          setShowOnboarding(false);
-          sessionStorage.removeItem('onboardingInProgress');
-        }} />
+        <OnboardingTour 
+          isDemo={user?.role === 'DEMO'}
+          onComplete={() => {
+            setShowOnboarding(false);
+            sessionStorage.removeItem('onboardingInProgress');
+          }} 
+        />
       )}
       
       {/* Navigation */}

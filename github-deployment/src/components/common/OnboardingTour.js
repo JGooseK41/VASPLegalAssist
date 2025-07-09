@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const OnboardingTour = ({ onComplete }) => {
+const OnboardingTour = ({ onComplete, isDemo = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
@@ -349,11 +349,16 @@ const OnboardingTour = ({ onComplete }) => {
 
   const handleComplete = () => {
     setIsVisible(false);
-    localStorage.setItem('onboardingCompleted', 'true');
-    localStorage.setItem('onboardingCompletedTime', Date.now().toString());
+    
+    // Only save completion for non-demo users
+    if (!isDemo) {
+      localStorage.setItem('onboardingCompleted', 'true');
+      localStorage.setItem('onboardingCompletedTime', Date.now().toString());
+    }
     
     // Clear all navigation flags and in-progress flag from sessionStorage
     sessionStorage.removeItem('onboardingInProgress');
+    sessionStorage.removeItem('demoTutorialShown'); // Clear demo flag so it shows again next session
     for (let i = 0; i < steps.length; i++) {
       const key = `onboarding_nav_${i}_${steps[i].page}`;
       sessionStorage.removeItem(key);
