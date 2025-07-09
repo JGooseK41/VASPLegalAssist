@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import './OnboardingTour.css';
 
 const OnboardingTour = ({ onComplete, isDemo = false }) => {
   const navigate = useNavigate();
@@ -85,8 +86,8 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     },
     {
       title: "Track Your Results 📈",
-      content: "After sending requests, log responses here. Did it work? How long did it take? Your feedback improves LEO scores and helps future investigators avoid pitfalls.",
-      target: '[data-tour="submit-response"]',
+      content: "After sending requests, track responses through the community comments. Share what worked, turnaround times, and tips to help improve LEO scores for everyone.",
+      target: '[data-tour="vasp-card"]',
       position: 'bottom',
       page: '/search'
     },
@@ -398,8 +399,8 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
 
   return (
     <>
-      {/* Backdrop - lighter for better visibility */}
-      <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={handleSkip} />
+      {/* Backdrop - darker for better contrast */}
+      <div className="fixed inset-0 bg-black bg-opacity-60 z-40" onClick={handleSkip} />
       
       {/* Highlight element with enhanced visibility */}
       {highlightBounds && (
@@ -408,7 +409,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
           <div
             className="fixed inset-0 pointer-events-none z-45"
             style={{
-              background: 'rgba(0, 0, 0, 0.5)',
+              background: 'rgba(0, 0, 0, 0.75)',
               clipPath: `polygon(
                 0 0, 
                 100% 0, 
@@ -425,19 +426,46 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
           />
           {/* Glowing border - no background overlay to keep area bright */}
           <div
-            className="fixed pointer-events-none z-46"
+            className="fixed pointer-events-none z-46 highlight-border"
             style={{
               top: highlightBounds.top,
               left: highlightBounds.left,
               width: highlightBounds.width,
               height: highlightBounds.height,
-              border: '3px solid #3B82F6',
-              borderRadius: '12px',
-              boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4)'
+              border: '4px solid #3B82F6',
+              borderRadius: '12px'
             }}
           />
+          {/* Pulsing arrow pointing to highlighted element */}
+          {tooltipPosition.top && highlightBounds && (
+            <div
+              className="fixed z-48 pointer-events-none"
+              style={{
+                top: tooltipPosition.bottom ? highlightBounds.top - 40 : highlightBounds.top + highlightBounds.height + 10,
+                left: highlightBounds.left + (highlightBounds.width / 2) - 20,
+                transform: tooltipPosition.bottom ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}
+            >
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                style={{
+                  animation: 'arrow-pulse 1.5s ease-in-out infinite'
+                }}
+              >
+                <path
+                  d="M20 5 L35 25 L25 25 L25 35 L15 35 L15 25 L5 25 Z"
+                  fill="#3B82F6"
+                  stroke="#1E40AF"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
+          )}
         </>
       )}
+      
       
       {/* Tour tooltip */}
       <div 
