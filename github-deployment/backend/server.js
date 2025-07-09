@@ -115,19 +115,40 @@ app.use('/api/', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', loginLimiter);
 
-// CORS Configuration
+// CORS Configuration - Temporary fix for production
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [];
+const clientUrl = process.env.CLIENT_URL?.trim();
+const allowedOrigins = [
+  'https://theblockrecord.com',
+  'https://www.theblockrecord.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  ...allowedOriginsEnv
+];
+if (clientUrl) allowedOrigins.push(clientUrl);
+
+console.log('CORS Configuration - Allowed origins:', allowedOrigins);
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [process.env.CLIENT_URL || 'http://localhost:3000'];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    console.log('CORS check - Request origin:', origin);
+    
+    // Allow requests with no origin (like mobile apps)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log('CORS BLOCKED - Origin not in allowed list:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   exposedHeaders: ['Content-Disposition', 'Content-Type'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  preflightContinue: false
 };
 
 app.use(cors(corsOptions));
