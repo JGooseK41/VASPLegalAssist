@@ -14,7 +14,7 @@ const OnboardingTour = ({ onComplete }) => {
   const steps = [
     {
       title: "Welcome to VASP Legal Assistant! 🚀",
-      content: "The world's first crowdsourced platform for cryptocurrency legal requests. Built by investigators, for investigators. This tutorial will walk you through a typical investigation workflow in just 5 minutes.",
+      content: "The world's first crowdsourced platform for cryptocurrency legal requests. Built by investigators, for investigators. Let's walk through how to use the platform effectively.",
       target: null,
       position: 'center',
       page: '/dashboard'
@@ -49,7 +49,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Generate Your First Document ⚡",
-      content: "Click 'Generate Request' to create freeze orders or records requests. The system auto-fills compliance emails, addresses, and jurisdiction data - saving you 20+ minutes per document!",
+      content: "Click 'Generate Request' to create freeze orders or records requests. The system auto-fills compliance emails, addresses, and jurisdiction data from the crowdsourced database.",
       target: '[data-tour="generate-request"]',
       position: 'bottom',
       page: '/search'
@@ -76,8 +76,8 @@ const OnboardingTour = ({ onComplete }) => {
       page: '/templates'
     },
     {
-      title: "Military-Grade Encryption 🔐",
-      content: "Your templates and documents are encrypted client-side. Only you have the key - even admins can't see your data. Download backups anytime for agency records.",
+      title: "Client-Side Encryption 🔐",
+      content: "Your templates and documents are encrypted in your browser before storage. Only you have the key - even admins can't see your data. Download backups anytime for agency records.",
       target: '[data-tour="recent-documents"]',
       position: 'top',
       page: '/dashboard'
@@ -98,7 +98,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Earn Recognition Points 🏆",
-      content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Top contributors get special badges and priority support.",
+      content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the leaderboard to see top contributors.",
       target: '[data-tour="leaderboard"]',
       position: 'left',
       page: '/dashboard'
@@ -112,7 +112,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Start Your First Request! 🎯",
-      content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. Save 30+ minutes per request using our crowdsourced data. Need help? support@theblockrecord.com",
+      content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. The crowdsourced data helps streamline the legal request process.",
       target: '[data-tour="quick-links"]',
       position: 'top',
       page: '/dashboard'
