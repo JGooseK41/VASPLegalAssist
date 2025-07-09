@@ -21,6 +21,7 @@ const VASPCard = ({ vasp, onSelect }) => {
   const [showServiceTypeModal, setShowServiceTypeModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [selectedServiceType, setSelectedServiceType] = useState(null);
   
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -51,12 +52,22 @@ const VASPCard = ({ vasp, onSelect }) => {
                     
                     return (
                       <div key={type} className="relative group">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-help transition-all hover:shadow-md`}
-                          title={config.shortDescription}
+                        <button
+                          onClick={() => {
+                            setSelectedServiceType(type);
+                            setShowServiceTypeModal(true);
+                          }}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getServiceTypeColorClasses(config.color)} cursor-pointer transition-all hover:shadow-md hover:scale-105`}
                         >
                           {config.label}
-                        </span>
+                        </button>
+                        <div className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg shadow-lg max-w-xs whitespace-normal">
+                          <div className="font-semibold mb-1">{config.fullName}</div>
+                          <div>{config.shortDescription}</div>
+                          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -237,8 +248,12 @@ const VASPCard = ({ vasp, onSelect }) => {
       {showServiceTypeModal && (
         <ServiceTypeModal
           isOpen={showServiceTypeModal}
-          onClose={() => setShowServiceTypeModal(false)}
+          onClose={() => {
+            setShowServiceTypeModal(false);
+            setSelectedServiceType(null);
+          }}
           selectedTypes={vasp.service_types || []}
+          initialType={selectedServiceType}
         />
       )}
       
