@@ -36,15 +36,15 @@ router.get('/', async (req, res) => {
           phone: vasp.phone || "",
           preferred_method: vasp.preferred_method || "email",
           
-          // Request type specific fields
-          records_processing_time: vasp.records_processing_time || vasp.processing_time || "5-10 business days",
-          records_required_document: vasp.records_required_document || vasp.required_document || "Letterhead",
-          records_accepts_us: vasp.records_accepts_us !== undefined ? vasp.records_accepts_us : (vasp.accepts_us_service || true),
+          // Request type specific fields - no defaults for acceptance
+          records_processing_time: vasp.records_processing_time || vasp.processing_time || "Unknown",
+          records_required_document: vasp.records_required_document || vasp.required_document || null,
+          records_accepts_us: vasp.records_accepts_us !== undefined ? vasp.records_accepts_us : null,
           records_jurisdictions: vasp.records_jurisdictions || [],
           
-          freeze_processing_time: vasp.freeze_processing_time || vasp.processing_time || "5-10 business days",
-          freeze_required_document: vasp.freeze_required_document || vasp.required_document || "Search Warrant",
-          freeze_accepts_us: vasp.freeze_accepts_us !== undefined ? vasp.freeze_accepts_us : (vasp.accepts_us_service || false),
+          freeze_processing_time: vasp.freeze_processing_time || vasp.processing_time || "Unknown",
+          freeze_required_document: vasp.freeze_required_document || vasp.required_document || null,
+          freeze_accepts_us: vasp.freeze_accepts_us !== undefined ? vasp.freeze_accepts_us : null,
           freeze_jurisdictions: vasp.freeze_jurisdictions || [],
           
           // Legacy fields for backward compatibility

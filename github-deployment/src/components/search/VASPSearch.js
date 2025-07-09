@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft } from 'lucide-react';
+import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft, ExternalLink } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
@@ -42,9 +42,7 @@ const VASPCard = ({ vasp, onSelect }) => {
         {/* Top Priority: LEO Score and Request Type Indicators */}
         <div className="flex items-center justify-between">
           <RequestTypeIndicators vasp={vasp} />
-          {stats?.leoScore && (
-            <LEOFriendlyScore leoScore={stats.leoScore} compact={true} />
-          )}
+          <LEOFriendlyScore leoScore={stats?.leoScore} compact={true} />
         </div>
 
         {/* Essential Contact Info */}
@@ -57,14 +55,31 @@ const VASPCard = ({ vasp, onSelect }) => {
           )}
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">
-              Preferred: <span className="font-medium capitalize">{vasp.preferred_method}</span>
+              Preferred service method: {' '}
+              {vasp.preferred_method === 'kodex' ? (
+                <a 
+                  href="https://app.kodexglobal.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-600 hover:text-blue-700 inline-flex items-center"
+                >
+                  Kodex Portal
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </a>
+              ) : vasp.has_own_portal && vasp.law_enforcement_url ? (
+                <a 
+                  href={vasp.law_enforcement_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-600 hover:text-blue-700 inline-flex items-center"
+                >
+                  Portal
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </a>
+              ) : (
+                <span className="font-medium capitalize">{vasp.preferred_method}</span>
+              )}
             </span>
-            {vasp.has_own_portal && (
-              <span className="text-blue-600 flex items-center">
-                <Globe className="h-3 w-3 mr-1" />
-                Portal
-              </span>
-            )}
           </div>
         </div>
 

@@ -65,34 +65,27 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     
     return (
       <div className="bg-white p-3 rounded-b-lg border-l border-r border-b border-gray-200 text-xs">
-        {/* Compact Info Grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {/* Required Document */}
-          <div className="flex justify-between">
-            <span className="text-gray-600">Required:</span>
-            <span className="font-medium text-gray-900">{displayRequiredDoc}</span>
+        {/* Required Document - Most Important */}
+        <div className="mb-3 text-center">
+          <p className="text-xs text-gray-500 mb-1">Required Document:</p>
+          <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${
+            !displayRequiredDoc || displayRequiredDoc === 'Not specified' ? 'bg-gray-100 text-gray-600' :
+            displayRequiredDoc.toLowerCase().includes('letterhead') ? 'bg-green-100 text-green-800' :
+            displayRequiredDoc.toLowerCase().includes('subpoena') ? 'bg-yellow-100 text-yellow-800' :
+            displayRequiredDoc.toLowerCase().includes('warrant') ? 'bg-orange-100 text-orange-800' :
+            displayRequiredDoc.toLowerCase().includes('mlat') ? 'bg-red-100 text-red-800' :
+            'bg-gray-100 text-gray-700'
+          }`}>
+            {displayRequiredDoc || 'Unknown'}
           </div>
-          
+        </div>
+        
+        {/* Additional Info Grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           {/* Processing Time */}
           <div className="flex justify-between">
             <span className="text-gray-600">Time:</span>
             <span className="font-medium text-gray-900">{displayProcessingTime.replace('business days', 'days')}</span>
-          </div>
-          
-          {/* US Service */}
-          <div className="flex justify-between">
-            <span className="text-gray-600">US Service:</span>
-            {displayAcceptsUS ? (
-              <span className="flex items-center text-green-700 font-medium">
-                <Check className="h-3 w-3 mr-0.5" />
-                Yes
-              </span>
-            ) : (
-              <span className="flex items-center text-red-700 font-medium">
-                <X className="h-3 w-3 mr-0.5" />
-                No
-              </span>
-            )}
           </div>
           
           {/* Success Rate */}

@@ -4,8 +4,28 @@ import { Shield, Info, TrendingUp, Clock, CheckCircle, Users, Mail, FileCheck, S
 const LEOFriendlyScore = ({ leoScore, compact = false }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   
+  // Show "Not enough data" state when no score available
   if (!leoScore || leoScore.score === undefined) {
-    return null;
+    if (compact) {
+      return (
+        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-gray-300 bg-gray-100 text-gray-600">
+          <Shield className="h-4 w-4 mr-1" />
+          <span className="text-xs">LEO Score: Not enough data</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <Shield className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900">LEO Friendly Score</h3>
+          </div>
+        </div>
+        <p className="text-sm text-gray-500">Not enough community data to calculate score yet. Be the first to contribute!</p>
+      </div>
+    );
   }
   
   const { score, grade, factors } = leoScore;
