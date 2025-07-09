@@ -398,8 +398,8 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleSkip} />
+      {/* Backdrop - lighter for better visibility */}
+      <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={handleSkip} />
       
       {/* Highlight element with enhanced visibility */}
       {highlightBounds && (
@@ -408,7 +408,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
           <div
             className="fixed inset-0 pointer-events-none z-45"
             style={{
-              background: 'rgba(0, 0, 0, 0.7)',
+              background: 'rgba(0, 0, 0, 0.5)',
               clipPath: `polygon(
                 0 0, 
                 100% 0, 
@@ -423,7 +423,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
               )`
             }}
           />
-          {/* Glowing border */}
+          {/* Glowing border - no background overlay to keep area bright */}
           <div
             className="fixed pointer-events-none z-46"
             style={{
@@ -433,8 +433,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
               height: highlightBounds.height,
               border: '3px solid #3B82F6',
               borderRadius: '12px',
-              boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 20px rgba(59, 130, 246, 0.2)',
-              background: 'rgba(59, 130, 246, 0.1)'
+              boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4)'
             }}
           />
         </>
