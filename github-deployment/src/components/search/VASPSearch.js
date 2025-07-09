@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft, ExternalLink, Copy } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
@@ -20,6 +20,13 @@ const VASPCard = ({ vasp, onSelect }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showServiceTypeModal, setShowServiceTypeModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
   
   return (
     <div className="bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-200 border-2 border-gray-300 hover:border-blue-400 overflow-hidden" data-tour="vasp-card">
@@ -84,23 +91,37 @@ const VASPCard = ({ vasp, onSelect }) => {
 
       {/* Key Info Section */}
       <div className="p-4 space-y-3">
-        {/* LEO Friendly Score */}
-        <div className="text-right">
-          <LEOFriendlyScore leoScore={stats?.leoScore} compact={true} />
-        </div>
-
-        {/* Essential Contact Info */}
-        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+        {/* Essential Contact Info - More Prominent */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 space-y-3">
           {vasp.compliance_email && (
-            <div className="flex items-center text-sm">
-              <Mail className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-              <span className="text-gray-700 truncate">{vasp.compliance_email}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Mail className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">Compliance Email</p>
+                  <p className="text-base font-semibold text-gray-900 select-all">{vasp.compliance_email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => copyToClipboard(vasp.compliance_email)}
+                className="ml-2 p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                title="Copy email address"
+              >
+                {copiedEmail ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
             </div>
           )}
           {vasp.service_address && (
-            <div className="flex items-start text-sm">
-              <MapPin className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-              <span className="text-gray-700">{vasp.service_address}</span>
+            <div className="flex items-start">
+              <MapPin className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Service Address</p>
+                <p className="text-base font-medium text-gray-900">{vasp.service_address}</p>
+              </div>
             </div>
           )}
           <div className="flex items-center justify-between text-sm">
@@ -135,6 +156,11 @@ const VASPCard = ({ vasp, onSelect }) => {
 
         {/* Request Type Tabs - Keep these prominent */}
         <VaspRequestTypeInfo vasp={vasp} stats={stats} />
+        
+        {/* LEO Friendly Score */}
+        <div className="flex justify-end">
+          <LEOFriendlyScore leoScore={stats?.leoScore} compact={true} />
+        </div>
 
         {/* Collapsible Details Section */}
         {showDetails && (
