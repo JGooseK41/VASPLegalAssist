@@ -318,7 +318,7 @@ const SimpleDocumentBuilder = () => {
         </div>
 
         {/* Document Type Selection */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6" data-tour="document-mode">
           <h2 className="text-lg font-medium text-gray-900 mb-4">
             Step 2: Document Type
             <span className="text-sm text-gray-500 ml-2 font-normal">Choose the type of legal request</span>

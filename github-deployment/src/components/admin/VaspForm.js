@@ -433,7 +433,7 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
             
             {/* Freeze Request Section */}
             <div className="border-l-4 border-orange-500 pl-4">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Freeze/Seizure Request</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Freeze Request</h4>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">

@@ -13,94 +13,108 @@ const OnboardingTour = ({ onComplete }) => {
 
   const steps = [
     {
-      title: "Welcome to VASP Records Assistant! 👋",
-      content: "The world's first crowdsourced legal document platform for cryptocurrency investigations. Let's explore the innovative features that will transform your workflow.",
+      title: "Welcome to VASP Legal Assistant! 🚀",
+      content: "Join 500+ investigators using the world's first AI-powered platform for cryptocurrency legal requests. This tutorial will walk you through a typical investigation workflow in just 5 minutes.",
       target: null,
       position: 'center',
       page: '/dashboard'
     },
     {
-      title: "Real-time VASP Intelligence 🔍",
-      content: "Search 300+ VASPs with live feedback from investigators worldwide. See compliance ratings, response times, and service types (CEX, DEX, P2P) at a glance.",
+      title: "Step 1: Start Your Investigation 🔍",
+      content: "Begin by searching our database of 100+ VASPs. Type exchange names like 'Binance', 'Coinbase', or search by jurisdiction. Real-time data from global investigators at your fingertips!",
       target: '[data-tour="search-vasp"]',
       position: 'bottom',
       page: '/search'
     },
     {
-      title: "Service Type Indicators 🏷️",
-      content: "Instantly identify VASP types: CEX (Centralized Exchange), DEX (Decentralized), P2P, Bridge, etc. Each badge shows investigative value and typical evidence available.",
+      title: "LEO Friendly Score System 📊",
+      content: "See the green/yellow/red grades? That's our LEO Friendly Score - showing how cooperative each VASP is. Grade A means fast responses and easy process. Grade F means expect challenges.",
       target: '[data-tour="vasp-card"]',
       position: 'bottom',
       page: '/search'
     },
     {
-      title: "One-Click Document Generation ⚡",
-      content: "Generate freeze orders and subpoenas in seconds. Just select a VASP and our AI fills in all compliance contacts and jurisdiction data automatically.",
+      title: "Service Type Intelligence 🏷️",
+      content: "Click any service badge (CEX, DEX, P2P) to see what evidence is available. CEX has full KYC, DEX has limited data, P2P varies. Hover for quick info, click for full guide!",
+      target: '[data-tour="vasp-card"]',
+      position: 'bottom',
+      page: '/search'
+    },
+    {
+      title: "Required Documents at a Glance 📋",
+      content: "Color coding shows what each VASP requires: Green (Letterhead) = Easy, Yellow (Subpoena) = Medium, Orange (Search Warrant) = Hard, Red (MLAT) = Complex. Know before you submit!",
+      target: '[data-tour="vasp-card"]',
+      position: 'bottom',
+      page: '/search'
+    },
+    {
+      title: "Generate Your First Document ⚡",
+      content: "Click 'Generate Request' to create freeze orders or records requests. The system auto-fills compliance emails, addresses, and jurisdiction data - saving you 20+ minutes per document!",
       target: '[data-tour="generate-request"]',
       position: 'bottom',
       page: '/search'
     },
     {
-      title: "Batch Transaction Processing 📊",
-      content: "Import CSV files with multiple transactions. The system automatically generates comprehensive legal documents with transaction tables - no manual data entry!",
+      title: "Simple vs Custom Mode 🎯",
+      content: "Simple Mode: Quick forms for standard requests. Custom Mode: Use your agency's templates with smart tags like {{CASE_NUMBER}}. Most users start with Simple Mode.",
+      target: '[data-tour="document-mode"]',
+      position: 'bottom',
+      page: '/documents/simple'
+    },
+    {
+      title: "Batch Processing Power 📊",
+      content: "Have multiple addresses? Upload a CSV with up to 100 transactions. Generate personalized documents for each VASP in seconds. Perfect for complex investigations!",
       target: '[data-tour="batch-import"]',
       position: 'bottom',
       page: '/batch-process'
     },
     {
-      title: "Smart Templates with AI Tags 🤖",
-      content: "Create custom templates with smart tags like {{case_number}} and {{transaction_table}}. Upload your agency's Word docs and we'll detect placeholders automatically.",
-      target: '[data-tour="upload-template"]',
-      position: 'bottom',
-      page: '/templates'
-    },
-    {
-      title: "Community Template Sharing 🌐",
-      content: "Access templates shared by 500+ investigators. Share your own templates to earn points. Set domain restrictions to control who can use them.",
+      title: "Smart Template Library 📚",
+      content: "Access templates shared by other agencies. Filter by domain (.gov, .mil) or create your own. Each template use earns the creator points - encouraging knowledge sharing!",
       target: '[data-tour="community-tab"]',
       position: 'top',
       page: '/templates'
     },
     {
-      title: "Encrypted Document Storage 🔐",
-      content: "Military-grade client-side encryption protects your sensitive case data. Even admins can't see your documents - only you have the key.",
+      title: "Military-Grade Encryption 🔐",
+      content: "Your templates and documents are encrypted client-side. Only you have the key - even admins can't see your data. Download backups anytime for agency records.",
       target: '[data-tour="recent-documents"]',
       position: 'top',
       page: '/dashboard'
     },
     {
-      title: "Investigator Feedback System 💬",
-      content: "Submit surveys after each VASP response. Your feedback helps other investigators know response times, data quality, and LEO-friendliness ratings.",
+      title: "Track Your Results 📈",
+      content: "After sending requests, log responses here. Did it work? How long did it take? Your feedback improves LEO scores and helps future investigators avoid pitfalls.",
       target: '[data-tour="submit-response"]',
       position: 'bottom',
       page: '/submit-response'
     },
     {
-      title: "Points & Recognition System 🏆",
-      content: "Earn points for contributing: 10 pts for VASP feedback, 5 pts for sharing templates, 3 pts for adding new VASPs. Top contributors get special recognition!",
-      target: '[data-tour="leaderboard"]',
-      position: 'left',
-      page: '/dashboard'
-    },
-    {
-      title: "Global Jurisdiction Database 🌍",
-      content: "Access compliance office locations for 30+ countries. Know exactly where to send your legal requests based on VASP jurisdiction.",
+      title: "Community Comments 💬",
+      content: "Check comments on each VASP for insider tips. 'Use badge number in subject line' or 'Requires notarization' - learn from others' experiences before you submit!",
       target: '[data-tour="vasp-card"]',
       position: 'bottom',
       page: '/search'
     },
     {
-      title: "Quick Actions Hub 🚀",
-      content: "Your command center: Generate documents, manage templates, process batches, add new VASPs, and access all platform features from one place.",
-      target: '[data-tour="quick-links"]',
-      position: 'top',
+      title: "Earn Recognition Points 🏆",
+      content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Top contributors get special badges and priority support.",
+      target: '[data-tour="leaderboard"]',
+      position: 'left',
       page: '/dashboard'
     },
     {
-      title: "Ready to Transform Your Investigations? 🎯",
-      content: "You're all set! Start by searching for a VASP or importing your transaction data. Join 500+ investigators saving hours on every case. Questions? Check the FAQ or contact support.",
-      target: null,
-      position: 'center',
+      title: "Update VASP Information 🔄",
+      content: "Found a new compliance email? Required document changed? Click 'Update Info' to submit changes. Admin-verified updates keep our database accurate for all users.",
+      target: '[data-tour="vasp-card"]',
+      position: 'bottom',
+      page: '/search'
+    },
+    {
+      title: "Start Your First Request! 🎯",
+      content: "You're ready! Search for a VASP, click 'Generate Request', and create your document. Most users save 30+ minutes per request. Need help? support@theblockrecord.com",
+      target: '[data-tour="quick-links"]',
+      position: 'top',
       page: '/dashboard'
     }
   ];

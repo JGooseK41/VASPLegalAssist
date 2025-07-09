@@ -220,7 +220,7 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Required Document for Freeze/Seizure
+                  Required Document for Freeze Request
                 </label>
                 <select
                   value={formData.freeze_required_document}

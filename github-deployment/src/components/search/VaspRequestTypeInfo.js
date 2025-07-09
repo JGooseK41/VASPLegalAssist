@@ -28,8 +28,8 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
         onClick={onClick}
         className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-t-lg transition-all duration-200 flex items-center justify-center gap-2 relative ${
           isActive 
-            ? 'bg-blue-600 text-white shadow-lg transform -translate-y-0.5' 
-            : 'bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800'
+            ? 'bg-gray-800 text-white shadow-lg transform -translate-y-0.5' 
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
         }`}
         style={isActive ? {
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
@@ -38,7 +38,7 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
         {type === 'records' ? <FileText className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
         {label}
         {isActive && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-700 rounded-t-full"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-900 rounded-t-full"></div>
         )}
       </button>
     );
@@ -144,7 +144,7 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
         />
         <RequestTypeTab
           type="freeze"
-          label="Freeze/Seizure"
+          label="Freeze Request"
           isActive={activeTab === 'freeze'}
           onClick={() => setActiveTab('freeze')}
         />

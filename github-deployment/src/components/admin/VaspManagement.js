@@ -405,7 +405,7 @@ const RequiredDocsQuickEdit = ({ vasp, onClose, onSave }) => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Freeze/Seizure Request - Required Document
+              Freeze Request - Required Document
             </label>
             <select
               value={formData.freeze_required_document}
@@ -417,7 +417,7 @@ const RequiredDocsQuickEdit = ({ vasp, onClose, onSave }) => {
               ))}
             </select>
             <p className="mt-1 text-xs text-gray-500">
-              Document type required for asset freeze/seizure requests
+              Document type required for asset freeze requests
             </p>
           </div>
         </div>

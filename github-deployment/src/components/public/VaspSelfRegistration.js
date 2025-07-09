@@ -257,7 +257,7 @@ const VaspSelfRegistration = ({ isOpen, onClose }) => {
                   type="button"
                   className="py-3 px-4 bg-gray-50 text-sm font-medium text-gray-700"
                 >
-                  Freeze/Seizure Request
+                  Freeze Request
                 </button>
               </div>
               
@@ -314,7 +314,7 @@ const VaspSelfRegistration = ({ isOpen, onClose }) => {
               
               {/* Freeze Request Requirements */}
               <div className="p-4 space-y-4 bg-gray-50 border-t border-gray-200">
-                <h4 className="font-medium text-sm text-gray-900">Freeze/Seizure Request Requirements</h4>
+                <h4 className="font-medium text-sm text-gray-900">Freeze Request Requirements</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
