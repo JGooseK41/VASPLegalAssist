@@ -24,6 +24,14 @@ const Dashboard = () => {
   useEffect(() => {
     loadDashboardData();
     
+    // Check if tutorial restart was requested
+    const restartRequested = localStorage.getItem('restartTutorial');
+    if (restartRequested) {
+      localStorage.removeItem('restartTutorial');
+      setShowOnboarding(true);
+      return;
+    }
+    
     // Check if user needs onboarding
     const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
     if (!hasCompletedOnboarding && user?.role !== 'DEMO') {

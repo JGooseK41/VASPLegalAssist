@@ -128,16 +128,25 @@ const OnboardingTour = ({ onComplete }) => {
     if (onComplete) onComplete();
   };
 
-  // Hide tour if user navigates away
+  // Hide tour if user navigates away (but not on initial load)
   useEffect(() => {
+    let isInitialLoad = true;
+    
+    // Give a small delay to distinguish between initial load and actual visibility changes
+    const timer = setTimeout(() => {
+      isInitialLoad = false;
+    }, 1000);
+    
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      // Don't close on initial page visibility changes (like during page reload)
+      if (document.hidden && !isInitialLoad) {
         handleComplete();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);

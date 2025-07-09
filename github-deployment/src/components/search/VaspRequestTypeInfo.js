@@ -51,9 +51,9 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
                        Object.keys(stats.turnaroundTime.distribution).length > 0;
     const displayProcessingTime = hasUserData ? stats.turnaroundTime.mostCommon : "Need more data";
     
-    // Fallback to legacy fields if new fields don't exist
-    const displayRequiredDoc = requiredDoc || vasp.required_document || "Not specified";
-    const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : vasp.accepts_us_service;
+    // Don't fallback to legacy fields for freeze - keep them separate
+    const displayRequiredDoc = requiredDoc || (isRecords ? vasp.required_document : null) || "Unknown";
+    const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : (isRecords ? vasp.accepts_us_service : false);
     
     return (
       <div className="bg-white p-3 rounded-b-lg border-l border-r border-b border-gray-200 text-xs">
@@ -61,11 +61,13 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
         <div className="mb-3 text-center">
           <p className="text-xs text-gray-500 mb-1">Required Document:</p>
           <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${
-            !displayRequiredDoc || displayRequiredDoc === 'Not specified' ? 'bg-gray-100 text-gray-600' :
+            !displayRequiredDoc || displayRequiredDoc === 'Unknown' || displayRequiredDoc === 'Not specified' ? 'bg-gray-100 text-gray-600' :
             displayRequiredDoc.toLowerCase().includes('letterhead') ? 'bg-green-100 text-green-800' :
             displayRequiredDoc.toLowerCase().includes('subpoena') ? 'bg-yellow-100 text-yellow-800' :
             displayRequiredDoc.toLowerCase().includes('warrant') ? 'bg-orange-100 text-orange-800' :
             displayRequiredDoc.toLowerCase().includes('mlat') ? 'bg-red-100 text-red-800' :
+            displayRequiredDoc.toLowerCase().includes('no capability') ? 'bg-gray-100 text-gray-700' :
+            displayRequiredDoc.toLowerCase().includes('non-compliant') ? 'bg-red-100 text-red-800' :
             'bg-gray-100 text-gray-700'
           }`}>
             {displayRequiredDoc || 'Unknown'}

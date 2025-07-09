@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Home, Globe, Users, FileText, ChevronLeft, BarChart3 } from 'lucide-react';
+import { Home, Globe, Users, ChevronLeft, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 import VaspManagement from './VaspManagement';
 import UserManagement from './UserManagement';
-import SubmissionManagement from './SubmissionManagement';
 import Analytics from './Analytics';
 
 const AdminPortal = () => {
@@ -14,7 +13,6 @@ const AdminPortal = () => {
     { id: 'dashboard', label: 'Dashboard', icon: Home, component: AdminDashboard },
     { id: 'vasps', label: 'VASP Management', icon: Globe, component: VaspManagement },
     { id: 'users', label: 'User Management', icon: Users, component: UserManagement },
-    { id: 'submissions', label: 'Submissions', icon: FileText, component: SubmissionManagement },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, component: Analytics }
   ];
   
