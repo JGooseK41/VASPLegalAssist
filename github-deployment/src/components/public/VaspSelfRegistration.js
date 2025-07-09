@@ -17,11 +17,22 @@ const VaspSelfRegistration = ({ isOpen, onClose }) => {
     complianceContact: '',
     serviceAddress: '',
     phone: '',
-    processingTime: '5-10 business days',
+    
+    // Records Request Requirements
+    recordsProcessingTime: '5-10 business days',
+    recordsRequiredDocument: 'Letterhead',
+    recordsAcceptsUS: true,
+    recordsJurisdictions: [],
+    
+    // Freeze Request Requirements
+    freezeProcessingTime: '5-10 business days',
+    freezeRequiredDocument: 'Search Warrant',
+    freezeAcceptsUS: false,
+    freezeJurisdictions: [],
+    
+    // Shared fields
     preferredMethod: 'email',
-    requiredDocument: '',
     infoTypes: ['KYC', 'Transaction History', 'Account Balance', 'Login Records'],
-    acceptsUsService: true,
     hasOwnPortal: false,
     lawEnforcementUrl: '',
     notes: '',
@@ -231,57 +242,144 @@ const VaspSelfRegistration = ({ isOpen, onClose }) => {
       case 2:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">Service Details</h3>
+            <h3 className="text-lg font-medium text-gray-900">Service Requirements</h3>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Typical Processing Time
-              </label>
-              <select
-                value={formData.processingTime}
-                onChange={(e) => setFormData({...formData, processingTime: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="24 hours">24 hours</option>
-                <option value="2-3 business days">2-3 business days</option>
-                <option value="5-10 business days">5-10 business days</option>
-                <option value="10-15 business days">10-15 business days</option>
-                <option value="15+ business days">15+ business days</option>
-              </select>
+            {/* Request Type Tabs */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-2">
+                <button
+                  type="button"
+                  className="py-3 px-4 bg-blue-50 border-r border-gray-200 text-sm font-medium text-blue-700"
+                >
+                  Records Request
+                </button>
+                <button
+                  type="button"
+                  className="py-3 px-4 bg-gray-50 text-sm font-medium text-gray-700"
+                >
+                  Freeze/Seizure Request
+                </button>
+              </div>
+              
+              {/* Records Request Requirements */}
+              <div className="p-4 space-y-4 bg-blue-50">
+                <h4 className="font-medium text-sm text-gray-900">Records Request Requirements</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Processing Time
+                    </label>
+                    <select
+                      value={formData.recordsProcessingTime}
+                      onChange={(e) => setFormData({...formData, recordsProcessingTime: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="24 hours">24 hours</option>
+                      <option value="2-3 business days">2-3 business days</option>
+                      <option value="5-10 business days">5-10 business days</option>
+                      <option value="10-15 business days">10-15 business days</option>
+                      <option value="15+ business days">15+ business days</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Required Document
+                    </label>
+                    <select
+                      value={formData.recordsRequiredDocument}
+                      onChange={(e) => setFormData({...formData, recordsRequiredDocument: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Letterhead">Agency Letterhead</option>
+                      <option value="Subpoena">Subpoena</option>
+                      <option value="Search Warrant">Search Warrant</option>
+                      <option value="Court Order">Court Order</option>
+                      <option value="MLAT">MLAT Request</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.recordsAcceptsUS}
+                    onChange={(e) => setFormData({...formData, recordsAcceptsUS: e.target.checked})}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Accepts US law enforcement requests</span>
+                </label>
+              </div>
+              
+              {/* Freeze Request Requirements */}
+              <div className="p-4 space-y-4 bg-gray-50 border-t border-gray-200">
+                <h4 className="font-medium text-sm text-gray-900">Freeze/Seizure Request Requirements</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Processing Time
+                    </label>
+                    <select
+                      value={formData.freezeProcessingTime}
+                      onChange={(e) => setFormData({...formData, freezeProcessingTime: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="24 hours">24 hours</option>
+                      <option value="2-3 business days">2-3 business days</option>
+                      <option value="5-10 business days">5-10 business days</option>
+                      <option value="10-15 business days">10-15 business days</option>
+                      <option value="15+ business days">15+ business days</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Required Document
+                    </label>
+                    <select
+                      value={formData.freezeRequiredDocument}
+                      onChange={(e) => setFormData({...formData, freezeRequiredDocument: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Search Warrant">Search Warrant</option>
+                      <option value="Court Order">Court Order</option>
+                      <option value="MLAT">MLAT Request</option>
+                      <option value="Subpoena">Subpoena (if accepted)</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.freezeAcceptsUS}
+                    onChange={(e) => setFormData({...formData, freezeAcceptsUS: e.target.checked})}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Accepts US law enforcement freeze requests</span>
+                </label>
+              </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Method
-              </label>
-              <select
-                value={formData.preferredMethod}
-                onChange={(e) => setFormData({...formData, preferredMethod: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="email">Email</option>
-                <option value="portal">Web Portal</option>
-                <option value="kodex">Kodex</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Required Document Type
-              </label>
-              <select
-                value={formData.requiredDocument}
-                onChange={(e) => setFormData({...formData, requiredDocument: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select document type</option>
-                <option value="Letterhead">Agency Letterhead</option>
-                <option value="Subpoena">Subpoena</option>
-                <option value="Search Warrant">Search Warrant</option>
-                <option value="Court Order">Court Order</option>
-                <option value="MLAT">MLAT Request</option>
-              </select>
+            {/* Shared Settings */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Preferred Submission Method
+                </label>
+                <select
+                  value={formData.preferredMethod}
+                  onChange={(e) => setFormData({...formData, preferredMethod: e.target.value})}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="email">Email</option>
+                  <option value="portal">Web Portal</option>
+                  <option value="kodex">Kodex</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
             </div>
             
             <div>

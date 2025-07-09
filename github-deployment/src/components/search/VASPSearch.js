@@ -7,6 +7,9 @@ import VaspSubmissionModal from './VaspSubmissionModal';
 import VaspResponseStats from './VaspResponseStats';
 import EmailUpdateSuggestion from './EmailUpdateSuggestion';
 import DirectContactDisplay from './DirectContactDisplay';
+import VaspRequestTypeInfo from './VaspRequestTypeInfo';
+import RequestTypeIndicators from './RequestTypeIndicators';
+import LEOFriendlyScore from './LEOFriendlyScore';
 import { extractDbaFromNames } from '../../utils/parseVaspNames';
 
 const VASPCard = ({ vasp, onSelect }) => {
@@ -29,6 +32,16 @@ const VASPCard = ({ vasp, onSelect }) => {
           <span className="text-sm text-gray-500 truncate">{vasp.jurisdiction}</span>
         </div>
       </div>
+      
+      {/* LEO Friendly Score - Display if available */}
+      {stats?.leoScore && (
+        <div className="mb-3">
+          <LEOFriendlyScore leoScore={stats.leoScore} compact={true} />
+        </div>
+      )}
+      
+      {/* Request Type Indicators - Quick view of what's accepted */}
+      <RequestTypeIndicators vasp={vasp} />
 
       <div className="space-y-2 mb-4">
         {vasp.compliance_email && (
@@ -38,21 +51,11 @@ const VASPCard = ({ vasp, onSelect }) => {
           </div>
         )}
         <div className="flex items-center space-x-2">
-          <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-sm text-gray-600">{vasp.processing_time}</span>
-        </div>
-        <div className="flex items-center space-x-2">
           <Globe className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <span className="text-sm text-gray-600 capitalize">
             Method: {vasp.preferred_method}
           </span>
         </div>
-        {vasp.required_document && (
-          <div className="flex items-center space-x-2">
-            <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <span className="text-sm text-gray-600">Required: {vasp.required_document}</span>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -67,6 +70,9 @@ const VASPCard = ({ vasp, onSelect }) => {
           </span>
         )}
       </div>
+      
+      {/* Request Type Requirements */}
+      <VaspRequestTypeInfo vasp={vasp} stats={stats} />
       
       {/* VASP Response Statistics */}
       <VaspResponseStats 
@@ -95,12 +101,6 @@ const VASPCard = ({ vasp, onSelect }) => {
 
       <div className="flex justify-between items-center">
         <div className="flex space-x-2">
-          {vasp.accepts_us_service && (
-            <span className="inline-flex items-center text-xs text-green-600">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              US Service
-            </span>
-          )}
           {vasp.has_own_portal && (
             <span className="inline-flex items-center text-xs text-blue-600">
               <Globe className="h-3 w-3 mr-1" />

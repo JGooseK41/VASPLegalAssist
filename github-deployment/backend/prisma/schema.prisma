@@ -162,17 +162,33 @@ model Vasp {
   compliance_contact  String?
   service_address     String?
   phone               String?
-  processing_time     String    @default("5-10 business days")
-  preferred_method    String
-  required_document   String?
+  
+  // Records Request specific fields
+  records_processing_time    String?   @default("5-10 business days")
+  records_required_document  String?   // Letterhead, Subpoena, etc.
+  records_accepts_us        Boolean   @default(true)
+  records_jurisdictions     String[]  // Specific jurisdictions accepted
+  
+  // Freeze Request specific fields  
+  freeze_processing_time     String?   @default("5-10 business days")
+  freeze_required_document   String?   // Search Warrant, Court Order, etc.
+  freeze_accepts_us         Boolean   @default(false)
+  freeze_jurisdictions      String[]  // Specific jurisdictions accepted
+  
+  // Shared fields
+  preferred_method    String    @default("email")
   info_types          String[]
-  accepts_us_service  Boolean   @default(false)
   has_own_portal      Boolean   @default(false)
   law_enforcement_url String?
   notes               String?
   isActive            Boolean   @default(true)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+  
+  // Legacy fields for backward compatibility
+  processing_time     String    @default("5-10 business days")
+  required_document   String?
+  accepts_us_service  Boolean   @default(false)
   
   comments            VaspComment[]
   responses           VaspResponse[]
@@ -193,14 +209,30 @@ model VaspSubmission {
   compliance_contact  String?
   service_address     String?
   phone               String?
-  processing_time     String
+  
+  // Records Request specific fields
+  records_processing_time    String?
+  records_required_document  String?
+  records_accepts_us        Boolean   @default(true)
+  records_jurisdictions     String[]
+  
+  // Freeze Request specific fields
+  freeze_processing_time     String?
+  freeze_required_document   String?
+  freeze_accepts_us         Boolean   @default(false)
+  freeze_jurisdictions      String[]
+  
+  // Shared fields
   preferred_method    String
-  required_document   String?
   info_types          String[]
-  accepts_us_service  Boolean   @default(false)
   has_own_portal      Boolean   @default(false)
   law_enforcement_url String?
   notes               String?
+  
+  // Legacy fields
+  processing_time     String    @default("5-10 business days")
+  required_document   String?
+  accepts_us_service  Boolean   @default(false)
   
   // Self-registration fields
   submitterName       String?
@@ -268,6 +300,9 @@ model VaspResponse {
   fees                  String?   // Any fees charged
   additionalRequirements String?  // Other requirements noted
   additionalNotes       String?   // General notes (will become a comment)
+  
+  // Subjective rating
+  leoFriendlinessRating Int?      // 1-10 subjective rating of how LEO-friendly the VASP is
   
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

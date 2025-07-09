@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, XCircle, AlertCircle, ChevronRight, MessageSquare, Mail, Clock, FileText, DollarSign } from 'lucide-react';
+import { X, CheckCircle, XCircle, AlertCircle, ChevronRight, MessageSquare, Mail, Clock, FileText, DollarSign, Star } from 'lucide-react';
 import axios from 'axios';
 
 const VaspResponseModalV2 = ({ isOpen, onClose, document, onSuccess }) => {
@@ -32,6 +32,7 @@ const VaspResponseModalV2 = ({ isOpen, onClose, document, onSuccess }) => {
     
     // Step 4: Additional Notes
     additionalNotes: '',
+    leoFriendlinessRating: null,
     
     // Legacy fields for compatibility
     isUsCompliant: null,
@@ -159,6 +160,7 @@ const VaspResponseModalV2 = ({ isOpen, onClose, document, onSuccess }) => {
         fees: formData.fees,
         additionalRequirements: formData.additionalRequirements,
         additionalNotes: formData.additionalNotes,
+        leoFriendlinessRating: formData.leoFriendlinessRating,
         
         // Legacy fields
         isUsCompliant,
@@ -601,6 +603,42 @@ const VaspResponseModalV2 = ({ isOpen, onClose, document, onSuccess }) => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">Additional Information</h3>
             
+            {/* LEO Friendliness Rating */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                How LEO-friendly is this VASP? (1-10)
+              </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Rate your overall experience working with this VASP from a law enforcement perspective
+              </p>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-500">Difficult</span>
+                <div className="flex space-x-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setFormData({...formData, leoFriendlinessRating: rating})}
+                      className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                        formData.leoFriendlinessRating === rating
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                      }`}
+                    >
+                      {rating}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-sm text-gray-500">Excellent</span>
+              </div>
+              {formData.leoFriendlinessRating && (
+                <div className="mt-2 flex items-center text-sm text-blue-600">
+                  <Star className="h-4 w-4 mr-1" />
+                  You rated this VASP {formData.leoFriendlinessRating}/10
+                </div>
+              )}
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Any additional notes that would help other users? (optional)
@@ -657,6 +695,13 @@ const VaspResponseModalV2 = ({ isOpen, onClose, document, onSuccess }) => {
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 text-gray-400 mr-2" />
                     <span>Fees: {formData.fees}</span>
+                  </div>
+                )}
+                
+                {formData.leoFriendlinessRating && (
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-blue-400 mr-2" />
+                    <span>LEO Friendly Rating: {formData.leoFriendlinessRating}/10</span>
                   </div>
                 )}
               </div>
