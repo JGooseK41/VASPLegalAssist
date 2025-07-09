@@ -121,6 +121,17 @@ const OnboardingTour = ({ onComplete }) => {
   ];
 
   const currentStepData = steps[currentStep];
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('OnboardingTour state:', {
+      currentStep,
+      totalSteps: steps.length,
+      isVisible,
+      currentPage: location.pathname,
+      targetPage: currentStepData?.page
+    });
+  }, [currentStep, isVisible, location.pathname]);
 
   // Navigate to the correct page when step changes
   useEffect(() => {
@@ -134,7 +145,7 @@ const OnboardingTour = ({ onComplete }) => {
       navigationCountRef.current += 1;
       if (navigationCountRef.current > 50) {
         console.error('OnboardingTour: Too many navigations, aborting to prevent infinite loop');
-        handleComplete();
+        setIsVisible(false);
         return;
       }
       
@@ -238,17 +249,22 @@ const OnboardingTour = ({ onComplete }) => {
 
   // Auto-advance for welcome and completion steps
   useEffect(() => {
-    if (currentStep === 0 || currentStep === steps.length - 1) {
+    console.log('Auto-advance check: currentStep =', currentStep, 'total steps =', steps.length);
+    
+    if (currentStep === 0) {
       const timer = setTimeout(() => {
-        if (currentStep === 0) {
-          setCurrentStep(1);
-        } else {
-          handleComplete();
-        }
-      }, 10000); // 10 seconds to read welcome/completion screens
+        console.log('Auto-advancing from welcome screen');
+        setCurrentStep(1);
+      }, 10000); // 10 seconds to read welcome screen
+      return () => clearTimeout(timer);
+    } else if (currentStep === steps.length - 1) {
+      const timer = setTimeout(() => {
+        console.log('Auto-completing from last step');
+        handleComplete();
+      }, 10000); // 10 seconds to read completion screen
       return () => clearTimeout(timer);
     }
-  }, [currentStep]);
+  }, [currentStep, steps.length]);
 
   const calculateTooltipPosition = (elementRect, position) => {
     const tooltipWidth = 400;
@@ -313,6 +329,7 @@ const OnboardingTour = ({ onComplete }) => {
   };
 
   const handleNext = () => {
+    console.log('handleNext: currentStep =', currentStep, 'steps.length =', steps.length);
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -352,12 +369,14 @@ const OnboardingTour = ({ onComplete }) => {
     // Give a small delay to distinguish between initial load and actual visibility changes
     const timer = setTimeout(() => {
       isInitialLoad = false;
-    }, 1000);
+    }, 2000); // Increased delay
     
     const handleVisibilityChange = () => {
-      // Don't close on initial page visibility changes (like during page reload)
+      // Only close if the document is hidden for more than a few seconds
+      // This prevents closing during navigation
       if (document.hidden && !isInitialLoad) {
-        handleComplete();
+        // Don't immediately close - user might be switching tabs briefly
+        console.log('OnboardingTour: Page became hidden, but not closing immediately');
       }
     };
 
