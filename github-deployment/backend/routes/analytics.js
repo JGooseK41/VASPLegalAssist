@@ -12,21 +12,39 @@ const requireAdminAccess = (req, res, next) => {
     userRole: req.userRole,
     hasRole: !!req.userRole,
     isAdmin: req.userRole === 'ADMIN',
-    isMasterAdmin: req.userRole === 'MASTER_ADMIN'
+    isMasterAdmin: req.userRole === 'MASTER_ADMIN',
+    headers: req.headers.authorization ? 'Present' : 'Missing'
   });
   
   if (!req.userRole || (req.userRole !== 'ADMIN' && req.userRole !== 'MASTER_ADMIN')) {
-    console.log('Analytics access denied:', req.userRole);
+    console.log('Analytics access denied:', {
+      userRole: req.userRole,
+      reason: !req.userRole ? 'No role set' : 'Insufficient permissions'
+    });
     return res.status(403).json({ 
       error: 'Insufficient permissions',
       message: 'You do not have permission to access analytics. This feature requires administrator privileges.',
       required: 'ADMIN or MASTER_ADMIN',
-      current: req.userRole
+      current: req.userRole || 'none',
+      debug: {
+        hasRole: !!req.userRole,
+        roleValue: req.userRole
+      }
     });
   }
   console.log('Analytics access granted for:', req.userRole);
   next();
 };
+
+// Health check endpoint - no auth required
+router.get('/health', async (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: '1.0.1', // Updated to track deployments
+    message: 'Analytics routes are loaded'
+  });
+});
 
 // Debug endpoint to check visitor data
 router.get('/debug', requireAuth, requireAdminAccess, async (req, res) => {
