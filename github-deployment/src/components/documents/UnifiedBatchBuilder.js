@@ -623,7 +623,7 @@ Kraken,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`;
       </div>
 
       {/* CSV Upload */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <div className="bg-white shadow rounded-lg p-6 mb-6" data-tour="batch-import">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Upload CSV File</h2>
         
         {/* CSV Format Info */}

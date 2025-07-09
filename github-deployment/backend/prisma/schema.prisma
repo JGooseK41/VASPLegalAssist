@@ -36,6 +36,7 @@ model User {
   vaspSubmissions         VaspSubmission[]
   templateUsage           TemplateUsage[]
   vaspUpdateRequests      VaspUpdateRequest[]
+  sessions                UserSession[]
 }
 
 model DocumentTemplate {
@@ -339,4 +340,22 @@ model VaspUpdateRequest {
   @@index([vaspId])
   @@index([userId])
   @@index([status])
+}
+
+model UserSession {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  token       String    @unique
+  ipAddress   String?
+  userAgent   String?
+  loginAt     DateTime  @default(now())
+  lastActivity DateTime @default(now())
+  expiresAt   DateTime
+  isActive    Boolean   @default(true)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([isActive])
+  @@index([lastActivity])
 }

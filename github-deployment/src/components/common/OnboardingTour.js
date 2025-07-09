@@ -67,7 +67,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
       content: "Have multiple addresses? Upload a CSV with up to 100 transactions. Generate personalized documents for each VASP in seconds. Perfect for complex investigations!",
       target: '[data-tour="batch-import"]',
       position: 'bottom',
-      page: '/batch-process'
+      page: '/documents/batch'
     },
     {
       title: "Smart Template Library 📚",
@@ -88,7 +88,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
       content: "After sending requests, log responses here. Did it work? How long did it take? Your feedback improves LEO scores and helps future investigators avoid pitfalls.",
       target: '[data-tour="submit-response"]',
       position: 'bottom',
-      page: '/submit-response'
+      page: '/search'
     },
     {
       title: "Community Comments 💬",

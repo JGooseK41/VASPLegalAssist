@@ -293,4 +293,74 @@ router.get('/realtime', requireAuth, requireRole('ADMIN'), async (req, res) => {
   }
 });
 
+// GET /api/analytics/user-sessions - Get user access logs
+router.get('/user-sessions', requireAuth, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { startDate, endDate, isActive } = req.query;
+    
+    // Build where clause for filtering
+    const where = {};
+    
+    if (startDate || endDate) {
+      where.loginAt = {};
+      if (startDate) {
+        where.loginAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.loginAt.lte = end;
+      }
+    }
+    
+    if (isActive !== undefined) {
+      where.isActive = isActive === 'true';
+    }
+    
+    // Get user sessions with user details
+    const sessions = await prisma.userSession.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            agencyName: true,
+            role: true
+          }
+        }
+      },
+      orderBy: {
+        lastActivity: 'desc'
+      },
+      take: 100 // Limit to 100 most recent sessions
+    });
+    
+    // Get counts for summary
+    const activeSessions = await prisma.userSession.count({
+      where: {
+        isActive: true,
+        expiresAt: { gt: new Date() }
+      }
+    });
+    
+    const totalSessions = await prisma.userSession.count({
+      where: where.loginAt ? { loginAt: where.loginAt } : {}
+    });
+    
+    res.json({
+      sessions,
+      summary: {
+        activeSessions,
+        totalSessions
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user sessions:', error);
+    res.status(500).json({ error: 'Failed to fetch user sessions' });
+  }
+});
+
 module.exports = router;

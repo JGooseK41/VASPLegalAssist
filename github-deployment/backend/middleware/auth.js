@@ -29,6 +29,20 @@ const authMiddleware = async (req, res, next) => {
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     
+    // Update last activity for the session (non-blocking)
+    if (decoded.userId !== 'demo-user-id') {
+      prisma.userSession.updateMany({
+        where: {
+          token,
+          isActive: true,
+          expiresAt: { gt: new Date() }
+        },
+        data: {
+          lastActivity: new Date()
+        }
+      }).catch(err => console.error('Failed to update session activity:', err));
+    }
+    
     // Special handling for demo users - they don't exist in database
     if (decoded.userId === 'demo-user-id' && decoded.role === 'DEMO') {
       console.log('Auth middleware: Demo user authenticated');
@@ -104,6 +118,20 @@ const requireAuth = async (req, res, next) => {
     
     req.userId = decoded.userId;
     req.userRole = decoded.role;
+    
+    // Update last activity for the session (non-blocking)
+    if (decoded.userId !== 'demo-user-id') {
+      prisma.userSession.updateMany({
+        where: {
+          token,
+          isActive: true,
+          expiresAt: { gt: new Date() }
+        },
+        data: {
+          lastActivity: new Date()
+        }
+      }).catch(err => console.error('Failed to update session activity:', err));
+    }
     
     // Special handling for demo users - they don't exist in database
     if (decoded.userId === 'demo-user-id' && decoded.role === 'DEMO') {

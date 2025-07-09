@@ -116,7 +116,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        // Call backend logout endpoint to mark session as inactive
+        await authAPI.logout();
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Continue with local logout even if backend call fails
+    }
+    
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     localStorage.removeItem('lastActivity');

@@ -114,6 +114,8 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
 
     // Check for demo account
     if (email === 'demo@theblockaudit.com' && password === 'Crypto') {
@@ -171,6 +173,24 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user.id, user.role);
+
+    // Create user session
+    const expiresAt = new Date();
+    if (user.role === 'DEMO') {
+      expiresAt.setHours(expiresAt.getHours() + 1);
+    } else {
+      expiresAt.setDate(expiresAt.getDate() + 7);
+    }
+
+    await prisma.userSession.create({
+      data: {
+        userId: user.id,
+        token,
+        ipAddress,
+        userAgent,
+        expiresAt
+      }
+    });
 
     // Check for documents without responses from the past month
     const oneMonthAgo = new Date();
@@ -499,9 +519,34 @@ const resendVerificationEmail = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (token) {
+      // Mark the session as inactive
+      await prisma.userSession.updateMany({
+        where: {
+          token,
+          isActive: true
+        },
+        data: {
+          isActive: false
+        }
+      });
+    }
+    
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Failed to logout' });
+  }
+};
+
 module.exports = {
   register,
   login,
+  logout,
   forgotPassword,
   resetPassword,
   validateResetToken,

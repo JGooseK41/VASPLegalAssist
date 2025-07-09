@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Globe, Users, BarChart3, TrendingUp, Eye, Clock, MapPin, Activity } from 'lucide-react';
+import { Calendar, Globe, Users, BarChart3, TrendingUp, Eye, Clock, MapPin, Activity, UserCheck } from 'lucide-react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import {
   Filler,
 } from 'chart.js';
 import axios from 'axios';
+import UserAccessLog from './UserAccessLog';
 
 ChartJS.register(
   CategoryScale,
@@ -34,6 +35,7 @@ const Analytics = () => {
   const [realtimeData, setRealtimeData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('visitor'); // 'visitor' or 'user'
   const [dateRange, setDateRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -182,6 +184,44 @@ const Analytics = () => {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Analytics Dashboard</h1>
           
+          {/* Tabs */}
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('visitor')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'visitor'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Globe className="h-4 w-4" />
+                  <span>Visitor Analytics</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('user')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'user'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <UserCheck className="h-4 w-4" />
+                  <span>User Access Log</span>
+                </div>
+              </button>
+            </nav>
+          </div>
+          
+          {/* Show User Access Log for user tab */}
+          {activeTab === 'user' && <UserAccessLog />}
+          
+          {/* Show Visitor Analytics for visitor tab */}
+          {activeTab === 'visitor' && (
+            <>
           {/* Date Range Selector */}
           <div className="flex flex-wrap gap-4 mb-6">
             <div>
@@ -337,6 +377,8 @@ const Analytics = () => {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
