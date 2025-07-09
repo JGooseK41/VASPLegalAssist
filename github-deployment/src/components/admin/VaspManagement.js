@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw, X } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import VaspForm from './VaspForm';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
@@ -793,7 +793,7 @@ const VaspManagement = () => {
         )}
       </div>
         </>
-      ) : (
+      ) : activeTab === 'submissions' ? (
         <>
           {/* Submissions Tab Content */}
           <div className="bg-white shadow rounded-lg p-4">
