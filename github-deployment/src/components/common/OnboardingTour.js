@@ -11,43 +11,79 @@ const OnboardingTour = ({ onComplete }) => {
   const steps = [
     {
       title: "Welcome to VASP Records Assistant! 👋",
-      content: "Let's take a quick tour to help you get started with creating legal documents for cryptocurrency investigations.",
+      content: "The world's first crowdsourced legal document platform for cryptocurrency investigations. Let's explore the innovative features that will transform your workflow.",
       target: null,
       position: 'center'
     },
     {
-      title: "Search VASPs",
-      content: "Start here to find compliance contacts and read real-time intelligence from other investigators.",
+      title: "Real-time VASP Intelligence 🔍",
+      content: "Search 300+ VASPs with live feedback from investigators worldwide. See compliance ratings, response times, and service types (CEX, DEX, P2P) at a glance.",
       target: '[data-tour="search-vasp"]',
       position: 'bottom'
     },
     {
-      title: "Generate Documents",
-      content: "Create freeze orders, subpoenas, and data requests. Click 'Generate Request' after selecting a VASP.",
+      title: "Service Type Indicators 🏷️",
+      content: "Instantly identify VASP types: CEX (Centralized Exchange), DEX (Decentralized), P2P, Bridge, etc. Each badge shows investigative value and typical evidence available.",
+      target: '[data-tour="vasp-badges"]',
+      position: 'bottom'
+    },
+    {
+      title: "One-Click Document Generation ⚡",
+      content: "Generate freeze orders and subpoenas in seconds. Just select a VASP and our AI fills in all compliance contacts and jurisdiction data automatically.",
       target: '[data-tour="generate-request"]',
       position: 'bottom'
     },
     {
-      title: "Recent Documents",
-      content: "Access your previously created documents here. Click to download or delete them.",
+      title: "Batch Transaction Processing 📊",
+      content: "Import CSV files with multiple transactions. The system automatically generates comprehensive legal documents with transaction tables - no manual data entry!",
+      target: '[data-tour="batch-process"]',
+      position: 'right'
+    },
+    {
+      title: "Smart Templates with AI Tags 🤖",
+      content: "Create custom templates with smart tags like {{case_number}} and {{transaction_table}}. Upload your agency's Word docs and we'll detect placeholders automatically.",
+      target: '[data-tour="my-templates"]',
+      position: 'right'
+    },
+    {
+      title: "Community Template Sharing 🌐",
+      content: "Access templates shared by 500+ investigators. Share your own templates to earn points. Set domain restrictions to control who can use them.",
+      target: '[data-tour="community-templates"]',
+      position: 'top'
+    },
+    {
+      title: "Encrypted Document Storage 🔐",
+      content: "Military-grade client-side encryption protects your sensitive case data. Even admins can't see your documents - only you have the key.",
       target: '[data-tour="recent-documents"]',
       position: 'top'
     },
     {
-      title: "Platform Stats",
-      content: "See how many investigators are using the platform and track document creation.",
-      target: '[data-tour="platform-stats"]',
-      position: 'top'
+      title: "Investigator Feedback System 💬",
+      content: "Submit surveys after each VASP response. Your feedback helps other investigators know response times, data quality, and LEO-friendliness ratings.",
+      target: '[data-tour="submit-feedback"]',
+      position: 'left'
     },
     {
-      title: "Quick Links",
-      content: "Access templates, batch processing, and add new VASPs to the database here.",
+      title: "Points & Recognition System 🏆",
+      content: "Earn points for contributing: 10 pts for VASP feedback, 5 pts for sharing templates, 3 pts for adding new VASPs. Top contributors get special recognition!",
+      target: '[data-tour="leaderboard"]',
+      position: 'left'
+    },
+    {
+      title: "Global Jurisdiction Database 🌍",
+      content: "Access compliance office locations for 30+ countries. Know exactly where to send your legal requests based on VASP jurisdiction.",
+      target: '[data-tour="jurisdiction-info"]',
+      position: 'bottom'
+    },
+    {
+      title: "Quick Actions Hub 🚀",
+      content: "Your command center: Generate documents, manage templates, process batches, add new VASPs, and access all platform features from one place.",
       target: '[data-tour="quick-links"]',
       position: 'top'
     },
     {
-      title: "You're All Set! 🎉",
-      content: "Start by searching for a VASP or creating your first document. Need help? Check the FAQ in the navigation bar.",
+      title: "Ready to Transform Your Investigations? 🎯",
+      content: "You're all set! Start by searching for a VASP or importing your transaction data. Join 500+ investigators saving hours on every case. Questions? Check the FAQ or contact support.",
       target: null,
       position: 'center'
     }
@@ -143,7 +179,7 @@ const OnboardingTour = ({ onComplete }) => {
         } else {
           handleComplete();
         }
-      }, 5000);
+      }, 7000); // Increased to 7 seconds for longer content
       return () => clearTimeout(timer);
     }
   }, [currentStep]);

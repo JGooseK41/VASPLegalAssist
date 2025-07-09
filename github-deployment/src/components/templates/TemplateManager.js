@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe, ArrowLeft } from 'lucide-react';
+import { Save, Edit2, Trash2, Plus, X, CheckCircle, AlertCircle, FileText, Upload, Map, Lock, Unlock, HelpCircle, BookOpen, FileCode, Lightbulb, Globe, ArrowLeft, Users, Award, Copy } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { templateAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,6 +8,7 @@ import { createEncryptedTemplateAPI } from '../../services/encryptedApi';
 import SmartTemplateUpload from './SmartTemplateUpload';
 import MarkerMappingEditor from './MarkerMappingEditor';
 import DirectTemplateCreator from './DirectTemplateCreator';
+import TemplateSharingModal from './TemplateSharingModal';
 
 const TemplateManager = () => {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ const TemplateManager = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [encryptionTimeout, setEncryptionTimeout] = useState(false);
   const [showDirectCreator, setShowDirectCreator] = useState(false);
+  const [activeTab, setActiveTab] = useState('my-templates');
   
   // Initialize encryption
   const encryption = useEncryption();
@@ -64,6 +66,10 @@ const TemplateManager = () => {
     return () => clearTimeout(timeout);
   }, []);
 
+  // Computed values for different template types
+  const globalTemplates = templates.filter(t => t.isGlobal);
+  const userSharedTemplates = templates.filter(t => t.isUserShared && t.userId !== user?.id);
+  
   const loadTemplates = async () => {
     try {
       setLoading(true);
@@ -151,6 +157,61 @@ const TemplateManager = () => {
       } else {
         setError('Failed to delete template. Please try again.');
       }
+    }
+  };
+
+  const handleCopyTemplate = async (template) => {
+    try {
+      setError(null);
+      
+      // Track template usage if it's a shared template
+      if (template.isUserShared && template.userId !== user?.id) {
+        await templateAPI.trackTemplateUsage(template.id);
+      }
+      
+      // Create a copy of the template
+      const newTemplate = {
+        ...template,
+        templateName: `Copy of ${template.templateName || template.sharedTitle}`,
+        isGlobal: false,
+        isUserShared: false,
+        id: undefined,
+        createdAt: undefined,
+        updatedAt: undefined
+      };
+      
+      await handleSaveTemplate(newTemplate);
+      setSuccess('Template copied successfully!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Failed to copy template:', err);
+      setError('Failed to copy template. Please try again.');
+    }
+  };
+
+  const getActiveTemplates = () => {
+    switch (activeTab) {
+      case 'my-templates':
+        return templates.filter(t => !t.isGlobal && !t.isUserShared);
+      case 'global-templates':
+        return globalTemplates;
+      case 'user-shared':
+        return userSharedTemplates;
+      default:
+        return [];
+    }
+  };
+
+  const getEmptyStateMessage = () => {
+    switch (activeTab) {
+      case 'my-templates':
+        return 'No templates yet. Create your first template to get started!';
+      case 'global-templates':
+        return 'No standard templates available.';
+      case 'user-shared':
+        return 'No community templates available yet. Be the first to share!';
+      default:
+        return 'No templates found.';
     }
   };
 
@@ -265,6 +326,19 @@ const TemplateManager = () => {
           />
         )}
 
+        {showNewTemplate && (
+          <div className="mb-6">
+            <TemplateEditor
+              template={{}}
+              onSave={(template) => {
+                handleSaveTemplate(template);
+                setShowNewTemplate(false);
+              }}
+              onCancel={() => setShowNewTemplate(false)}
+            />
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="-mb-px flex space-x-8">
@@ -280,7 +354,7 @@ const TemplateManager = () => {
                 <FileText className="w-4 w-4 mr-2" />
                 My Templates
                 <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {templates.length}
+                  {templates.filter(t => !t.isGlobal && !t.isUserShared).length}
                 </span>
               </div>
             </button>
@@ -425,7 +499,9 @@ const TemplateManager = () => {
         
         {/* Empty state for other tabs */}
         {getActiveTemplates().length === 0 && activeTab !== 'my-templates' && (
-          getEmptyStateMessage()
+          <div className="text-center py-12">
+            <p className="text-gray-500">{getEmptyStateMessage()}</p>
+          </div>
         )}
 
         {/* Help Modal */}
@@ -901,9 +977,10 @@ const TemplateCard = ({ template, onEdit, onDelete, onConfigureMarkers, onCopy, 
 };
 
 const TemplateEditor = ({ template, onSave, onCancel }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    name: template.name || '',
-    document_type: template.document_type || 'subpoena',
+    templateName: template.templateName || template.name || '',
+    templateType: template.templateType || template.document_type || 'subpoena',
     header_info: {
       agency_name: template.header_info?.agency_name || '',
       address: template.header_info?.address || '',
@@ -914,16 +991,44 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
     footer_text: template.footer_text || '',
     custom_fields: template.custom_fields || {}
   });
+  
+  const [shareWithCommunity, setShareWithCommunity] = useState(template.isUserShared || false);
+  const [showSharingModal, setShowSharingModal] = useState(false);
+  const [sharingData, setSharingData] = useState({
+    sharedTitle: template.sharedTitle || '',
+    sharedDescription: template.sharedDescription || '',
+    allowedDomains: template.allowedDomains || []
+  });
+
+  const handleShareToggle = (checked) => {
+    if (checked && !template.isUserShared) {
+      // If turning on sharing for the first time, show modal
+      setShowSharingModal(true);
+    } else {
+      setShareWithCommunity(checked);
+    }
+  };
+
+  const handleSharingConfirm = (data) => {
+    setSharingData(data);
+    setShareWithCommunity(true);
+    setShowSharingModal(false);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
       ...template,
-      ...formData
+      ...formData,
+      isUserShared: shareWithCommunity,
+      sharedTitle: shareWithCommunity ? sharingData.sharedTitle : null,
+      sharedDescription: shareWithCommunity ? sharingData.sharedDescription : null,
+      allowedDomains: shareWithCommunity ? sharingData.allowedDomains : []
     });
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
       <div className="space-y-6">
         <div>
@@ -938,8 +1043,8 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
               </label>
               <input
                 type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                value={formData.templateName}
+                onChange={(e) => setFormData({...formData, templateName: e.target.value})}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Federal Subpoena Template"
                 required
@@ -951,8 +1056,8 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
                 Document Type <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.document_type}
-                onChange={(e) => setFormData({...formData, document_type: e.target.value})}
+                value={formData.templateType}
+                onChange={(e) => setFormData({...formData, templateType: e.target.value})}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
               >
@@ -1048,6 +1153,30 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
           />
         </div>
 
+        {/* Community Sharing Option */}
+        {user && !user.isDemo && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <label className="flex items-start cursor-pointer">
+              <input
+                type="checkbox"
+                checked={shareWithCommunity}
+                onChange={(e) => handleShareToggle(e.target.checked)}
+                className="h-4 w-4 text-green-600 rounded mr-2 mt-0.5"
+              />
+              <div className="flex-1">
+                <span className="flex items-center">
+                  <Users className="h-4 w-4 mr-1 text-green-600" />
+                  <span className="text-sm font-medium">Share with community</span>
+                </span>
+                <p className="text-xs text-gray-600 mt-1">
+                  Share your template with other users and earn 5 points + 1 point for each use.
+                  {template.isUserShared && ' You can update sharing settings or remove from community.'}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
+
         <div className="flex justify-end space-x-3">
           <button
             type="button"
@@ -1066,6 +1195,15 @@ const TemplateEditor = ({ template, onSave, onCancel }) => {
         </div>
       </div>
     </form>
+    
+    {/* Sharing Modal */}
+    <TemplateSharingModal
+      isOpen={showSharingModal}
+      onClose={() => setShowSharingModal(false)}
+      onConfirm={handleSharingConfirm}
+      templateName={formData.templateName}
+    />
+    </>
   );
 };
 
