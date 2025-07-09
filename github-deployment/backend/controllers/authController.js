@@ -68,8 +68,8 @@ const register = async (req, res) => {
       console.error('Failed to send admin notification:', err);
     });
 
-    // For admin users, generate token immediately
-    if (user.role === 'ADMIN') {
+    // For admin and master admin users, generate token immediately
+    if (user.role === 'ADMIN' || user.role === 'MASTER_ADMIN') {
       const token = generateToken(user.id, user.role);
       
       return res.status(201).json({
@@ -156,22 +156,23 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if email is verified (skip for admin users)
-    if (!user.isEmailVerified && user.role !== 'ADMIN') {
+    // Check if email is verified (skip for admin users and master admin)
+    if (!user.isEmailVerified && user.role !== 'ADMIN' && user.role !== 'MASTER_ADMIN') {
       return res.status(403).json({ 
         error: 'Please verify your email address before logging in. Check your inbox for the verification email.',
         requiresEmailVerification: true
       });
     }
 
-    // Check if user is approved (skip for admin users)
-    if (!user.isApproved && user.role !== 'ADMIN') {
+    // Check if user is approved (skip for admin users and master admin)
+    if (!user.isApproved && user.role !== 'ADMIN' && user.role !== 'MASTER_ADMIN') {
       return res.status(403).json({ 
         error: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
         requiresApproval: true
       });
     }
 
+    console.log('Login: Creating token for user:', user.email, 'with role:', user.role);
     const token = generateToken(user.id, user.role);
 
     // Create user session

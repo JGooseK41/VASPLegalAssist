@@ -50,14 +50,14 @@ const authMiddleware = async (req, res, next) => {
       return;
     }
     
-    // Check if user is approved (skip for admin users)
-    if (decoded.role !== 'ADMIN') {
-      console.log('Auth middleware: Checking approval for non-admin user');
+    // Check if user is approved (skip for admin users and master admin users)
+    if (decoded.role !== 'ADMIN' && decoded.role !== 'MASTER_ADMIN') {
+      console.log('Auth middleware: Checking approval for non-admin user, role:', decoded.role);
       
       try {
         const user = await prisma.user.findUnique({
           where: { id: decoded.userId },
-          select: { isApproved: true, email: true }
+          select: { isApproved: true, email: true, role: true }
         });
         
         console.log('Auth middleware: User lookup result:', user);
@@ -77,6 +77,8 @@ const authMiddleware = async (req, res, next) => {
           message: 'Failed to verify user approval status'
         });
       }
+    } else {
+      console.log('Auth middleware: Skipping approval check for admin/master admin user, role:', decoded.role);
     }
     
     console.log('Auth middleware: Authentication successful');
@@ -140,14 +142,14 @@ const requireAuth = async (req, res, next) => {
       return;
     }
     
-    // Check if user is approved (skip for admin users)
-    if (decoded.role !== 'ADMIN') {
-      console.log('RequireAuth: Checking approval for non-admin user');
+    // Check if user is approved (skip for admin users and master admin users)
+    if (decoded.role !== 'ADMIN' && decoded.role !== 'MASTER_ADMIN') {
+      console.log('RequireAuth: Checking approval for non-admin user, role:', decoded.role);
       
       try {
         const user = await prisma.user.findUnique({
           where: { id: decoded.userId },
-          select: { isApproved: true, email: true }
+          select: { isApproved: true, email: true, role: true }
         });
         
         console.log('RequireAuth: User lookup result:', user);
@@ -167,6 +169,8 @@ const requireAuth = async (req, res, next) => {
           message: 'Failed to verify user approval status'
         });
       }
+    } else {
+      console.log('RequireAuth: Skipping approval check for admin/master admin user, role:', decoded.role);
     }
     
     console.log('RequireAuth: Authentication successful');

@@ -242,7 +242,9 @@ const updateUserRole = async (req, res) => {
     const { role } = req.body;
     
     // Only MASTER_ADMIN can update roles
+    console.log('updateUserRole: Checking if user has MASTER_ADMIN role. Current role:', req.userRole);
     if (req.userRole !== 'MASTER_ADMIN') {
+      console.log('updateUserRole: Access denied. User role is:', req.userRole, 'but MASTER_ADMIN required');
       return res.status(403).json({ error: 'Only master admin can update user roles' });
     }
     

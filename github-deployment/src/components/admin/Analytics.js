@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import axios from 'axios';
 import UserAccessLog from './UserAccessLog';
+import AuthDebug from './AuthDebug';
 
 ChartJS.register(
   CategoryScale,
@@ -124,6 +125,11 @@ const Analytics = () => {
               <p className="mt-1 text-sm text-red-700">{error}</p>
             </div>
           </div>
+        </div>
+        
+        {/* Debug component to help diagnose the issue */}
+        <div className="mt-6">
+          <AuthDebug />
         </div>
       </div>
     );

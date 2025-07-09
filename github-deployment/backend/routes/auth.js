@@ -30,4 +30,14 @@ router.post('/verify-email', verifyEmail);
 // POST /api/auth/resend-verification
 router.post('/resend-verification', resendVerificationEmail);
 
+// GET /api/auth/verify-token - Verify current token and return user info
+router.get('/verify-token', requireAuth, (req, res) => {
+  res.json({
+    authenticated: true,
+    userId: req.userId,
+    userRole: req.userRole,
+    message: 'Token is valid'
+  });
+});
+
 module.exports = router;
