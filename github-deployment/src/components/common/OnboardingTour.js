@@ -217,19 +217,17 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
       if (currentStepData.target) {
         const element = document.querySelector(currentStepData.target);
         if (element) {
-        const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top >= 0 && 
-                           rect.bottom <= window.innerHeight &&
-                           rect.left >= 0 &&
-                           rect.right <= window.innerWidth;
-        
-        if (!isInViewport) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // Wait for scroll to complete before updating positions
-          setTimeout(updatePositions, 800);
-        } else {
-          updatePositions();
-        }
+          // Scroll element into view with some padding
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'center' 
+          });
+          
+          // Wait for scroll to complete before positioning
+          setTimeout(() => {
+            updatePositions();
+          }, 500);
         } else {
           updatePositions();
         }
@@ -269,30 +267,65 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
 
   const calculateTooltipPosition = (elementRect, position) => {
     const tooltipWidth = 400;
-    const tooltipHeight = 300; // Approximate height
+    const tooltipHeight = 350; // Approximate height
     const padding = 20;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     let styles = { position: 'fixed' };
     
+    // First, check if element is in viewport and adjust position if needed
+    const elementInViewport = elementRect.top >= 0 && 
+                             elementRect.bottom <= viewportHeight &&
+                             elementRect.left >= 0 && 
+                             elementRect.right <= viewportWidth;
+    
+    // If element is below viewport, position tooltip at top of screen
+    if (elementRect.top > viewportHeight - 100) {
+      styles.top = `${padding}px`;
+      styles.left = '50%';
+      styles.transform = 'translateX(-50%)';
+      return styles;
+    }
+    
+    // If element is above viewport, position tooltip at bottom of screen
+    if (elementRect.bottom < 100) {
+      styles.bottom = `${padding}px`;
+      styles.left = '50%';
+      styles.transform = 'translateX(-50%)';
+      return styles;
+    }
+    
+    // Normal positioning logic
     switch (position) {
       case 'bottom':
-        styles.top = `${elementRect.bottom + padding}px`;
+        // Check if tooltip would go below viewport
+        if (elementRect.bottom + padding + tooltipHeight > viewportHeight) {
+          // Position above element instead
+          styles.bottom = `${viewportHeight - elementRect.top + padding}px`;
+        } else {
+          styles.top = `${elementRect.bottom + padding}px`;
+        }
         styles.left = `${elementRect.left + elementRect.width / 2}px`;
         styles.transform = 'translateX(-50%)';
         break;
       case 'top':
-        styles.bottom = `${window.innerHeight - elementRect.top + padding}px`;
+        // Check if tooltip would go above viewport
+        if (elementRect.top - padding - tooltipHeight < 0) {
+          // Position below element instead
+          styles.top = `${elementRect.bottom + padding}px`;
+        } else {
+          styles.bottom = `${viewportHeight - elementRect.top + padding}px`;
+        }
         styles.left = `${elementRect.left + elementRect.width / 2}px`;
         styles.transform = 'translateX(-50%)';
         break;
       case 'left':
-        styles.top = `${elementRect.top + elementRect.height / 2}px`;
-        styles.right = `${window.innerWidth - elementRect.left + padding}px`;
-        styles.transform = 'translateY(-50%)';
+        styles.top = `${Math.max(padding, Math.min(elementRect.top + elementRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - padding))}px`;
+        styles.right = `${viewportWidth - elementRect.left + padding}px`;
         break;
       case 'right':
-        styles.top = `${elementRect.top + elementRect.height / 2}px`;
+        styles.top = `${Math.max(padding, Math.min(elementRect.top + elementRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - padding))}px`;
         styles.left = `${elementRect.right + padding}px`;
-        styles.transform = 'translateY(-50%)';
         break;
       default:
         styles.top = `${elementRect.bottom + padding}px`;
@@ -300,21 +333,21 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
         styles.transform = 'translateX(-50%)';
     }
     
-    // Ensure tooltip stays within viewport
-    if (styles.left) {
+    // Ensure tooltip stays within horizontal viewport bounds
+    if (styles.left && styles.transform === 'translateX(-50%)') {
       const leftValue = parseInt(styles.left);
       const transformedLeft = leftValue - (tooltipWidth / 2);
       
       if (transformedLeft < padding) {
         styles.left = `${padding}px`;
         styles.transform = 'translateX(0)';
-      } else if (transformedLeft + tooltipWidth > window.innerWidth - padding) {
-        styles.left = `${window.innerWidth - tooltipWidth - padding}px`;
+      } else if (transformedLeft + tooltipWidth > viewportWidth - padding) {
+        styles.left = `${viewportWidth - tooltipWidth - padding}px`;
         styles.transform = 'translateX(0)';
       }
     }
     
-    // Ensure tooltip doesn't go off the top or bottom
+    // Final check to ensure tooltip is visible
     if (styles.top) {
       const topValue = parseInt(styles.top);
       if (topValue < padding) {
@@ -399,48 +432,47 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
 
   return (
     <>
-      {/* Backdrop - darker for better contrast */}
-      <div className="fixed inset-0 bg-black bg-opacity-60 z-40" onClick={handleSkip} />
-      
-      {/* Highlight element with enhanced visibility */}
-      {highlightBounds && (
+      {/* Single overlay with cutout for highlighted element */}
+      {highlightBounds ? (
         <>
-          {/* Dark overlay with cutout */}
+          {/* Dark overlay with cutout - 50% opacity everywhere except highlighted area */}
           <div
-            className="fixed inset-0 pointer-events-none z-45"
+            className="fixed inset-0 pointer-events-none z-40"
             style={{
-              background: 'rgba(0, 0, 0, 0.75)',
+              background: 'rgba(0, 0, 0, 0.5)',
               clipPath: `polygon(
                 0 0, 
                 100% 0, 
                 100% 100%, 
                 0 100%, 
                 0 0,
-                ${highlightBounds.left}px ${highlightBounds.top}px,
-                ${highlightBounds.left}px ${highlightBounds.top + highlightBounds.height}px,
-                ${highlightBounds.left + highlightBounds.width}px ${highlightBounds.top + highlightBounds.height}px,
-                ${highlightBounds.left + highlightBounds.width}px ${highlightBounds.top}px,
-                ${highlightBounds.left}px ${highlightBounds.top}px
+                ${highlightBounds.left - 4}px ${highlightBounds.top - 4}px,
+                ${highlightBounds.left - 4}px ${highlightBounds.top + highlightBounds.height + 4}px,
+                ${highlightBounds.left + highlightBounds.width + 4}px ${highlightBounds.top + highlightBounds.height + 4}px,
+                ${highlightBounds.left + highlightBounds.width + 4}px ${highlightBounds.top - 4}px,
+                ${highlightBounds.left - 4}px ${highlightBounds.top - 4}px
               )`
             }}
           />
-          {/* Glowing border - no background overlay to keep area bright */}
+          {/* Glowing border */}
           <div
-            className="fixed pointer-events-none z-46 highlight-border"
+            className="fixed pointer-events-none highlight-border"
             style={{
-              top: highlightBounds.top,
-              left: highlightBounds.left,
-              width: highlightBounds.width,
-              height: highlightBounds.height,
+              top: highlightBounds.top - 4,
+              left: highlightBounds.left - 4,
+              width: highlightBounds.width + 8,
+              height: highlightBounds.height + 8,
               border: '4px solid #3B82F6',
-              borderRadius: '12px'
+              borderRadius: '12px',
+              zIndex: 41
             }}
           />
           {/* Pulsing arrow pointing to highlighted element */}
           {tooltipPosition.top && highlightBounds && (
             <div
-              className="fixed z-48 pointer-events-none"
+              className="fixed pointer-events-none"
               style={{
+                zIndex: 42,
                 top: tooltipPosition.bottom ? highlightBounds.top - 40 : highlightBounds.top + highlightBounds.height + 10,
                 left: highlightBounds.left + (highlightBounds.width / 2) - 20,
                 transform: tooltipPosition.bottom ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -464,13 +496,18 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
             </div>
           )}
         </>
+      ) : (
+        /* Simple backdrop when no element is highlighted */
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleSkip} />
       )}
-      
       
       {/* Tour tooltip */}
       <div 
-        className={`bg-white rounded-lg shadow-2xl p-6 ${isMobile ? 'max-w-sm' : 'max-w-md'} mx-4 z-50 pointer-events-auto`}
-        style={tooltipPosition}
+        className={`bg-white rounded-lg shadow-2xl p-6 ${isMobile ? 'max-w-sm' : 'max-w-md'} mx-4 pointer-events-auto`}
+        style={{
+          ...tooltipPosition,
+          zIndex: 50
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
