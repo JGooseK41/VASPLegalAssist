@@ -1,12 +1,35 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Custom admin check middleware that accepts both ADMIN and MASTER_ADMIN
+const requireAdminAccess = (req, res, next) => {
+  console.log('Analytics access check:', {
+    userId: req.userId,
+    userRole: req.userRole,
+    hasRole: !!req.userRole,
+    isAdmin: req.userRole === 'ADMIN',
+    isMasterAdmin: req.userRole === 'MASTER_ADMIN'
+  });
+  
+  if (!req.userRole || (req.userRole !== 'ADMIN' && req.userRole !== 'MASTER_ADMIN')) {
+    console.log('Analytics access denied:', req.userRole);
+    return res.status(403).json({ 
+      error: 'Insufficient permissions',
+      message: 'You do not have permission to access analytics. This feature requires administrator privileges.',
+      required: 'ADMIN or MASTER_ADMIN',
+      current: req.userRole
+    });
+  }
+  console.log('Analytics access granted for:', req.userRole);
+  next();
+};
+
 // Get analytics summary
-router.get('/summary', requireAuth, requireRole('ADMIN'), async (req, res) => {
+router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     
@@ -164,7 +187,7 @@ router.get('/summary', requireAuth, requireRole('ADMIN'), async (req, res) => {
 });
 
 // Get detailed visitor sessions
-router.get('/sessions', requireAuth, requireRole('ADMIN'), async (req, res) => {
+router.get('/sessions', requireAuth, requireAdminAccess, async (req, res) => {
   try {
     const { 
       startDate, 
@@ -243,7 +266,7 @@ router.get('/sessions', requireAuth, requireRole('ADMIN'), async (req, res) => {
 });
 
 // Get real-time visitor count
-router.get('/realtime', requireAuth, requireRole('ADMIN'), async (req, res) => {
+router.get('/realtime', requireAuth, requireAdminAccess, async (req, res) => {
   try {
     // Count sessions from last 30 minutes
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
@@ -294,7 +317,7 @@ router.get('/realtime', requireAuth, requireRole('ADMIN'), async (req, res) => {
 });
 
 // GET /api/analytics/user-sessions - Get user access logs
-router.get('/user-sessions', requireAuth, requireRole('ADMIN'), async (req, res) => {
+router.get('/user-sessions', requireAuth, requireAdminAccess, async (req, res) => {
   try {
     const { startDate, endDate, isActive } = req.query;
     
