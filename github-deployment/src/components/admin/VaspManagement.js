@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw, X } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw, X, Shield } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import VaspForm from './VaspForm';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
@@ -345,6 +345,103 @@ const ServiceTypeQuickEdit = ({ vasp, onClose, onSave }) => {
   );
 };
 
+// Required Documents Quick Edit Component
+const RequiredDocsQuickEdit = ({ vasp, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    records_required_document: vasp.records_required_document || '',
+    freeze_required_document: vasp.freeze_required_document || ''
+  });
+  const [saving, setSaving] = useState(false);
+  
+  const documentOptions = [
+    { value: '', label: 'Unknown' },
+    { value: 'Letterhead', label: 'Letterhead' },
+    { value: 'Subpoena', label: 'Subpoena' },
+    { value: 'Search Warrant', label: 'Search Warrant' },
+    { value: 'MLAT', label: 'MLAT' },
+    { value: 'No Capability', label: 'No Capability by VASP' },
+    { value: 'Non-Compliant', label: 'Non-Compliant' }
+  ];
+  
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(vasp.id, formData);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save required documents:', error);
+      alert('Failed to save required documents');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-lg w-full">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Edit Required Documents</h3>
+          <p className="mt-1 text-sm text-gray-500">{vasp.name}</p>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Records Request - Required Document
+            </label>
+            <select
+              value={formData.records_required_document}
+              onChange={(e) => setFormData({...formData, records_required_document: e.target.value})}
+              className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              {documentOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Document type required for data/records requests
+            </p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Freeze/Seizure Request - Required Document
+            </label>
+            <select
+              value={formData.freeze_required_document}
+              onChange={(e) => setFormData({...formData, freeze_required_document: e.target.value})}
+              className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              {documentOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Document type required for asset freeze/seizure requests
+            </p>
+          </div>
+        </div>
+        
+        <div className="p-6 bg-gray-50 flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const VaspManagement = () => {
   const [activeTab, setActiveTab] = useState('vasps');
   const [vasps, setVasps] = useState([]);
@@ -359,6 +456,7 @@ const VaspManagement = () => {
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState('PENDING');
   const [editingServiceTypes, setEditingServiceTypes] = useState(null);
+  const [editingRequiredDocs, setEditingRequiredDocs] = useState(null);
   const [updateRequestStatusFilter, setUpdateRequestStatusFilter] = useState('PENDING');
   const [selectedUpdateRequest, setSelectedUpdateRequest] = useState(null);
   
@@ -472,6 +570,16 @@ const VaspManagement = () => {
       loadVasps();
     } catch (error) {
       console.error('Failed to update service types:', error);
+      throw error;
+    }
+  };
+  
+  const handleSaveRequiredDocs = async (vaspId, docs) => {
+    try {
+      await adminAPI.updateVasp(vaspId, docs);
+      loadVasps();
+    } catch (error) {
+      console.error('Failed to update required documents:', error);
       throw error;
     }
   };
@@ -643,6 +751,9 @@ const VaspManagement = () => {
                     Service Types
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Required Docs
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Method
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -702,6 +813,43 @@ const VaspManagement = () => {
                           title="Edit service types"
                         >
                           <Tag className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-xs">
+                          <div className="flex items-center space-x-1">
+                            <FileText className="w-3 h-3 text-blue-500" />
+                            <span className={`font-medium ${
+                              vasp.records_required_document === 'Letterhead' ? 'text-green-600' :
+                              vasp.records_required_document === 'Subpoena' ? 'text-yellow-600' :
+                              vasp.records_required_document === 'Search Warrant' ? 'text-orange-600' :
+                              vasp.records_required_document === 'MLAT' ? 'text-red-600' :
+                              'text-gray-500'
+                            }`}>
+                              {vasp.records_required_document || 'Unknown'}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1 mt-1">
+                            <Shield className="w-3 h-3 text-orange-500" />
+                            <span className={`font-medium ${
+                              vasp.freeze_required_document === 'Letterhead' ? 'text-green-600' :
+                              vasp.freeze_required_document === 'Subpoena' ? 'text-yellow-600' :
+                              vasp.freeze_required_document === 'Search Warrant' ? 'text-orange-600' :
+                              vasp.freeze_required_document === 'MLAT' ? 'text-red-600' :
+                              'text-gray-500'
+                            }`}>
+                              {vasp.freeze_required_document || 'Unknown'}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setEditingRequiredDocs(vasp)}
+                          className="text-gray-400 hover:text-gray-600"
+                          title="Edit required documents"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -1043,6 +1191,14 @@ const VaspManagement = () => {
           vasp={editingServiceTypes}
           onClose={() => setEditingServiceTypes(null)}
           onSave={handleSaveServiceTypes}
+        />
+      )}
+      
+      {editingRequiredDocs && (
+        <RequiredDocsQuickEdit
+          vasp={editingRequiredDocs}
+          onClose={() => setEditingRequiredDocs(null)}
+          onSave={handleSaveRequiredDocs}
         />
       )}
     </div>
