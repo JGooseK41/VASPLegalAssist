@@ -257,7 +257,7 @@ Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,de
       </div>
 
       {/* CSV Upload */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <div className="bg-white shadow rounded-lg p-6 mb-6" data-tour="batch-import">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Upload CSV File</h2>
         <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
           <div className="space-y-1 text-center">

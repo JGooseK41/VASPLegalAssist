@@ -1,8 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import VaspForm from './VaspForm';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
+
+// Update Request Detail Modal
+const UpdateRequestDetail = ({ updateRequest, onClose, onApprove, onReject }) => {
+  const [adminNotes, setAdminNotes] = useState('');
+  
+  if (!updateRequest) return null;
+  
+  const changes = updateRequest.proposedChanges || {};
+  const originalVasp = updateRequest.vasp || {};
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Update Request for {originalVasp.name}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Submitter Info */}
+          <div className="mb-6 bg-gray-50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Submitted By</h3>
+            <p className="text-sm text-gray-900">
+              {updateRequest.user?.firstName} {updateRequest.user?.lastName} - {updateRequest.user?.agencyName}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(updateRequest.createdAt).toLocaleString()}
+            </p>
+          </div>
+          
+          {/* User Comments */}
+          {updateRequest.userComments && (
+            <div className="mb-6 bg-blue-50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-blue-900 mb-2">User Comments</h3>
+              <p className="text-sm text-blue-800">{updateRequest.userComments}</p>
+            </div>
+          )}
+          
+          {/* Proposed Changes */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Proposed Changes</h3>
+            <div className="space-y-4">
+              {Object.entries(changes).map(([field, newValue]) => {
+                if (field === 'user_comments' || field === 'notes') return null;
+                
+                const originalValue = originalVasp[field];
+                const hasChanged = JSON.stringify(originalValue) !== JSON.stringify(newValue);
+                
+                return (
+                  <div key={field} className={`border rounded-lg p-4 ${hasChanged ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200'}`}>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Current</p>
+                        <p className="text-sm text-gray-900">
+                          {Array.isArray(originalValue) ? originalValue.join(', ') : (originalValue || 'Not set')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Proposed</p>
+                        <p className="text-sm text-gray-900 font-medium">
+                          {Array.isArray(newValue) ? newValue.join(', ') : (newValue || 'Not set')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Admin Notes */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Admin Notes (Optional)
+            </label>
+            <textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              rows={3}
+              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              placeholder="Add notes about this decision..."
+            />
+          </div>
+          
+          {/* Actions */}
+          {updateRequest.status === 'PENDING' && (
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  updateRequest.adminNotes = adminNotes;
+                  onReject(updateRequest.id);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => {
+                  updateRequest.adminNotes = adminNotes;
+                  onApprove(updateRequest.id);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Approve Changes
+              </button>
+            </div>
+          )}
+          
+          {updateRequest.status !== 'PENDING' && (
+            <div className="bg-gray-100 rounded-lg p-4">
+              <p className="text-sm text-gray-700">
+                This request was <strong>{updateRequest.status.toLowerCase()}</strong> on{' '}
+                {new Date(updateRequest.updatedAt).toLocaleString()}
+              </p>
+              {updateRequest.adminNotes && (
+                <p className="text-sm text-gray-600 mt-2">
+                  <strong>Admin Notes:</strong> {updateRequest.adminNotes}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Submission Detail Modal Component
 const SubmissionDetail = ({ submission, onClose, onApprove, onReject }) => {
@@ -213,6 +349,7 @@ const VaspManagement = () => {
   const [activeTab, setActiveTab] = useState('vasps');
   const [vasps, setVasps] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [updateRequests, setUpdateRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -222,14 +359,18 @@ const VaspManagement = () => {
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState('PENDING');
   const [editingServiceTypes, setEditingServiceTypes] = useState(null);
+  const [updateRequestStatusFilter, setUpdateRequestStatusFilter] = useState('PENDING');
+  const [selectedUpdateRequest, setSelectedUpdateRequest] = useState(null);
   
   useEffect(() => {
     if (activeTab === 'vasps') {
       loadVasps();
-    } else {
+    } else if (activeTab === 'submissions') {
       loadSubmissions();
+    } else if (activeTab === 'updates') {
+      loadUpdateRequests();
     }
-  }, [currentPage, searchQuery, activeTab, submissionStatusFilter]);
+  }, [currentPage, searchQuery, activeTab, submissionStatusFilter, updateRequestStatusFilter]);
   
   const loadVasps = async () => {
     try {
@@ -335,6 +476,33 @@ const VaspManagement = () => {
     }
   };
   
+  const loadUpdateRequests = async () => {
+    try {
+      setLoading(true);
+      const data = await adminAPI.getUpdateRequests(updateRequestStatusFilter);
+      setUpdateRequests(data);
+    } catch (error) {
+      console.error('Failed to load update requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleProcessUpdateRequest = async (id, action) => {
+    try {
+      const adminNotes = selectedUpdateRequest?.adminNotes || '';
+      await adminAPI.processUpdateRequest(id, action, adminNotes);
+      setSelectedUpdateRequest(null);
+      loadUpdateRequests();
+      if (action === 'APPROVED') {
+        loadVasps(); // Refresh VASPs if approved
+      }
+    } catch (error) {
+      console.error('Failed to process update request:', error);
+      alert('Failed to process update request');
+    }
+  };
+  
   const getStatusIcon = (status) => {
     switch (status) {
       case 'PENDING':
@@ -400,6 +568,24 @@ const VaspManagement = () => {
               {submissions.filter(s => s.status === 'PENDING').length > 0 && (
                 <span className="ml-2 bg-yellow-100 text-yellow-800 py-0.5 px-2.5 rounded-full text-xs">
                   {submissions.filter(s => s.status === 'PENDING').length} pending
+                </span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('updates')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'updates'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Update Requests
+              {updateRequests.filter(u => u.status === 'PENDING').length > 0 && (
+                <span className="ml-2 bg-yellow-100 text-yellow-800 py-0.5 px-2.5 rounded-full text-xs">
+                  {updateRequests.filter(u => u.status === 'PENDING').length} pending
                 </span>
               )}
             </div>
@@ -729,7 +915,110 @@ const VaspManagement = () => {
             )}
           </div>
         </>
-      )}
+      ) : activeTab === 'updates' ? (
+        <>
+          {/* Update Requests Tab Content */}
+          <div className="mb-4">
+            <div className="bg-white shadow rounded-lg p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Status
+              </label>
+              <select
+                value={updateRequestStatusFilter}
+                onChange={(e) => setUpdateRequestStatusFilter(e.target.value)}
+                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Update Requests Table */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            {loading ? (
+              <div className="p-6 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading update requests...</p>
+              </div>
+            ) : updateRequests.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                No update requests found
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        VASP
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Submitted By
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Changes
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {updateRequests.map((request) => (
+                      <tr key={request.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {getStatusIcon(request.status)}
+                            <span className="ml-2 text-sm text-gray-900">
+                              {request.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {request.vasp?.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {request.user?.firstName} {request.user?.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {request.user?.agencyName}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {Object.keys(request.proposedChanges || {}).length} fields
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => setSelectedUpdateRequest(request)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      ) : null}
       
       {selectedSubmission && (
         <SubmissionDetail
@@ -737,6 +1026,15 @@ const VaspManagement = () => {
           onClose={() => setSelectedSubmission(null)}
           onApprove={handleApproveSubmission}
           onReject={handleRejectSubmission}
+        />
+      )}
+      
+      {selectedUpdateRequest && (
+        <UpdateRequestDetail
+          updateRequest={selectedUpdateRequest}
+          onClose={() => setSelectedUpdateRequest(null)}
+          onApprove={(id) => handleProcessUpdateRequest(id, 'APPROVED')}
+          onReject={(id) => handleProcessUpdateRequest(id, 'REJECTED')}
         />
       )}
       

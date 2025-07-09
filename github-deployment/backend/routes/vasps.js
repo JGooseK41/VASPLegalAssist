@@ -8,6 +8,44 @@ const prisma = new PrismaClient();
 // Routes
 router.use(authMiddleware);
 
+// Submit update request
+router.post('/update-request', async (req, res) => {
+  try {
+    const { vaspId, proposedChanges, userComments } = req.body;
+    
+    // Create update request
+    const updateRequest = await prisma.vaspUpdateRequest.create({
+      data: {
+        vaspId: parseInt(vaspId),
+        userId: req.user.id,
+        proposedChanges,
+        userComments,
+        status: 'PENDING'
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            agencyName: true
+          }
+        },
+        vasp: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+    
+    res.json(updateRequest);
+  } catch (error) {
+    console.error('Error creating update request:', error);
+    res.status(500).json({ error: 'Failed to submit update request' });
+  }
+});
+
 // GET /api/vasps - Get all VASPs from database
 router.get('/', async (req, res) => {
   try {

@@ -21,7 +21,11 @@ const {
   rejectSubmission,
   
   // Dashboard
-  getDashboardStats
+  getDashboardStats,
+  
+  // Update Requests
+  getUpdateRequests,
+  processUpdateRequest
 } = require('../controllers/adminController');
 
 // All routes require authentication and admin role
@@ -47,5 +51,9 @@ router.put('/users/:userId/role', updateUserRole);
 router.get('/submissions', getSubmissions);
 router.post('/submissions/:submissionId/approve', approveSubmission);
 router.post('/submissions/:submissionId/reject', rejectSubmission);
+
+// Update Request Management
+router.get('/update-requests', getUpdateRequests);
+router.put('/update-requests/:id', processUpdateRequest);
 
 module.exports = router;

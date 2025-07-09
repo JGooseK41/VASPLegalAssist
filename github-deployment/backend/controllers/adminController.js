@@ -391,6 +391,97 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// Get VASP update requests
+const getUpdateRequests = async (req, res) => {
+  try {
+    const { status = 'PENDING' } = req.query;
+    
+    const updateRequests = await prisma.vaspUpdateRequest.findMany({
+      where: {
+        status
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            agencyName: true
+          }
+        },
+        vasp: {
+          select: {
+            name: true,
+            legal_name: true,
+            jurisdiction: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    res.json(updateRequests);
+  } catch (error) {
+    console.error('Error fetching update requests:', error);
+    res.status(500).json({ error: 'Failed to fetch update requests' });
+  }
+};
+
+// Process update request (approve/reject)
+const processUpdateRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, adminNotes } = req.body;
+    
+    if (!['APPROVED', 'REJECTED'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+    
+    const updateRequest = await prisma.vaspUpdateRequest.findUnique({
+      where: { id }
+    });
+    
+    if (!updateRequest) {
+      return res.status(404).json({ error: 'Update request not found' });
+    }
+    
+    // If approved, apply the changes
+    if (action === 'APPROVED') {
+      const changes = updateRequest.proposedChanges;
+      await prisma.vasp.update({
+        where: { id: updateRequest.vaspId },
+        data: {
+          name: changes.name,
+          legal_name: changes.legal_name,
+          compliance_email: changes.compliance_email,
+          compliance_contact: changes.compliance_contact,
+          service_address: changes.service_address,
+          jurisdiction: changes.jurisdiction,
+          service_types: changes.service_types,
+          law_enforcement_url: changes.law_enforcement_url
+        }
+      });
+    }
+    
+    // Update request status
+    const updatedRequest = await prisma.vaspUpdateRequest.update({
+      where: { id },
+      data: {
+        status: action,
+        adminNotes,
+        updatedAt: new Date()
+      }
+    });
+    
+    res.json(updatedRequest);
+  } catch (error) {
+    console.error('Error processing update request:', error);
+    res.status(500).json({ error: 'Failed to process update request' });
+  }
+};
+
 module.exports = {
   // VASP Management
   getVasps,
@@ -410,5 +501,9 @@ module.exports = {
   rejectSubmission,
   
   // Dashboard
-  getDashboardStats
+  getDashboardStats,
+  
+  // Update Requests
+  getUpdateRequests,
+  processUpdateRequest
 };

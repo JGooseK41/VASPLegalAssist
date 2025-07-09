@@ -11,7 +11,7 @@ import VaspRequestTypeInfo from './VaspRequestTypeInfo';
 import LEOFriendlyScore from './LEOFriendlyScore';
 import { extractDbaFromNames } from '../../utils/parseVaspNames';
 import ServiceTypeModal from './ServiceTypeModal';
-
+import VaspUpdateModal from './VaspUpdateModal';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
 
 const VASPCard = ({ vasp, onSelect }) => {
@@ -19,9 +19,10 @@ const VASPCard = ({ vasp, onSelect }) => {
   const [stats, setStats] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showServiceTypeModal, setShowServiceTypeModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   
   return (
-    <div className="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
+    <div className="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden" data-tour="vasp-card">
       {/* Header Section - More prominent with color */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
@@ -63,13 +64,13 @@ const VASPCard = ({ vasp, onSelect }) => {
                 {/* Info button for full details */}
                 <button
                   onClick={() => setShowServiceTypeModal(true)}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-                  title="View service type details"
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                  title="View all service type details"
                 >
-                  <span className="sr-only">Service type information</span>
-                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
+                  <span>View Details</span>
                 </button>
               </div>
             )}
@@ -187,8 +188,15 @@ const VASPCard = ({ vasp, onSelect }) => {
             {showDetails ? 'Less details' : 'More details'}
           </button>
           <button
+            onClick={() => setShowUpdateModal(true)}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+          >
+            Update Info
+          </button>
+          <button
             onClick={() => onSelect(vasp)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+            data-tour="generate-request"
           >
             Generate Request
           </button>
@@ -206,6 +214,15 @@ const VASPCard = ({ vasp, onSelect }) => {
           isOpen={showServiceTypeModal}
           onClose={() => setShowServiceTypeModal(false)}
           selectedTypes={vasp.service_types || []}
+        />
+      )}
+      
+      {/* Update Info Modal */}
+      {showUpdateModal && (
+        <VaspUpdateModal
+          isOpen={showUpdateModal}
+          onClose={() => setShowUpdateModal(false)}
+          vasp={vasp}
         />
       )}
     </div>
@@ -364,6 +381,7 @@ const VASPSearch = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name, legal name, jurisdiction, or email..."
                   className="pl-10 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  data-tour="search-vasp"
                 />
               </div>
             </div>

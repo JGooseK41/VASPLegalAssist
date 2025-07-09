@@ -290,6 +290,11 @@ export const vaspAPI = {
   getVASP: async (id) => {
     const response = await api.get(`/vasps/${id}`);
     return response.data;
+  },
+  
+  submitUpdateRequest: async (updateData) => {
+    const response = await api.post('/vasps/update-request', updateData);
+    return response.data;
   }
 };
 
@@ -384,6 +389,17 @@ export const adminAPI = {
   
   rejectSubmission: async (submissionId, reason) => {
     const response = await api.post(`/admin/submissions/${submissionId}/reject`, { reason });
+    return response.data;
+  },
+  
+  // Update requests
+  getUpdateRequests: async (status = 'PENDING') => {
+    const response = await api.get(`/admin/update-requests?status=${status}`);
+    return response.data;
+  },
+  
+  processUpdateRequest: async (id, action, adminNotes) => {
+    const response = await api.put(`/admin/update-requests/${id}`, { action, adminNotes });
     return response.data;
   }
 };

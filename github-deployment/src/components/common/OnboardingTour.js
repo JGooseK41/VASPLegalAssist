@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const OnboardingTour = ({ onComplete }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [tooltipPosition, setTooltipPosition] = useState({});
@@ -13,83 +16,103 @@ const OnboardingTour = ({ onComplete }) => {
       title: "Welcome to VASP Records Assistant! 👋",
       content: "The world's first crowdsourced legal document platform for cryptocurrency investigations. Let's explore the innovative features that will transform your workflow.",
       target: null,
-      position: 'center'
+      position: 'center',
+      page: '/dashboard'
     },
     {
       title: "Real-time VASP Intelligence 🔍",
       content: "Search 300+ VASPs with live feedback from investigators worldwide. See compliance ratings, response times, and service types (CEX, DEX, P2P) at a glance.",
       target: '[data-tour="search-vasp"]',
-      position: 'bottom'
+      position: 'bottom',
+      page: '/search'
     },
     {
       title: "Service Type Indicators 🏷️",
       content: "Instantly identify VASP types: CEX (Centralized Exchange), DEX (Decentralized), P2P, Bridge, etc. Each badge shows investigative value and typical evidence available.",
-      target: '[data-tour="vasp-badges"]',
-      position: 'bottom'
+      target: '[data-tour="vasp-card"]',
+      position: 'bottom',
+      page: '/search'
     },
     {
       title: "One-Click Document Generation ⚡",
       content: "Generate freeze orders and subpoenas in seconds. Just select a VASP and our AI fills in all compliance contacts and jurisdiction data automatically.",
       target: '[data-tour="generate-request"]',
-      position: 'bottom'
+      position: 'bottom',
+      page: '/search'
     },
     {
       title: "Batch Transaction Processing 📊",
       content: "Import CSV files with multiple transactions. The system automatically generates comprehensive legal documents with transaction tables - no manual data entry!",
-      target: '[data-tour="batch-process"]',
-      position: 'right'
+      target: '[data-tour="batch-import"]',
+      position: 'bottom',
+      page: '/batch-process'
     },
     {
       title: "Smart Templates with AI Tags 🤖",
       content: "Create custom templates with smart tags like {{case_number}} and {{transaction_table}}. Upload your agency's Word docs and we'll detect placeholders automatically.",
-      target: '[data-tour="my-templates"]',
-      position: 'right'
+      target: '[data-tour="upload-template"]',
+      position: 'bottom',
+      page: '/templates'
     },
     {
       title: "Community Template Sharing 🌐",
       content: "Access templates shared by 500+ investigators. Share your own templates to earn points. Set domain restrictions to control who can use them.",
-      target: '[data-tour="community-templates"]',
-      position: 'top'
+      target: '[data-tour="community-tab"]',
+      position: 'top',
+      page: '/templates'
     },
     {
       title: "Encrypted Document Storage 🔐",
       content: "Military-grade client-side encryption protects your sensitive case data. Even admins can't see your documents - only you have the key.",
       target: '[data-tour="recent-documents"]',
-      position: 'top'
+      position: 'top',
+      page: '/dashboard'
     },
     {
       title: "Investigator Feedback System 💬",
       content: "Submit surveys after each VASP response. Your feedback helps other investigators know response times, data quality, and LEO-friendliness ratings.",
-      target: '[data-tour="submit-feedback"]',
-      position: 'left'
+      target: '[data-tour="submit-response"]',
+      position: 'bottom',
+      page: '/submit-response'
     },
     {
       title: "Points & Recognition System 🏆",
       content: "Earn points for contributing: 10 pts for VASP feedback, 5 pts for sharing templates, 3 pts for adding new VASPs. Top contributors get special recognition!",
       target: '[data-tour="leaderboard"]',
-      position: 'left'
+      position: 'left',
+      page: '/dashboard'
     },
     {
       title: "Global Jurisdiction Database 🌍",
       content: "Access compliance office locations for 30+ countries. Know exactly where to send your legal requests based on VASP jurisdiction.",
-      target: '[data-tour="jurisdiction-info"]',
-      position: 'bottom'
+      target: '[data-tour="vasp-card"]',
+      position: 'bottom',
+      page: '/search'
     },
     {
       title: "Quick Actions Hub 🚀",
       content: "Your command center: Generate documents, manage templates, process batches, add new VASPs, and access all platform features from one place.",
       target: '[data-tour="quick-links"]',
-      position: 'top'
+      position: 'top',
+      page: '/dashboard'
     },
     {
       title: "Ready to Transform Your Investigations? 🎯",
       content: "You're all set! Start by searching for a VASP or importing your transaction data. Join 500+ investigators saving hours on every case. Questions? Check the FAQ or contact support.",
       target: null,
-      position: 'center'
+      position: 'center',
+      page: '/dashboard'
     }
   ];
 
   const currentStepData = steps[currentStep];
+
+  // Navigate to the correct page when step changes
+  useEffect(() => {
+    if (currentStepData.page && location.pathname !== currentStepData.page) {
+      navigate(currentStepData.page);
+    }
+  }, [currentStep, currentStepData.page, location.pathname, navigate]);
 
   // Update positions when step changes, window resizes, or user scrolls
   useEffect(() => {
@@ -101,12 +124,12 @@ const OnboardingTour = ({ onComplete }) => {
         if (element) {
           const rect = element.getBoundingClientRect();
           
-          // Update highlight bounds
+          // Update highlight bounds with more padding and rounded corners
           setHighlightBounds({
-            top: rect.top - 5,
-            left: rect.left - 5,
-            width: rect.width + 10,
-            height: rect.height + 10
+            top: rect.top - 10,
+            left: rect.left - 10,
+            width: rect.width + 20,
+            height: rect.height + 20
           });
           
           // Update tooltip position
@@ -136,10 +159,14 @@ const OnboardingTour = ({ onComplete }) => {
       }
     };
 
-    // Scroll target into view if needed
-    if (currentStepData.target) {
-      const element = document.querySelector(currentStepData.target);
-      if (element) {
+    // Add delay after navigation to ensure page loads
+    const navigationDelay = location.pathname !== currentStepData.page ? 800 : 0;
+    
+    setTimeout(() => {
+      // Scroll target into view if needed
+      if (currentStepData.target) {
+        const element = document.querySelector(currentStepData.target);
+        if (element) {
         const rect = element.getBoundingClientRect();
         const isInViewport = rect.top >= 0 && 
                            rect.bottom <= window.innerHeight &&
@@ -153,12 +180,13 @@ const OnboardingTour = ({ onComplete }) => {
         } else {
           updatePositions();
         }
+        } else {
+          updatePositions();
+        }
       } else {
         updatePositions();
       }
-    } else {
-      updatePositions();
-    }
+    }, navigationDelay);
 
     // Update positions on scroll and resize
     window.addEventListener('resize', updatePositions);
@@ -302,18 +330,43 @@ const OnboardingTour = ({ onComplete }) => {
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleSkip} />
       
-      {/* Highlight element */}
+      {/* Highlight element with enhanced visibility */}
       {highlightBounds && (
-        <div
-          className="fixed border-2 border-blue-500 rounded-lg pointer-events-none z-45"
-          style={{
-            top: highlightBounds.top,
-            left: highlightBounds.left,
-            width: highlightBounds.width,
-            height: highlightBounds.height,
-            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
-          }}
-        />
+        <>
+          {/* Dark overlay with cutout */}
+          <div
+            className="fixed inset-0 pointer-events-none z-45"
+            style={{
+              background: 'rgba(0, 0, 0, 0.7)',
+              clipPath: `polygon(
+                0 0, 
+                100% 0, 
+                100% 100%, 
+                0 100%, 
+                0 0,
+                ${highlightBounds.left}px ${highlightBounds.top}px,
+                ${highlightBounds.left}px ${highlightBounds.top + highlightBounds.height}px,
+                ${highlightBounds.left + highlightBounds.width}px ${highlightBounds.top + highlightBounds.height}px,
+                ${highlightBounds.left + highlightBounds.width}px ${highlightBounds.top}px,
+                ${highlightBounds.left}px ${highlightBounds.top}px
+              )`
+            }}
+          />
+          {/* Glowing border */}
+          <div
+            className="fixed pointer-events-none z-46"
+            style={{
+              top: highlightBounds.top,
+              left: highlightBounds.left,
+              width: highlightBounds.width,
+              height: highlightBounds.height,
+              border: '3px solid #3B82F6',
+              borderRadius: '12px',
+              boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 20px rgba(59, 130, 246, 0.2)',
+              background: 'rgba(59, 130, 246, 0.1)'
+            }}
+          />
+        </>
       )}
       
       {/* Tour tooltip */}
