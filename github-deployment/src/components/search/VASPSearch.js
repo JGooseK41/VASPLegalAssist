@@ -285,7 +285,7 @@ const VASPSearch = () => {
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Submit New VASP
+              Add VASP to Database
             </button>
           </div>
         </div>

@@ -22,9 +22,7 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     return <X className="h-4 w-4" />;
   };
   
-  const RequestTypeTab = ({ type, label, isActive, onClick, effectiveness }) => {
-    const color = getEffectivenessColor(effectiveness?.rate);
-    
+  const RequestTypeTab = ({ type, label, isActive, onClick }) => {
     return (
       <button
         onClick={onClick}
@@ -36,16 +34,6 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
       >
         {type === 'records' ? <FileText className="h-3.5 w-3.5" /> : <Shield className="h-3.5 w-3.5" />}
         {label}
-        {effectiveness && (
-          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium
-            ${color === 'green' ? 'bg-green-100 text-green-800' :
-              color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
-              color === 'red' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'}`}
-          >
-            {effectiveness.rate}%
-          </span>
-        )}
       </button>
     );
   };
@@ -58,8 +46,12 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
     const jurisdictions = isRecords ? vasp.records_jurisdictions : vasp.freeze_jurisdictions;
     const effectiveness = isRecords ? recordsEffectiveness : freezeEffectiveness;
     
+    // Only show turnaround time if we have actual user data
+    const hasUserData = stats?.turnaroundTime?.mostCommon && stats?.turnaroundTime?.distribution && 
+                       Object.keys(stats.turnaroundTime.distribution).length > 0;
+    const displayProcessingTime = hasUserData ? stats.turnaroundTime.mostCommon : "Need more data";
+    
     // Fallback to legacy fields if new fields don't exist
-    const displayProcessingTime = processingTime || vasp.processing_time || "5-10 business days";
     const displayRequiredDoc = requiredDoc || vasp.required_document || "Not specified";
     const displayAcceptsUS = acceptsUS !== undefined ? acceptsUS : vasp.accepts_us_service;
     
@@ -85,11 +77,15 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
           {/* Processing Time */}
           <div className="flex justify-between">
             <span className="text-gray-600">Time:</span>
-            <span className="font-medium text-gray-900">{displayProcessingTime.replace('business days', 'days')}</span>
+            <span className={`font-medium ${hasUserData ? 'text-gray-900' : 'text-gray-500'}`}>
+              {displayProcessingTime === "Need more data" 
+                ? displayProcessingTime 
+                : displayProcessingTime.replace('business days', 'days')}
+            </span>
           </div>
           
           {/* Success Rate */}
-          {effectiveness && (
+          {effectiveness ? (
             <div className="flex justify-between">
               <span className="text-gray-600">Success:</span>
               <span className={`font-medium ${
@@ -98,6 +94,11 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
               }`}>
                 {effectiveness.rate}%
               </span>
+            </div>
+          ) : (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Success:</span>
+              <span className="font-medium text-gray-500">Need more data</span>
             </div>
           )}
         </div>
@@ -131,14 +132,12 @@ const VaspRequestTypeInfo = ({ vasp, stats }) => {
           label="Records"
           isActive={activeTab === 'records'}
           onClick={() => setActiveTab('records')}
-          effectiveness={recordsEffectiveness}
         />
         <RequestTypeTab
           type="freeze"
           label="Freeze"
           isActive={activeTab === 'freeze'}
           onClick={() => setActiveTab('freeze')}
-          effectiveness={freezeEffectiveness}
         />
       </div>
       

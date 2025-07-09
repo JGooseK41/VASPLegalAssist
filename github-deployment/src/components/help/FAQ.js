@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award, PlayCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -911,15 +911,31 @@ Badge #{{badge_number}}
           Go Back
         </button>
         
-        {!user && (
-          <Link
-            to="/register"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Register for Access
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {user && (
+            <button
+              onClick={() => {
+                localStorage.removeItem('onboardingCompleted');
+                navigate('/');
+                window.location.reload();
+              }}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <PlayCircle className="h-4 w-4 mr-2" />
+              Restart Tutorial
+            </button>
+          )}
+          
+          {!user && (
+            <Link
+              to="/register"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Register for Access
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="text-center mb-8">

@@ -22,7 +22,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Generate Documents",
-      content: "Create freeze orders, subpoenas, and data requests using our smart templates or your custom templates.",
+      content: "Create freeze orders, subpoenas, and data requests. Click 'Generate Request' after selecting a VASP.",
       target: '[data-tour="generate-request"]',
       position: 'bottom'
     },
@@ -40,7 +40,7 @@ const OnboardingTour = ({ onComplete }) => {
     },
     {
       title: "Quick Links",
-      content: "Access templates, batch processing, and submit new VASP information here.",
+      content: "Access templates, batch processing, and add new VASPs to the database here.",
       target: '[data-tour="quick-links"]',
       position: 'top'
     },

@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
           freeze_jurisdictions: vasp.freeze_jurisdictions || [],
           
           // Legacy fields for backward compatibility
-          processing_time: vasp.processing_time || "5-10 business days",
+          processing_time: vasp.processing_time || null, // Don't show default without data
           accepts_international: true,
           accepts_us_service: vasp.accepts_us_service || false,
           has_own_portal: vasp.has_own_portal || false,
@@ -116,7 +116,7 @@ router.get('/:id', async (req, res) => {
       compliance_email: vasp.compliance_email || "",
       phone: vasp.phone || "",
       preferred_method: vasp.preferred_method || "email",
-      processing_time: vasp.processing_time || "5-10 business days",
+      processing_time: vasp.processing_time || null, // Don't show default without data
       accepts_international: true,
       accepts_us_service: vasp.accepts_us_service || false,
       has_own_portal: vasp.has_own_portal || false,

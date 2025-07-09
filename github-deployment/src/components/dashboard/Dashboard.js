@@ -344,7 +344,7 @@ const Dashboard = () => {
                 className="flex items-center text-sm text-gray-700 hover:text-green-700 p-2 rounded hover:bg-green-50 transition-colors"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Submit VASP
+                Add VASP
               </Link>
             </div>
           </div>
