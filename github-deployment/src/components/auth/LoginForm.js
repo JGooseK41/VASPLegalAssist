@@ -8,12 +8,22 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showDemoInfo, setShowDemoInfo] = useState(true);
+  const [loginError, setLoginError] = useState(null);
+  const [showVerificationLink, setShowVerificationLink] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError(null);
+    setShowVerificationLink(false);
+    
     const result = await login(formData.email, formData.password);
     if (result.success) {
       navigate('/');
+    } else {
+      setLoginError(result.error);
+      if (result.requiresEmailVerification) {
+        setShowVerificationLink(true);
+      }
     }
   };
 
@@ -77,12 +87,22 @@ const LoginForm = () => {
             </div>
           )}
 
-          {error && (
+          {(error || loginError) && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <div className="ml-3">
-                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="text-sm text-red-800">{error || loginError}</p>
+                  {showVerificationLink && (
+                    <div className="mt-2">
+                      <Link
+                        to="/resend-verification"
+                        className="text-sm font-medium text-red-600 hover:text-red-500"
+                      >
+                        Resend verification email →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

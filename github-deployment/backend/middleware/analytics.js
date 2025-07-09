@@ -101,8 +101,8 @@ async function trackVisitor(req, res, next) {
     const userAgent = req.headers['user-agent'] || null;
     const referrer = req.headers['referer'] || req.headers['referrer'] || null;
     
-    // Get or create session ID from cookie
-    let sessionId = req.cookies?.sessionId;
+    // Get or create session ID from signed cookie
+    let sessionId = req.signedCookies?.sessionId;
     
     if (!sessionId) {
       // Create new session without geolocation first (non-blocking)
@@ -123,7 +123,8 @@ async function trackVisitor(req, res, next) {
         maxAge: 30 * 60 * 1000,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'strict',
+        signed: true
       });
       
       // Update geolocation asynchronously (non-blocking)

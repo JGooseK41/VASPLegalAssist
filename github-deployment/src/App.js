@@ -7,6 +7,8 @@ import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
+import VerifyEmail from './components/auth/VerifyEmail';
+import ResendVerification from './components/auth/ResendVerification';
 import Dashboard from './components/dashboard/Dashboard';
 import VASPSearch from './components/search/VASPSearch';
 import DocumentCreateChoice from './components/documents/DocumentCreateChoice';
@@ -33,6 +35,8 @@ function App() {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/resend-verification" element={<ResendVerification />} />
           <Route path="/faq" element={<FAQ />} />
           
           {/* Protected routes */}

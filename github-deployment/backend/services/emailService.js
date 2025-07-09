@@ -261,6 +261,93 @@ const emailService = {
       console.error('SendGrid error (admin notification):', error);
       // Don't throw - this is not critical for registration
     }
+  },
+
+  sendEmailVerification: async (to, firstName, verificationUrl) => {
+    const msg = {
+      to,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com',
+        name: process.env.SENDGRID_FROM_NAME || 'VASP Legal Assistant'
+      },
+      subject: 'Verify Your Email - VASP Legal Assistant',
+      text: `
+        Hello ${firstName},
+
+        Thank you for registering with VASP Legal Assistant!
+
+        Please verify your email address by clicking the following link:
+        ${verificationUrl}
+
+        This link will expire in 24 hours.
+
+        After verifying your email, your account will need to be approved by an administrator before you can log in.
+
+        If you did not create an account, please ignore this email.
+
+        Best regards,
+        VASP Legal Assistant Team
+      `,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; }
+            .content { background-color: #f9f9f9; padding: 30px; }
+            .button { 
+              display: inline-block; 
+              padding: 12px 24px; 
+              background-color: #2563eb; 
+              color: white; 
+              text-decoration: none; 
+              border-radius: 4px; 
+              margin: 20px 0;
+            }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            .warning { background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Verify Your Email</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${firstName},</p>
+              <p>Thank you for registering with VASP Legal Assistant!</p>
+              <p>Please verify your email address by clicking the button below:</p>
+              <div style="text-align: center;">
+                <a href="${verificationUrl}" class="button">Verify Email Address</a>
+              </div>
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #2563eb;">${verificationUrl}</p>
+              <div class="warning">
+                <p><strong>Important:</strong> This verification link will expire in 24 hours.</p>
+                <p>After verifying your email, your account will need to be approved by an administrator before you can log in.</p>
+              </div>
+              <p>If you did not create an account, please ignore this email.</p>
+              <p>Best regards,<br>VASP Legal Assistant Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log('Email verification sent successfully to:', to);
+      return true;
+    } catch (error) {
+      console.error('Error sending email verification:', error);
+      throw error; // Throw error for verification emails as they are critical
+    }
   }
 };
 

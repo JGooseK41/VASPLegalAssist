@@ -8,8 +8,12 @@ const prisma = new PrismaClient();
 
 const generateToken = (userId, role) => {
   return jwt.sign({ userId, role }, process.env.JWT_SECRET, {
-    expiresIn: role === 'DEMO' ? '1h' : '7d'
+    expiresIn: role === 'DEMO' ? '1h' : process.env.TOKEN_EXPIRY || '7d'
   });
+};
+
+const generateVerificationToken = () => {
+  return crypto.randomBytes(32).toString('hex');
 };
 
 const register = async (req, res) => {
@@ -25,10 +29,15 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password with stronger cost factor
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS) || 12);
 
-    // Create user
+    // Generate email verification token
+    const verificationToken = generateVerificationToken();
+    const verificationExpiry = new Date();
+    verificationExpiry.setHours(verificationExpiry.getHours() + 24); // 24 hour expiry
+
+    // Create user with email verification fields
     const user = await prisma.user.create({
       data: {
         email,
@@ -39,19 +48,22 @@ const register = async (req, res) => {
         agencyAddress,
         badgeNumber,
         title,
-        phone
+        phone,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpiry: verificationExpiry
       }
     });
 
     // Create default templates for new user
     await createDefaultTemplates(user.id);
 
-    // Send welcome email (don't wait for it)
-    emailService.sendWelcomeEmail(user.email, user.firstName).catch(err => {
-      console.error('Failed to send welcome email:', err);
+    // Send verification email
+    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    emailService.sendEmailVerification(user.email, user.firstName, verificationUrl).catch(err => {
+      console.error('Failed to send verification email:', err);
     });
 
-    // Send admin notification email
+    // Send admin notification email (for new registrations)
     emailService.sendAdminNotification(user).catch(err => {
       console.error('Failed to send admin notification:', err);
     });
@@ -75,9 +87,10 @@ const register = async (req, res) => {
       });
     }
 
-    // For regular users, don't generate token - they need approval first
+    // For regular users, don't generate token - they need email verification and approval
     res.status(201).json({
-      message: 'Registration successful! Your account is pending approval. You will receive an email once your account has been approved by an administrator.',
+      message: 'Registration successful! Please check your email to verify your account. After verification, your account will need to be approved by an administrator.',
+      requiresEmailVerification: true,
       requiresApproval: true,
       user: {
         id: user.id,
@@ -87,9 +100,10 @@ const register = async (req, res) => {
         agencyName: user.agencyName,
         agencyAddress: user.agencyAddress,
         role: user.role,
-        isApproved: user.isApproved
+        isApproved: user.isApproved,
+        isEmailVerified: user.isEmailVerified
       }
-      // No token provided - user must wait for approval
+      // No token provided - user must verify email and wait for approval
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -140,9 +154,20 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Check if email is verified (skip for admin users)
+    if (!user.isEmailVerified && user.role !== 'ADMIN') {
+      return res.status(403).json({ 
+        error: 'Please verify your email address before logging in. Check your inbox for the verification email.',
+        requiresEmailVerification: true
+      });
+    }
+
     // Check if user is approved (skip for admin users)
     if (!user.isApproved && user.role !== 'ADMIN') {
-      return res.status(403).json({ error: 'Your account is pending approval. Please wait for an administrator to approve your registration.' });
+      return res.status(403).json({ 
+        error: 'Your account is pending approval. Please wait for an administrator to approve your registration.',
+        requiresApproval: true
+      });
     }
 
     const token = generateToken(user.id, user.role);
@@ -348,11 +373,108 @@ const getMemberCount = async (req, res) => {
   }
 };
 
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    // Find user with matching token
+    const user = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken: token,
+        emailVerificationExpiry: {
+          gt: new Date()
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Update user to mark email as verified
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpiry: null
+      }
+    });
+
+    // Send welcome email
+    emailService.sendWelcomeEmail(user.email, user.firstName).catch(err => {
+      console.error('Failed to send welcome email:', err);
+    });
+
+    res.json({ 
+      message: 'Email verified successfully! Your account is now pending administrator approval.',
+      requiresApproval: !user.isApproved
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+};
+
+const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      // Don't reveal if email exists
+      return res.json({ 
+        message: 'If an account exists with this email and is not yet verified, a new verification email will be sent.' 
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.json({ 
+        message: 'This email is already verified.' 
+      });
+    }
+
+    // Generate new verification token
+    const verificationToken = generateVerificationToken();
+    const verificationExpiry = new Date();
+    verificationExpiry.setHours(verificationExpiry.getHours() + 24);
+
+    // Update user with new token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpiry: verificationExpiry
+      }
+    });
+
+    // Send verification email
+    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
+
+    res.json({ 
+      message: 'Verification email sent. Please check your inbox.' 
+    });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
   resetPassword,
   validateResetToken,
-  getMemberCount
+  getMemberCount,
+  verifyEmail,
+  resendVerificationEmail
 };

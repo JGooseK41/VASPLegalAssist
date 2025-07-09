@@ -68,6 +68,16 @@ export const authAPI = {
   getMemberCount: async () => {
     const response = await api.get('/auth/member-count');
     return response.data;
+  },
+  
+  verifyEmail: async (token) => {
+    const response = await api.post('/auth/verify-email', { token });
+    return response.data;
+  },
+  
+  resendVerification: async (email) => {
+    const response = await api.post('/auth/resend-verification', { email });
+    return response.data;
   }
 };
 

@@ -51,8 +51,16 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Login failed';
+      const requiresEmailVerification = err.response?.data?.requiresEmailVerification;
+      const requiresApproval = err.response?.data?.requiresApproval;
+      
       setError(errorMessage);
-      return { success: false, error: errorMessage };
+      return { 
+        success: false, 
+        error: errorMessage,
+        requiresEmailVerification,
+        requiresApproval
+      };
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +73,18 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authAPI.register(userData);
       
-      // Check if registration requires approval
+      // Check if registration requires email verification
+      if (response.requiresEmailVerification) {
+        // Don't log them in - show success message
+        return { 
+          success: true, 
+          requiresEmailVerification: true,
+          requiresApproval: response.requiresApproval,
+          message: response.message || 'Registration successful! Please check your email to verify your account.'
+        };
+      }
+      
+      // Check if registration requires approval (for backward compatibility)
       if (response.requiresApproval) {
         // Don't log them in - show success message
         return { 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, forgotPassword, resetPassword, validateResetToken, getMemberCount } = require('../controllers/authController');
+const { register, login, forgotPassword, resetPassword, validateResetToken, getMemberCount, verifyEmail, resendVerificationEmail } = require('../controllers/authController');
 
 // POST /api/auth/register
 router.post('/register', register);
@@ -19,5 +19,11 @@ router.get('/validate-token/:token', validateResetToken);
 
 // GET /api/auth/member-count
 router.get('/member-count', getMemberCount);
+
+// POST /api/auth/verify-email
+router.post('/verify-email', verifyEmail);
+
+// POST /api/auth/resend-verification
+router.post('/resend-verification', resendVerificationEmail);
 
 module.exports = router;
