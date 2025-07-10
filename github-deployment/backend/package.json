@@ -18,6 +18,7 @@
     "@sendgrid/mail": "^8.1.5",
     "archiver": "^5.3.2",
     "bcryptjs": "^3.0.2",
+    "canvas-confetti": "^1.9.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csurf": "^1.2.2",

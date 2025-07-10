@@ -1,7 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown, MessageCircle, Eye } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import { isMasterAdmin } from '../../utils/auth';
+
+// User Feedback Modal
+const UserFeedbackModal = ({ user, isOpen, onClose }) => {
+  const [feedback, setFeedback] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (isOpen && user) {
+      loadFeedback();
+    }
+  }, [isOpen, user]);
+  
+  const loadFeedback = async () => {
+    try {
+      setLoading(true);
+      const data = await adminAPI.getUserFeedback(user.id);
+      setFeedback(data);
+    } catch (error) {
+      console.error('Failed to load feedback:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Contributor Feedback
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {user.firstName} {user.lastName} - {user.agencyName}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 overflow-y-auto max-h-[60vh]">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : feedback.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">
+              No feedback submitted yet
+            </p>
+          ) : (
+            <div className="space-y-6">
+              {feedback.map((item) => (
+                <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.milestone === 1 ? 'bg-green-100 text-green-800' :
+                        item.milestone === 100 ? 'bg-purple-100 text-purple-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {item.milestone} Point{item.milestone !== 1 ? 's' : ''} Milestone
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Discovery Source:</p>
+                      <p className="text-sm text-gray-900">{item.discoverySource}</p>
+                    </div>
+                    
+                    {item.suggestions && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Suggestions:</p>
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">{item.suggestions}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -11,6 +109,8 @@ const UserManagement = () => {
   const [filterApproved, setFilterApproved] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   
   useEffect(() => {
     loadUsers();
@@ -212,6 +312,18 @@ const UserManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>{user._count.documents} documents</div>
                       <div>{user._count.comments} comments</div>
+                      {user._count.contributorFeedback > 0 && (
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowFeedbackModal(true);
+                          }}
+                          className="flex items-center text-blue-600 hover:text-blue-800 mt-1"
+                        >
+                          <MessageCircle className="w-3 h-3 mr-1" />
+                          <span className="text-xs">{user._count.contributorFeedback} feedback</span>
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
@@ -306,6 +418,15 @@ const UserManagement = () => {
           </div>
         )}
       </div>
+      
+      <UserFeedbackModal
+        user={selectedUser}
+        isOpen={showFeedbackModal}
+        onClose={() => {
+          setShowFeedbackModal(false);
+          setSelectedUser(null);
+        }}
+      />
     </div>
   );
 };

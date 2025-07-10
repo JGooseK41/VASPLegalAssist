@@ -274,8 +274,166 @@ const getUserScore = async (req, res) => {
   }
 };
 
+// Check if user has reached a milestone
+const checkMilestone = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    // Get user's current score
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        vaspSubmissions: {
+          where: { status: 'APPROVED' },
+          select: { id: true }
+        },
+        comments: {
+          select: { 
+            id: true,
+            voteScore: true 
+          }
+        },
+        vaspResponses: {
+          select: { id: true }
+        },
+        vaspUpdateRequests: {
+          where: { status: 'APPROVED' },
+          select: { id: true }
+        },
+        milestoneNotifications: {
+          orderBy: { milestone: 'desc' },
+          take: 1
+        }
+      }
+    });
+    
+    if (!user) {
+      return res.json({ milestone: null });
+    }
+    
+    // Calculate total points
+    const submissionPoints = user.vaspSubmissions.length * 10;
+    const commentPoints = user.comments.length * 1;
+    const upvotePoints = user.comments.reduce((sum, comment) => sum + (comment.voteScore > 0 ? comment.voteScore * 5 : 0), 0);
+    const responsePoints = user.vaspResponses.length * 5;
+    const updatePoints = user.vaspUpdateRequests.length * 10;
+    const totalPoints = submissionPoints + commentPoints + upvotePoints + responsePoints + updatePoints;
+    
+    // Determine milestones (1, 100, 200, 300, etc.)
+    let currentMilestone = 0;
+    if (totalPoints >= 1) {
+      currentMilestone = 1;
+      if (totalPoints >= 100) {
+        currentMilestone = Math.floor(totalPoints / 100) * 100;
+      }
+    }
+    
+    // Check if this milestone has already been shown
+    const lastMilestoneShown = user.lastMilestoneShown || 0;
+    
+    if (currentMilestone > lastMilestoneShown) {
+      // Update last milestone shown
+      await prisma.user.update({
+        where: { id: userId },
+        data: { lastMilestoneShown: currentMilestone }
+      });
+      
+      // Create notification record
+      await prisma.milestoneNotification.create({
+        data: {
+          userId,
+          milestone: currentMilestone
+        }
+      });
+      
+      let type = 'FIRST_POINT';
+      if (currentMilestone === 100) {
+        type = 'MILESTONE_100';
+      } else if (currentMilestone > 100) {
+        type = 'MILESTONE_MULTIPLE';
+      }
+      
+      return res.json({
+        milestone: {
+          points: currentMilestone,
+          type,
+          totalPoints
+        }
+      });
+    }
+    
+    res.json({ milestone: null });
+  } catch (error) {
+    console.error('Check milestone error:', error);
+    res.status(500).json({ error: 'Failed to check milestone' });
+  }
+};
+
+// Submit milestone feedback
+const submitMilestoneFeedback = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { milestone, discoverySource, suggestions, feedbackType } = req.body;
+    
+    // Create feedback record
+    await prisma.contributorFeedback.create({
+      data: {
+        userId,
+        milestone,
+        discoverySource,
+        suggestions,
+        feedbackType
+      }
+    });
+    
+    // Mark milestone as acknowledged
+    await prisma.milestoneNotification.updateMany({
+      where: {
+        userId,
+        milestone
+      },
+      data: {
+        acknowledged: true,
+        acknowledgedAt: new Date()
+      }
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Submit feedback error:', error);
+    res.status(500).json({ error: 'Failed to submit feedback' });
+  }
+};
+
+// Acknowledge milestone without feedback
+const acknowledgeMilestone = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { milestone } = req.body;
+    
+    await prisma.milestoneNotification.updateMany({
+      where: {
+        userId,
+        milestone
+      },
+      data: {
+        acknowledged: true,
+        acknowledgedAt: new Date()
+      }
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Acknowledge milestone error:', error);
+    res.status(500).json({ error: 'Failed to acknowledge milestone' });
+  }
+};
+
 module.exports = {
   getTopContributor,
   getLeaderboard,
-  getUserScore
+  getUserScore,
+  checkMilestone,
+  submitMilestoneFeedback,
+  acknowledgeMilestone
 };

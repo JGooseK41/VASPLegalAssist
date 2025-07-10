@@ -385,6 +385,11 @@ export const adminAPI = {
     return response.data;
   },
   
+  getUserFeedback: async (userId) => {
+    const response = await api.get(`/admin/users/${userId}/feedback`);
+    return response.data;
+  },
+  
   // Submissions
   getSubmissions: async (status = 'PENDING') => {
     const response = await api.get('/admin/submissions', { params: { status } });
@@ -450,6 +455,21 @@ export const contributorAPI = {
   
   getUserScore: async () => {
     const response = await api.get('/contributors/my-score');
+    return response.data;
+  },
+  
+  checkMilestone: async () => {
+    const response = await api.get('/contributors/check-milestone');
+    return response.data;
+  },
+  
+  submitMilestoneFeedback: async (feedbackData) => {
+    const response = await api.post('/contributors/milestone-feedback', feedbackData);
+    return response.data;
+  },
+  
+  acknowledgeMilestone: async (milestone) => {
+    const response = await api.post('/contributors/acknowledge-milestone', { milestone });
     return response.data;
   }
 };

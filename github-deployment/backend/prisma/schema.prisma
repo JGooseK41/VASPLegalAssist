@@ -27,6 +27,7 @@ model User {
   emailVerificationToken  String?
   emailVerificationExpiry DateTime?
   lastSurveyReminderShown DateTime?
+  lastMilestoneShown      Int                  @default(0)
   votes                   CommentVote[]
   documents               Document[]
   templates               DocumentTemplate[]
@@ -37,6 +38,8 @@ model User {
   templateUsage           TemplateUsage[]
   vaspUpdateRequests      VaspUpdateRequest[]
   sessions                UserSession[]
+  milestoneNotifications  MilestoneNotification[]
+  contributorFeedback     ContributorFeedback[]
 }
 
 model DocumentTemplate {
@@ -374,4 +377,33 @@ model UserSession {
   @@index([token])
   @@index([isActive])
   @@index([lastActivity])
+}
+
+model MilestoneNotification {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  milestone       Int       // 1, 100, 200, 300, etc.
+  notifiedAt      DateTime  @default(now())
+  acknowledged    Boolean   @default(false)
+  acknowledgedAt  DateTime?
+  
+  @@unique([userId, milestone])
+  @@index([userId])
+  @@index([milestone])
+}
+
+model ContributorFeedback {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  milestone         Int      // Points milestone when feedback was given
+  discoverySource   String   // How they found the site
+  suggestions       String?  @db.Text // Improvements or suggestions
+  feedbackType      String   // "FIRST_POINT", "MILESTONE_100", etc.
+  createdAt         DateTime @default(now())
+  
+  @@index([userId])
+  @@index([milestone])
+  @@index([createdAt])
 }

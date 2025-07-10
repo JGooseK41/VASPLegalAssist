@@ -185,11 +185,17 @@ const getUsers = async (req, res) => {
           role: true,
           isApproved: true,
           createdAt: true,
+          lastMilestoneShown: true,
           _count: {
             select: {
               documents: true,
-              comments: true
+              comments: true,
+              contributorFeedback: true
             }
+          },
+          contributorFeedback: {
+            orderBy: { createdAt: 'desc' },
+            take: 5
           }
         },
         skip,
@@ -515,6 +521,32 @@ const processUpdateRequest = async (req, res) => {
   }
 };
 
+// Get user feedback history
+const getUserFeedback = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const feedback = await prisma.contributorFeedback.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    });
+    
+    res.json(feedback);
+  } catch (error) {
+    console.error('Error fetching user feedback:', error);
+    res.status(500).json({ error: 'Failed to fetch user feedback' });
+  }
+};
+
 module.exports = {
   // VASP Management
   getVasps,
@@ -527,6 +559,7 @@ module.exports = {
   approveUser,
   rejectUser,
   updateUserRole,
+  getUserFeedback,
   
   // VASP Submissions
   getSubmissions,

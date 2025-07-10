@@ -14,6 +14,7 @@ const {
   approveUser,
   rejectUser,
   updateUserRole,
+  getUserFeedback,
   
   // VASP Submissions
   getSubmissions,
@@ -55,6 +56,7 @@ router.get('/users', getUsers);
 router.post('/users/:userId/approve', approveUser);
 router.delete('/users/:userId/reject', rejectUser);
 router.put('/users/:userId/role', updateUserRole);
+router.get('/users/:userId/feedback', getUserFeedback);
 
 // VASP Submission Management
 router.get('/submissions', getSubmissions);
