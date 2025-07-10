@@ -28,6 +28,15 @@ const {
   processUpdateRequest
 } = require('../controllers/adminController');
 
+// Health check endpoint (no auth required)
+router.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Admin routes are accessible',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // All routes require authentication and admin role
 router.use(auth);
 router.use(adminAuth);

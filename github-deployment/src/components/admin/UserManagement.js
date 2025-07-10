@@ -28,11 +28,17 @@ const UserManagement = () => {
       if (filterRole) params.role = filterRole;
       if (filterApproved) params.isApproved = filterApproved;
       
+      console.log('UserManagement: Loading users with params:', params);
       const data = await adminAPI.getUsers(params);
-      setUsers(data.users);
-      setTotalPages(data.totalPages);
+      console.log('UserManagement: Received data:', data);
+      setUsers(data.users || []);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to load users:', error);
+      console.error('Error response:', error.response);
+      // Show empty state if error
+      setUsers([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }

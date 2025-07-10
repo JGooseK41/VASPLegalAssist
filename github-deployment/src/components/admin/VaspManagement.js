@@ -473,15 +473,21 @@ const VaspManagement = () => {
   const loadVasps = async () => {
     try {
       setLoading(true);
+      console.log('VaspManagement: Loading VASPs...');
       const data = await adminAPI.getVasps({
         page: currentPage,
         limit: 10,
         search: searchQuery
       });
-      setVasps(data.vasps);
-      setTotalPages(data.totalPages);
+      console.log('VaspManagement: Received data:', data);
+      setVasps(data.vasps || []);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to load VASPs:', error);
+      console.error('Error response:', error.response);
+      // Show empty state if error
+      setVasps([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
