@@ -31,7 +31,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "LEO Friendly Score System 📊",
       content: "See the green/yellow/red grades? That's our LEO Friendly Score - showing how cooperative each VASP is. Grade A means fast responses and easy process. Grade F means expect challenges.",
-      target: '[data-tour="vasp-card"] .flex.justify-end button',
+      target: '[data-tour="vasp-card"] div.flex.justify-end > div',
       position: 'bottom',
       page: '/search'
     },
@@ -87,7 +87,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     {
       title: "Track Your Results 📈",
       content: "See community response stats here! After sending requests, contribute your outcomes to help others know success rates, turnaround times, and tips for each VASP.",
-      target: '[data-tour="vasp-card"] .flex.items-center.flex-wrap.gap-2.mt-2',
+      target: '[data-tour="vasp-card"] div:has(> [class*="Success"]):has(> [class*="responses"])',
       position: 'bottom',
       page: '/search'
     },
@@ -100,10 +100,10 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
     },
     {
       title: "Earn Recognition Points 🏆",
-      content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the leaderboard to see top contributors.",
-      target: '[data-tour="leaderboard"]',
-      position: 'left',
-      page: '/'
+      content: "Contributing helps everyone! Earn 10 points for VASP updates, 5 for response feedback, 1 for helpful comments. Check the point structure and top contributors here.",
+      target: '.bg-white.rounded-lg.p-6:has(h3:contains("How Points Are Earned"))',
+      position: 'top',
+      page: '/leaderboard'
     },
     {
       title: "Update VASP Information 🔄",
@@ -229,11 +229,15 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
             updatePositions();
           }, 500);
         } else {
-          // Add a delay for step 9 to prevent arrow covering the element
+          // Add delays for specific steps to prevent visual jumps
           if (currentStep === 8) {  // Step 9 is index 8
             setTimeout(() => {
               updatePositions();
             }, 1000);
+          } else if (currentStep === 5 || currentStep === 6) {  // Steps 5-6 transition
+            setTimeout(() => {
+              updatePositions();
+            }, 800);
           } else {
             updatePositions();
           }
@@ -435,11 +439,13 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
                   highlightBounds.bottom + 10 : 
                   currentStepData.position === 'left' ?
                   highlightBounds.top + (highlightBounds.height / 2) - 30 :
+                  currentStepData.position === 'center' ?
+                  '50%' :
                   highlightBounds.top - 70,
                 left: currentStepData.position === 'left' ?
                   highlightBounds.right + 10 :
                   highlightBounds.left + (highlightBounds.width / 2) - 30,
-                transform: currentStepData.position === 'top' ? 'rotate(0deg)' : currentStepData.position === 'left' ? 'rotate(90deg)' : 'rotate(180deg)'
+                transform: currentStepData.position === 'bottom' ? 'rotate(180deg)' : currentStepData.position === 'left' ? 'rotate(90deg)' : 'rotate(0deg)'
               }}
             >
               <svg
