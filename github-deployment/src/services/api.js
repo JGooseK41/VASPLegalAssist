@@ -298,7 +298,11 @@ export const vaspAPI = {
   },
   
   submitUpdateRequest: async (updateData) => {
-    const response = await api.post('/vasps/update-request', updateData);
+    // Check if updateData is FormData (for file uploads)
+    const isFormData = updateData instanceof FormData;
+    const response = await api.post('/vasps/update-request', updateData, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+    });
     return response.data;
   }
 };

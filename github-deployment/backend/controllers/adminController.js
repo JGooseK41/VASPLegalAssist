@@ -440,7 +440,8 @@ const getUpdateRequests = async (req, res) => {
             legal_name: true,
             jurisdiction: true
           }
-        }
+        },
+        evidenceFiles: true
       },
       orderBy: {
         createdAt: 'desc'

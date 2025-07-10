@@ -2,16 +2,58 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { PrismaClient } = require('@prisma/client');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs').promises;
 
 const prisma = new PrismaClient();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'evidence');
+    await fs.mkdir(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'evidence-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // Routes
 router.use(authMiddleware);
 
-// Submit update request
-router.post('/update-request', async (req, res) => {
+// Submit update request with optional evidence files
+router.post('/update-request', upload.array('evidence', 5), async (req, res) => {
   try {
-    const { vaspId, proposedChanges, userComments } = req.body;
+    let updateRequestData;
+    
+    // Check if we received multipart form data or JSON
+    if (req.body.updateRequest) {
+      // Parse the JSON from form data
+      updateRequestData = JSON.parse(req.body.updateRequest);
+    } else {
+      // Regular JSON request without files
+      updateRequestData = req.body;
+    }
+    
+    const { vaspId, proposedChanges, userComments } = updateRequestData;
     
     // Create update request
     const updateRequest = await prisma.vaspUpdateRequest.create({
@@ -39,7 +81,49 @@ router.post('/update-request', async (req, res) => {
       }
     });
     
-    res.json(updateRequest);
+    // If files were uploaded, create evidence records
+    if (req.files && req.files.length > 0) {
+      const evidencePromises = req.files.map((file, index) => {
+        const description = req.body[`description_${index}`] || '';
+        
+        return prisma.updateRequestEvidence.create({
+          data: {
+            updateRequestId: updateRequest.id,
+            fileName: file.filename,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            fileUrl: `/uploads/evidence/${file.filename}`,
+            description
+          }
+        });
+      });
+      
+      await Promise.all(evidencePromises);
+    }
+    
+    // Fetch the complete update request with evidence
+    const completeUpdateRequest = await prisma.vaspUpdateRequest.findUnique({
+      where: { id: updateRequest.id },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            agencyName: true
+          }
+        },
+        vasp: {
+          select: {
+            name: true
+          }
+        },
+        evidenceFiles: true
+      }
+    });
+    
+    res.json(completeUpdateRequest);
   } catch (error) {
     console.error('Error creating update request:', error);
     res.status(500).json({ error: 'Failed to submit update request' });

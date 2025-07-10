@@ -334,12 +334,28 @@ model VaspUpdateRequest {
   userComments          String
   status                String   @default("PENDING") // PENDING, APPROVED, REJECTED
   adminNotes            String?
+  evidenceFiles         UpdateRequestEvidence[]
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   
   @@index([vaspId])
   @@index([userId])
   @@index([status])
+}
+
+model UpdateRequestEvidence {
+  id                String   @id @default(uuid())
+  updateRequestId   String
+  updateRequest     VaspUpdateRequest @relation(fields: [updateRequestId], references: [id], onDelete: Cascade)
+  fileName          String
+  originalName      String
+  mimeType          String
+  fileSize          Int
+  fileUrl           String
+  description       String?
+  createdAt         DateTime @default(now())
+  
+  @@index([updateRequestId])
 }
 
 model UserSession {

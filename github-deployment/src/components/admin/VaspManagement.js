@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw, X, Shield } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, Clock, Eye, FileText, Globe, Tag, RefreshCw, X, Shield, FileImage, ExternalLink } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import VaspForm from './VaspForm';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
@@ -82,6 +82,54 @@ const UpdateRequestDetail = ({ updateRequest, onClose, onApprove, onReject }) =>
               })}
             </div>
           </div>
+          
+          {/* Evidence Files */}
+          {updateRequest.evidenceFiles && updateRequest.evidenceFiles.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Supporting Evidence</h3>
+              <div className="space-y-3">
+                {updateRequest.evidenceFiles.map((file) => (
+                  <div key={file.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start space-x-4">
+                      {file.mimeType.startsWith('image/') ? (
+                        <img 
+                          src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${file.fileUrl}`}
+                          alt={file.originalName}
+                          className="h-20 w-20 object-cover rounded cursor-pointer"
+                          onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${file.fileUrl}`, '_blank')}
+                        />
+                      ) : (
+                        <div className="h-20 w-20 bg-gray-100 rounded flex items-center justify-center">
+                          <FileImage className="h-10 w-10 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
+                            <p className="text-xs text-gray-500">
+                              {(file.fileSize / 1024).toFixed(1)} KB • Uploaded {new Date(file.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <a
+                            href={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${file.fileUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </div>
+                        {file.description && (
+                          <p className="mt-2 text-sm text-gray-600">{file.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Admin Notes */}
           <div className="mb-6">
@@ -1154,7 +1202,15 @@ const VaspManagement = () => {
                           {new Date(request.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {Object.keys(request.proposedChanges || {}).length} fields
+                          <div className="flex items-center space-x-2">
+                            <span>{Object.keys(request.proposedChanges || {}).length} fields</span>
+                            {request.evidenceFiles && request.evidenceFiles.length > 0 && (
+                              <div className="flex items-center text-blue-600">
+                                <FileImage className="w-4 h-4 mr-1" />
+                                <span className="text-xs">{request.evidenceFiles.length}</span>
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button

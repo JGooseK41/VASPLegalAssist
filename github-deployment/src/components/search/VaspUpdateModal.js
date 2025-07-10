@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { X, Save, AlertCircle, Upload, FileImage, Trash2 } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { SERVICE_TYPE_DEFINITIONS } from '../../constants/serviceTypeDefinitions';
 
@@ -22,6 +22,8 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [evidenceFiles, setEvidenceFiles] = useState([]);
+  const [uploadError, setUploadError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +31,10 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
     setError(null);
     
     try {
-      // Create update request for admin approval
+      // Create FormData to handle file uploads
+      const formDataToSend = new FormData();
+      
+      // Add the update request data
       const updateRequest = {
         vaspId: vasp.id,
         vaspName: vasp.name,
@@ -38,7 +43,15 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
         userComments: formData.user_comments
       };
       
-      await vaspAPI.submitUpdateRequest(updateRequest);
+      formDataToSend.append('updateRequest', JSON.stringify(updateRequest));
+      
+      // Add evidence files
+      evidenceFiles.forEach((file, index) => {
+        formDataToSend.append('evidence', file.file);
+        formDataToSend.append(`description_${index}`, file.description || '');
+      });
+      
+      await vaspAPI.submitUpdateRequest(formDataToSend);
       setSuccess(true);
       setTimeout(() => {
         onClose();
@@ -58,6 +71,52 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
         ? prev.service_types.filter(t => t !== type)
         : [...prev.service_types, type]
     }));
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setUploadError(null);
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      // Check file type (images only)
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Only image files are allowed');
+        return false;
+      }
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return false;
+      }
+      return true;
+    });
+    
+    // Add valid files to the list
+    const newFiles = validFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      description: ''
+    }));
+    
+    setEvidenceFiles(prev => [...prev, ...newFiles]);
+  };
+  
+  const removeFile = (index) => {
+    setEvidenceFiles(prev => {
+      const newFiles = [...prev];
+      URL.revokeObjectURL(newFiles[index].preview);
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+  
+  const updateFileDescription = (index, description) => {
+    setEvidenceFiles(prev => {
+      const newFiles = [...prev];
+      newFiles[index].description = description;
+      return newFiles;
+    });
   };
 
   if (!isOpen) return null;
@@ -283,6 +342,80 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
                   required
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Evidence Upload */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Supporting Evidence</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Upload screenshots or images to support your update request (optional)
+            </p>
+            
+            {uploadError && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-sm text-red-800">{uploadError}</p>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              {/* File Upload Button */}
+              <label className="relative cursor-pointer bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 hover:border-gray-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileSelect}
+                />
+                <div className="text-center">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-600">
+                    Click to upload evidence (images only, max 5MB each)
+                  </p>
+                </div>
+              </label>
+              
+              {/* Uploaded Files List */}
+              {evidenceFiles.length > 0 && (
+                <div className="space-y-3">
+                  {evidenceFiles.map((file, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-4">
+                        <img
+                          src={file.preview}
+                          alt={`Evidence ${index + 1}`}
+                          className="h-20 w-20 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <FileImage className="h-4 w-4 text-gray-400" />
+                              <span className="text-sm font-medium text-gray-900">
+                                {file.file.name}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={file.description}
+                            onChange={(e) => updateFileDescription(index, e.target.value)}
+                            placeholder="Add a description for this evidence (optional)"
+                            className="mt-2 w-full text-sm border border-gray-300 rounded px-2 py-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
