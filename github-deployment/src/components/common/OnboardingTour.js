@@ -439,7 +439,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
                 left: currentStepData.position === 'left' ?
                   highlightBounds.right + 10 :
                   highlightBounds.left + (highlightBounds.width / 2) - 30,
-                transform: currentStepData.position === 'top' ? 'rotate(180deg)' : currentStepData.position === 'left' ? 'rotate(270deg)' : 'rotate(0deg)'
+                transform: currentStepData.position === 'top' ? 'rotate(0deg)' : currentStepData.position === 'left' ? 'rotate(90deg)' : 'rotate(180deg)'
               }}
             >
               <svg
