@@ -7,7 +7,9 @@ const {
   getUserScore,
   checkMilestone,
   submitMilestoneFeedback,
-  acknowledgeMilestone
+  acknowledgeMilestone,
+  checkLeaderboardAchievement,
+  acknowledgeLeaderboardAchievement
 } = require('../controllers/contributorController');
 
 // Apply auth middleware to all routes
@@ -30,5 +32,11 @@ router.post('/milestone-feedback', submitMilestoneFeedback);
 
 // Acknowledge milestone without feedback
 router.post('/acknowledge-milestone', acknowledgeMilestone);
+
+// Check for leaderboard achievement
+router.get('/check-leaderboard-achievement', checkLeaderboardAchievement);
+
+// Acknowledge leaderboard achievement
+router.post('/acknowledge-leaderboard-achievement', acknowledgeLeaderboardAchievement);
 
 module.exports = router;

@@ -1,6 +1,113 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Helper function to update leaderboard history and streaks
+const updateLeaderboardHistory = async (leaderboard) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Get yesterday's leaderboard for comparison
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const yesterdayLeaderboard = await prisma.leaderboardHistory.findMany({
+    where: {
+      date: {
+        gte: yesterday,
+        lt: today
+      }
+    }
+  });
+  
+  const yesterdayUserIds = new Set(yesterdayLeaderboard.map(entry => entry.userId));
+  
+  // Process today's leaderboard
+  for (let i = 0; i < leaderboard.length; i++) {
+    const entry = leaderboard[i];
+    const position = i + 1;
+    
+    try {
+      // Create or update today's leaderboard entry
+      await prisma.leaderboardHistory.upsert({
+        where: {
+          userId_date: {
+            userId: entry.userId,
+            date: today
+          }
+        },
+        update: {
+          position,
+          points: entry.score
+        },
+        create: {
+          userId: entry.userId,
+          position,
+          points: entry.score,
+          date: today
+        }
+      });
+      
+      // Update user's streak
+      const user = await prisma.user.findUnique({
+        where: { id: entry.userId },
+        select: {
+          currentLeaderboardStreak: true,
+          longestLeaderboardStreak: true,
+          lastOnLeaderboard: true
+        }
+      });
+      
+      let newStreak = 1;
+      
+      // Check if user was on leaderboard yesterday
+      if (yesterdayUserIds.has(entry.userId)) {
+        // Continue streak
+        newStreak = (user.currentLeaderboardStreak || 0) + 1;
+      } else if (user.lastOnLeaderboard) {
+        // Check if it's been more than 1 day since last on leaderboard
+        const daysSinceLastOnLeaderboard = Math.floor(
+          (today.getTime() - new Date(user.lastOnLeaderboard).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysSinceLastOnLeaderboard > 1) {
+          // Streak broken - start new streak
+          newStreak = 1;
+        } else {
+          // Continue streak (was on leaderboard within last day)
+          newStreak = (user.currentLeaderboardStreak || 0) + 1;
+        }
+      }
+      
+      const longestStreak = Math.max(newStreak, user.longestLeaderboardStreak || 0);
+      
+      await prisma.user.update({
+        where: { id: entry.userId },
+        data: {
+          currentLeaderboardStreak: newStreak,
+          longestLeaderboardStreak: longestStreak,
+          lastOnLeaderboard: today
+        }
+      });
+    } catch (error) {
+      console.error(`Error updating leaderboard history for user ${entry.userId}:`, error);
+    }
+  }
+  
+  // Reset streaks for users who fell off the leaderboard
+  const todayUserIds = new Set(leaderboard.map(entry => entry.userId));
+  
+  for (const yesterdayEntry of yesterdayLeaderboard) {
+    if (!todayUserIds.has(yesterdayEntry.userId)) {
+      await prisma.user.update({
+        where: { id: yesterdayEntry.userId },
+        data: {
+          currentLeaderboardStreak: 0
+        }
+      });
+    }
+  }
+};
+
 // Get top contributors based on scoring system
 const getTopContributor = async (req, res) => {
   try {
@@ -206,8 +313,28 @@ const getLeaderboard = async (req, res) => {
     userScores.sort((a, b) => b.score - a.score);
     const leaderboard = userScores.slice(0, 10);
 
+    // Update leaderboard history and streaks
+    await updateLeaderboardHistory(leaderboard);
+
+    // Get streak information for each user
+    const leaderboardWithStreaks = await Promise.all(leaderboard.map(async (entry) => {
+      const user = await prisma.user.findUnique({
+        where: { id: entry.userId },
+        select: { 
+          currentLeaderboardStreak: true,
+          longestLeaderboardStreak: true 
+        }
+      });
+      
+      return {
+        ...entry,
+        currentStreak: user?.currentLeaderboardStreak || 0,
+        longestStreak: user?.longestLeaderboardStreak || 0
+      };
+    }));
+
     res.json({
-      leaderboard,
+      leaderboard: leaderboardWithStreaks,
       lastUpdated: new Date().toISOString()
     });
   } catch (error) {
@@ -429,11 +556,60 @@ const acknowledgeMilestone = async (req, res) => {
   }
 };
 
+// Check if user made leaderboard for first time
+const checkLeaderboardAchievement = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    // Get user data
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        firstLeaderboardShown: true,
+        currentLeaderboardStreak: true
+      }
+    });
+    
+    if (!user) {
+      return res.json({ firstTime: false });
+    }
+    
+    // Check if user is currently on leaderboard and hasn't been notified
+    if (user.currentLeaderboardStreak > 0 && !user.firstLeaderboardShown) {
+      return res.json({ firstTime: true });
+    }
+    
+    res.json({ firstTime: false });
+  } catch (error) {
+    console.error('Check leaderboard achievement error:', error);
+    res.status(500).json({ error: 'Failed to check leaderboard achievement' });
+  }
+};
+
+// Acknowledge leaderboard achievement
+const acknowledgeLeaderboardAchievement = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    await prisma.user.update({
+      where: { id: userId },
+      data: { firstLeaderboardShown: true }
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Acknowledge leaderboard achievement error:', error);
+    res.status(500).json({ error: 'Failed to acknowledge achievement' });
+  }
+};
+
 module.exports = {
   getTopContributor,
   getLeaderboard,
   getUserScore,
   checkMilestone,
   submitMilestoneFeedback,
-  acknowledgeMilestone
+  acknowledgeMilestone,
+  checkLeaderboardAchievement,
+  acknowledgeLeaderboardAchievement
 };

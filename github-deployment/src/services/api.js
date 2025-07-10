@@ -471,6 +471,16 @@ export const contributorAPI = {
   acknowledgeMilestone: async (milestone) => {
     const response = await api.post('/contributors/acknowledge-milestone', { milestone });
     return response.data;
+  },
+  
+  checkLeaderboardAchievement: async () => {
+    const response = await api.get('/contributors/check-leaderboard-achievement');
+    return response.data;
+  },
+  
+  acknowledgeLeaderboardAchievement: async () => {
+    const response = await api.post('/contributors/acknowledge-leaderboard-achievement');
+    return response.data;
   }
 };
 

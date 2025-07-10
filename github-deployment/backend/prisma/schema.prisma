@@ -28,6 +28,10 @@ model User {
   emailVerificationExpiry DateTime?
   lastSurveyReminderShown DateTime?
   lastMilestoneShown      Int                  @default(0)
+  firstLeaderboardShown   Boolean              @default(false)
+  currentLeaderboardStreak Int                 @default(0)
+  longestLeaderboardStreak Int                 @default(0)
+  lastOnLeaderboard       DateTime?
   votes                   CommentVote[]
   documents               Document[]
   templates               DocumentTemplate[]
@@ -40,6 +44,7 @@ model User {
   sessions                UserSession[]
   milestoneNotifications  MilestoneNotification[]
   contributorFeedback     ContributorFeedback[]
+  leaderboardHistory      LeaderboardHistory[]
 }
 
 model DocumentTemplate {
@@ -406,4 +411,18 @@ model ContributorFeedback {
   @@index([userId])
   @@index([milestone])
   @@index([createdAt])
+}
+
+model LeaderboardHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  position  Int      // 1-10 for top 10
+  points    Int
+  date      DateTime @default(now())
+  
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@index([position])
 }

@@ -9,6 +9,7 @@ import SurveyReminderPopup from './SurveyReminderPopup';
 import { isAdmin } from '../../utils/auth';
 import OnboardingTour from './OnboardingTour';
 import MilestoneFeedbackPopup from './MilestoneFeedbackPopup';
+import LeaderboardAchievementPopup from './LeaderboardAchievementPopup';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -307,6 +308,7 @@ const Layout = () => {
       <ToastContainer />
       <SurveyReminderPopup />
       <MilestoneFeedbackPopup />
+      <LeaderboardAchievementPopup />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle, Shield, ArrowLeft } from 'lucide-react';
+import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle, Shield, ArrowLeft, Flame, Calendar } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -125,13 +125,27 @@ function Leaderboard() {
                     {getRankIcon(rank)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className="text-lg font-semibold flex items-center">
                       {contributor.name}
                       {isCurrentUser && (
                         <span className="ml-2 text-sm text-indigo-600 font-normal">(You)</span>
                       )}
+                      {contributor.currentStreak >= 7 && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          <Flame className="w-3 h-3 mr-1" />
+                          {contributor.currentStreak} day streak!
+                        </span>
+                      )}
                     </h3>
-                    <p className="text-sm text-gray-600">{contributor.agencyName}</p>
+                    <p className="text-sm text-gray-600 flex items-center">
+                      {contributor.agencyName}
+                      {contributor.currentStreak > 0 && contributor.currentStreak < 7 && (
+                        <span className="ml-2 inline-flex items-center text-xs text-gray-500">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {contributor.currentStreak} day{contributor.currentStreak !== 1 ? 's' : ''} on board
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 
@@ -194,6 +208,18 @@ function Leaderboard() {
             <span><strong>1 point</strong> each time another user uses your shared template</span>
           </li>
         </ul>
+        
+        <div className="mt-4 p-3 bg-orange-100 rounded-md">
+          <p className="text-sm font-semibold text-orange-900 flex items-center">
+            <Flame className="w-4 h-4 mr-2" />
+            Maintain Your Streak!
+          </p>
+          <p className="text-xs text-orange-800 mt-1">
+            Stay on the leaderboard for consecutive days to build your streak. 
+            Contributors with 7+ day streaks get the fire badge! Your position is updated daily,
+            so keep contributing to maintain your spot.
+          </p>
+        </div>
       </div>
     </div>
   );
