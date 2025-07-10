@@ -7,7 +7,7 @@ const getVasps = async (req, res) => {
   try {
     console.log('AdminController getVasps: Called with query:', req.query);
     console.log('AdminController getVasps: User role:', req.userRole);
-    const { page = 1, limit = 20, search, isActive } = req.query;
+    const { page = 1, limit = 50, search, isActive } = req.query;
     const skip = (page - 1) * limit;
     
     const where = {};
@@ -151,7 +151,7 @@ const getUsers = async (req, res) => {
   try {
     console.log('AdminController getUsers: Called with query:', req.query);
     console.log('AdminController getUsers: User role:', req.userRole);
-    const { page = 1, limit = 10, search, role, isApproved } = req.query;
+    const { page = 1, limit = 50, search, role, isApproved } = req.query;
     const skip = (page - 1) * limit;
     
     const where = {};

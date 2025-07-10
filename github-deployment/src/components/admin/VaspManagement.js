@@ -476,7 +476,7 @@ const VaspManagement = () => {
       console.log('VaspManagement: Loading VASPs...');
       const data = await adminAPI.getVasps({
         page: currentPage,
-        limit: 10,
+        limit: 50,
         search: searchQuery
       });
       console.log('VaspManagement: Received data:', data);

@@ -21,7 +21,7 @@ const UserManagement = () => {
       setLoading(true);
       const params = {
         page: currentPage,
-        limit: 10,
+        limit: 50,
         search: searchQuery
       };
       
