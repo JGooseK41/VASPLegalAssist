@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 // VASP Management
 const getVasps = async (req, res) => {
   try {
+    console.log('AdminController getVasps: Called with query:', req.query);
+    console.log('AdminController getVasps: User role:', req.userRole);
     const { page = 1, limit = 20, search, isActive } = req.query;
     const skip = (page - 1) * limit;
     
@@ -31,6 +33,7 @@ const getVasps = async (req, res) => {
       prisma.vasp.count({ where })
     ]);
     
+    console.log('AdminController getVasps: Found', vasps.length, 'VASPs out of', total, 'total');
     res.json({
       vasps,
       total,
@@ -39,7 +42,8 @@ const getVasps = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching VASPs:', error);
-    res.status(500).json({ error: 'Failed to fetch VASPs' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ error: 'Failed to fetch VASPs', details: error.message });
   }
 };
 
@@ -145,7 +149,9 @@ const deleteVasp = async (req, res) => {
 // User Management
 const getUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search, role, isApproved } = req.query;
+    console.log('AdminController getUsers: Called with query:', req.query);
+    console.log('AdminController getUsers: User role:', req.userRole);
+    const { page = 1, limit = 10, search, role, isApproved } = req.query;
     const skip = (page - 1) * limit;
     
     const where = {};
@@ -193,6 +199,7 @@ const getUsers = async (req, res) => {
       prisma.user.count({ where })
     ]);
     
+    console.log('AdminController getUsers: Found', users.length, 'users out of', total, 'total');
     res.json({
       users,
       total,
@@ -201,7 +208,8 @@ const getUsers = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ error: 'Failed to fetch users', details: error.message });
   }
 };
 
