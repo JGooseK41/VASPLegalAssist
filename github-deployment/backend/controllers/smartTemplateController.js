@@ -11,8 +11,15 @@ const prisma = new PrismaClient();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../uploads/templates');
-    await fs.mkdir(uploadDir, { recursive: true });
-    cb(null, uploadDir);
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
+      // Verify directory was created and is writable
+      await fs.access(uploadDir, fs.constants.W_OK);
+      cb(null, uploadDir);
+    } catch (error) {
+      console.error('Failed to create/access upload directory:', error);
+      cb(error);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -24,30 +31,38 @@ const fileFilter = (req, file, cb) => {
   const allowedTypes = ['.docx', '.html', '.txt'];
   const ext = path.extname(file.originalname).toLowerCase();
   
-  // Strict MIME type validation
+  // More flexible MIME type validation
   const allowedMimeTypes = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
     'text/html',
-    'text/plain'
+    'text/plain',
+    'application/octet-stream', // Generic binary type sometimes used for DOCX
+    'application/zip' // DOCX files are sometimes detected as ZIP
   ];
   
-  // Validate file type
+  // Also check for partial MIME type matches for better compatibility
+  const mimeTypePatterns = [
+    /wordprocessingml/i,
+    /msword/i,
+    /text\/html/i,
+    /text\/plain/i
+  ];
   
-  // Require both extension and MIME type to match
+  // Validate file type - prioritize extension over MIME type
   const validExtension = allowedTypes.includes(ext);
-  const validMimeType = allowedMimeTypes.includes(file.mimetype);
+  const validMimeType = allowedMimeTypes.includes(file.mimetype) || 
+                       mimeTypePatterns.some(pattern => pattern.test(file.mimetype));
   
-  if (validExtension && validMimeType) {
+  // Accept if extension is valid, even if MIME type is uncertain
+  if (validExtension) {
+    // Log MIME type mismatches for debugging
+    if (!validMimeType) {
+      console.log(`Template upload: Accepting file with extension ${ext} despite MIME type ${file.mimetype}`);
+    }
     cb(null, true);
   } else {
-    let errorMsg = 'Invalid file type. ';
-    if (!validExtension) {
-      errorMsg += `Extension "${ext}" not allowed. `;
-    }
-    if (!validMimeType) {
-      errorMsg += `MIME type "${file.mimetype}" not allowed. `;
-    }
+    let errorMsg = `Invalid file type. Extension "${ext}" not allowed. `;
     errorMsg += 'Only DOCX, HTML, and TXT files are allowed.';
     cb(new Error(errorMsg), false);
   }
@@ -65,6 +80,7 @@ const upload = multer({
 const uploadTemplate = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
+      console.error('Multer upload error:', err);
       if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
           return res.status(400).json({ error: 'File too large. Maximum size is 5MB.' });
@@ -74,8 +90,16 @@ const uploadTemplate = async (req, res) => {
     }
 
     if (!req.file) {
+      console.error('No file in request. Request headers:', req.headers);
       return res.status(400).json({ error: 'No file uploaded' });
     }
+
+    console.log('Template upload started:', {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      destination: req.file.path
+    });
 
     let templateData = {}; // Define outside try block for error handler access
     
@@ -96,14 +120,19 @@ const uploadTemplate = async (req, res) => {
 
       const fileType = path.extname(req.file.originalname).slice(1).toLowerCase();
       
+      console.log('Extracting content from file:', req.file.path, 'Type:', fileType);
+      
       // Extract content from uploaded file
       const content = await templateParser.extractContent(req.file.path, fileType);
+      console.log('Content extracted, length:', content.length);
       
       // Find smart markers in the content
       const markers = templateParser.findMarkers(content);
+      console.log('Markers found:', markers.length);
       
       // Validate template
       const validation = templateParser.validateTemplate(content, markers);
+      console.log('Template validation result:', validation);
       
       // Create template record
       // Check if user is admin to set global templates
@@ -136,16 +165,28 @@ const uploadTemplate = async (req, res) => {
         // Check if they're already stringified to avoid double serialization
         const processEncryptedField = (field) => {
           if (!field) return '';
+          
+          // Handle encrypted objects from clientEncryption service
+          if (typeof field === 'object' && field.isEncrypted && field.ciphertext) {
+            // This is an encrypted object from clientEncryption.encryptData
+            return JSON.stringify(field);
+          }
+          
           if (typeof field === 'string') {
             // Already a string, check if it's valid JSON
             try {
-              JSON.parse(field);
+              const parsed = JSON.parse(field);
+              // Check if it's an encrypted object that was stringified
+              if (parsed.isEncrypted && parsed.ciphertext) {
+                return field; // It's already a stringified encrypted object
+              }
               return field; // It's already a JSON string
             } catch {
-              return field; // It's a plain string
+              return field; // It's a plain string (shouldn't happen with encrypted data)
             }
           }
-          // It's an object, stringify it once
+          
+          // It's some other object, stringify it
           return JSON.stringify(field);
         };
         
@@ -169,6 +210,13 @@ const uploadTemplate = async (req, res) => {
         data: templateData
       });
 
+      console.log('Template created successfully:', {
+        id: template.id,
+        name: template.templateName,
+        fileUrl: template.fileUrl,
+        markersCount: markers.length
+      });
+
       res.status(201).json({
         template,
         markers,
@@ -183,9 +231,33 @@ const uploadTemplate = async (req, res) => {
       if (req.file && req.file.path) {
         await fs.unlink(req.file.path).catch(() => {});
       }
-      res.status(500).json({ 
-        error: 'Failed to process template',
-        details: error.message || 'Unknown error occurred'
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to process template';
+      let statusCode = 500;
+      
+      if (error.message.includes('extractContent')) {
+        errorMessage = 'Failed to extract content from the uploaded file. Please ensure the file is not corrupted.';
+      } else if (error.message.includes('findMarkers')) {
+        errorMessage = 'Failed to parse template markers. Please check your template syntax.';
+      } else if (error.message.includes('validateTemplate')) {
+        errorMessage = 'Template validation failed. Please ensure your template follows the required format.';
+      } else if (error.code === 'P2002') {
+        errorMessage = 'A template with this name already exists. Please choose a different name.';
+        statusCode = 409;
+      } else if (error.code === 'ENOENT') {
+        errorMessage = 'Upload directory not found. Please contact support.';
+      } else if (error.code === 'EACCES') {
+        errorMessage = 'Permission denied when saving file. Please contact support.';
+      } else if (error.message.includes('encryptFields') || error.message.includes('encryption')) {
+        errorMessage = 'Encryption error occurred. Please refresh the page and try again.';
+        statusCode = 400;
+      }
+      
+      res.status(statusCode).json({ 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        code: error.code
       });
     }
   });
