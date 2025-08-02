@@ -299,22 +299,27 @@ const VaspComments = ({ vaspId, vaspName }) => {
             <>
               {/* New Comment Form */}
               <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={isUpdate}
-                      onChange={(e) => setIsUpdate(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-gray-700">This is an update notification</span>
-                  </label>
-                  <HelpTooltip 
-                    content="Check this box if you're reporting important changes like new contact info, address updates, or compliance requirement changes. Admins will be notified to update the official record."
-                    position="right"
-                  >
-                    <HelpCircle className="w-4 h-4 text-amber-500 hover:text-amber-700" />
-                  </HelpTooltip>
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 text-sm flex-1">
+                      <input
+                        type="checkbox"
+                        checked={isUpdate}
+                        onChange={(e) => setIsUpdate(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-gray-700 font-medium">This is an update notification</span>
+                    </label>
+                    <HelpTooltip 
+                      content="When to check this box: ✓ New compliance email or contact info ✓ Changed service address ✓ Updated document requirements ✓ New portal URL ✓ Changes in response times or fees. Admins will be notified immediately to update the official record!"
+                      position="left"
+                    >
+                      <div className="flex items-center gap-1 text-amber-600 hover:text-amber-700 cursor-help">
+                        <span className="text-xs">What's this?</span>
+                        <HelpCircle className="w-4 h-4" />
+                      </div>
+                    </HelpTooltip>
+                  </div>
                 </div>
                 
                 <div className="flex gap-2">

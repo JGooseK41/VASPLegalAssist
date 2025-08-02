@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft, ExternalLink, Copy } from 'lucide-react';
+import { Search, MapPin, Mail, Clock, Globe, FileText, Shield, CheckCircle, AlertCircle, Plus, ArrowLeft, ExternalLink, Copy, Info } from 'lucide-react';
 import { vaspAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import VaspComments from '../comments/VaspComments';
@@ -36,12 +36,24 @@ const VASPCard = ({ vasp, onSelect }) => {
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-gray-900 truncate">{legalName}</h3>
-            {dba && (
-              <p className="text-sm text-gray-700 truncate mt-1">
-                <span className="text-gray-600">DBA:</span> <span className="font-medium">{dba}</span>
-              </p>
-            )}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 truncate">{legalName}</h3>
+                {dba && (
+                  <p className="text-sm text-gray-700 truncate mt-1">
+                    <span className="text-gray-600">DBA:</span> <span className="font-medium">{dba}</span>
+                  </p>
+                )}
+              </div>
+              <HelpTooltip
+                content="How to contribute: 1) Update Info - Submit corrections with evidence. 2) Log Response - Track how this VASP responds to requests. 3) Add Comments - Share your experiences below. Each contribution earns points!"
+                position="topRight"
+              >
+                <div className="ml-2 p-1.5 bg-white rounded-full shadow-sm border border-blue-200">
+                  <Info className="h-4 w-4 text-blue-600" />
+                </div>
+              </HelpTooltip>
+            </div>
             
             {/* Service Type Badges and Info */}
             <div className="mt-2 flex flex-wrap gap-1">
