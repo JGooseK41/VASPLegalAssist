@@ -88,7 +88,7 @@ const RegisterForm = () => {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Register for VASP Records Process Assistant
+          Register for VASP Records Assistant
         </p>
       </div>
 

@@ -71,7 +71,7 @@ const LoginForm = () => {
           </a>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          VASP Records Process Assistant
+          VASP Records Assistant
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Sign in to access the application
