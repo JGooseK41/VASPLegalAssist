@@ -31,7 +31,7 @@ const VASPCard = ({ vasp, onSelect }) => {
   };
   
   return (
-    <div className="bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-200 border-2 border-gray-300 hover:border-blue-400 overflow-hidden" data-tour="vasp-card">
+    <div className="bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-200 border-2 border-gray-300 hover:border-blue-400" data-tour="vasp-card">
       {/* Header Section - More prominent with color */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex justify-between items-start">

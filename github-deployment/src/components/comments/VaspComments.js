@@ -313,7 +313,7 @@ const VaspComments = ({ vaspId, vaspName }) => {
                     content="Check this box if you're reporting important changes like new contact info, address updates, or compliance requirement changes. Admins will be notified to update the official record."
                     position="right"
                   >
-                    <HelpCircle className="w-4 w-4 text-amber-500 hover:text-amber-700" />
+                    <HelpCircle className="w-4 h-4 text-amber-500 hover:text-amber-700" />
                   </HelpTooltip>
                 </div>
                 

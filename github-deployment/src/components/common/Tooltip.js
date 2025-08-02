@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { HelpCircle, Info } from 'lucide-react';
 
 const Tooltip = ({ content, children, position = 'top', className = '', large = false }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState({});
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
 
   const positionClasses = {
     top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
@@ -22,23 +26,132 @@ const Tooltip = ({ content, children, position = 'top', className = '', large = 
     topRight: 'top-full right-4 border-gray-900 border-t-8 border-x-8 border-x-transparent'
   };
 
+  useEffect(() => {
+    const updatePosition = () => {
+      if (isVisible && triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        
+        let style = {};
+        
+        switch (position) {
+          case 'top':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft + rect.width / 2,
+              top: rect.top + scrollTop - 8,
+              transform: 'translate(-50%, -100%)',
+              zIndex: 9999
+            };
+            break;
+          case 'bottom':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft + rect.width / 2,
+              top: rect.top + scrollTop + rect.height + 8,
+              transform: 'translateX(-50%)',
+              zIndex: 9999
+            };
+            break;
+          case 'left':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft - 8,
+              top: rect.top + scrollTop + rect.height / 2,
+              transform: 'translate(-100%, -50%)',
+              zIndex: 9999
+            };
+            break;
+          case 'right':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft + rect.width + 8,
+              top: rect.top + scrollTop + rect.height / 2,
+              transform: 'translateY(-50%)',
+              zIndex: 9999
+            };
+            break;
+          case 'topLeft':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft,
+              top: rect.top + scrollTop - 8,
+              transform: 'translateY(-100%)',
+              zIndex: 9999
+            };
+            break;
+          case 'topRight':
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft + rect.width,
+              top: rect.top + scrollTop - 8,
+              transform: 'translate(-100%, -100%)',
+              zIndex: 9999
+            };
+            break;
+          default:
+            style = {
+              position: 'absolute',
+              left: rect.left + scrollLeft + rect.width / 2,
+              top: rect.top + scrollTop - 8,
+              transform: 'translate(-50%, -100%)',
+              zIndex: 9999
+            };
+        }
+        
+        setTooltipStyle(style);
+      }
+    };
+
+    updatePosition();
+
+    if (isVisible) {
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isVisible, position]);
+
+  const handleMouseEnter = () => setIsVisible(true);
+  const handleMouseLeave = () => setIsVisible(false);
+  const handleClick = () => setIsVisible(!isVisible);
+
+  // Clean up tooltip when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsVisible(false);
+    };
+  }, []);
+
+  const tooltipElement = isVisible ? (
+    <div 
+      ref={tooltipRef}
+      style={tooltipStyle}
+      className="pointer-events-none animate-fadeIn"
+    >
+      <div className={`bg-gray-900 text-white ${large ? 'text-sm' : 'text-xs'} rounded-lg py-3 px-4 ${large ? 'max-w-sm' : 'max-w-xs'} shadow-xl`}>
+        {content}
+        <div className={`absolute w-0 h-0 ${arrowClasses[position]}`}></div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className={`relative inline-block ${className}`}>
       <div
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
-        onClick={() => setIsVisible(!isVisible)}
+        ref={triggerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       >
         {children}
       </div>
-      {isVisible && (
-        <div className={`absolute z-50 ${positionClasses[position]} pointer-events-none animate-fadeIn`}>
-          <div className={`bg-gray-900 text-white ${large ? 'text-sm' : 'text-xs'} rounded-lg py-3 px-4 ${large ? 'max-w-sm' : 'max-w-xs'} shadow-xl`}>
-            {content}
-            <div className={`absolute w-0 h-0 ${arrowClasses[position]}`}></div>
-          </div>
-        </div>
-      )}
+      {tooltipElement && createPortal(tooltipElement, document.body)}
     </div>
   );
 };
