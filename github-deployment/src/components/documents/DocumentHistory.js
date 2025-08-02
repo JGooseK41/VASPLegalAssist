@@ -7,6 +7,7 @@ import { createEncryptedDocumentAPI } from '../../services/encryptedApi';
 import VaspResponseModalV2 from './VaspResponseModalV2';
 import axios from 'axios';
 import { downloadFile } from '../../utils/urlHelpers';
+import { HelpTooltip } from '../common/Tooltip';
 
 const DocumentHistory = () => {
   const navigate = useNavigate();
@@ -323,13 +324,18 @@ const DocumentHistory = () => {
                           <Eye className="h-4 w-4" />
                         </button>
                         {!doc.decryptionError && !documentResponses[doc.id] && (
-                          <button
-                            onClick={() => setResponseModal({ isOpen: true, document: doc })}
-                            className="bg-green-600 hover:bg-green-700 text-white p-2 rounded"
-                            title="Log VASP Response"
+                          <HelpTooltip
+                            content="Log how this VASP responded to your request! Track compliance, response time, and requirements. You'll earn 5 points and help build our community intelligence database."
+                            position="left"
                           >
-                            <MessageSquare className="h-4 w-4" />
-                          </button>
+                            <button
+                              onClick={() => setResponseModal({ isOpen: true, document: doc })}
+                              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded relative"
+                              title="Log VASP Response"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </button>
+                          </HelpTooltip>
                         )}
                         <button
                           onClick={() => handleDownload(doc)}

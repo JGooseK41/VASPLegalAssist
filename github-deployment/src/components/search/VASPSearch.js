@@ -13,6 +13,7 @@ import { extractDbaFromNames } from '../../utils/parseVaspNames';
 import ServiceTypeModal from './ServiceTypeModal';
 import VaspUpdateModal from './VaspUpdateModal';
 import { SERVICE_TYPE_DEFINITIONS, getServiceTypeColorClasses } from '../../constants/serviceTypeDefinitions';
+import { HelpTooltip } from '../common/Tooltip';
 
 const VASPCard = ({ vasp, onSelect }) => {
   const { legalName, dba } = extractDbaFromNames(vasp.name, vasp.legal_name);
@@ -213,15 +214,20 @@ const VASPCard = ({ vasp, onSelect }) => {
         {/* Action Buttons */}
         <div className="pt-2 space-y-2">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowUpdateModal(true)}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            <HelpTooltip
+              content="Submit corrections or updates for this VASP! Provide evidence like screenshots or emails. Admins review all submissions and you'll earn points when approved."
+              position="top"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Update Info
-            </button>
+              <button
+                onClick={() => setShowUpdateModal(true)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2 relative"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Update Info
+              </button>
+            </HelpTooltip>
             <button
               onClick={() => onSelect(vasp)}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
@@ -396,13 +402,18 @@ const VASPSearch = () => {
                 Search and filter through {vaspData.length} Virtual Asset Service Providers for legal process
               </p>
             </div>
-            <button
-              onClick={() => setShowSubmissionModal(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            <HelpTooltip
+              content="Can't find a VASP? Submit it to our database! Share compliance contacts and requirements. Once approved, you'll earn 10 points and help the entire community."
+              position="left"
             >
-              <Plus className="w-5 h-5 mr-2" />
-              Add VASP to Database
-            </button>
+              <button
+                onClick={() => setShowSubmissionModal(true)}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors relative"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add VASP to Database
+              </button>
+            </HelpTooltip>
           </div>
         </div>
 

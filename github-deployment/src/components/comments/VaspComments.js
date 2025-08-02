@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, ThumbsUp, ThumbsDown, AlertCircle, Send, Edit2, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp, ThumbsDown, AlertCircle, Send, Edit2, Trash2, X, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { commentAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { HelpTooltip } from '../common/Tooltip';
 
 const CommentItem = ({ comment, onVote, onEdit, onDelete, currentUserId }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -69,23 +70,35 @@ const CommentItem = ({ comment, onVote, onEdit, onDelete, currentUserId }) => {
           
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => onVote(comment.id, comment.userVote === 1 ? 0 : 1)}
-                className={`p-1 rounded hover:bg-gray-100 ${
-                  comment.userVote === 1 ? 'text-green-600' : 'text-gray-400'
-                }`}
+              <HelpTooltip
+                content="Upvote helpful comments to surface the best information for everyone. The commenter earns 5 points per upvote!"
+                position="top"
+                pulse={false}
               >
-                <ThumbsUp className="w-4 h-4" />
-              </button>
+                <button
+                  onClick={() => onVote(comment.id, comment.userVote === 1 ? 0 : 1)}
+                  className={`p-1 rounded hover:bg-gray-100 ${
+                    comment.userVote === 1 ? 'text-green-600' : 'text-gray-400'
+                  }`}
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                </button>
+              </HelpTooltip>
               <span className="text-sm font-medium text-gray-600">{comment.voteScore}</span>
-              <button
-                onClick={() => onVote(comment.id, comment.userVote === -1 ? 0 : -1)}
-                className={`p-1 rounded hover:bg-gray-100 ${
-                  comment.userVote === -1 ? 'text-red-600' : 'text-gray-400'
-                }`}
+              <HelpTooltip
+                content="Downvote incorrect or unhelpful information to keep the community data accurate."
+                position="top"
+                pulse={false}
               >
-                <ThumbsDown className="w-4 h-4" />
-              </button>
+                <button
+                  onClick={() => onVote(comment.id, comment.userVote === -1 ? 0 : -1)}
+                  className={`p-1 rounded hover:bg-gray-100 ${
+                    comment.userVote === -1 ? 'text-red-600' : 'text-gray-400'
+                  }`}
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                </button>
+              </HelpTooltip>
             </div>
             
             <span className="text-xs text-gray-500">
@@ -256,6 +269,12 @@ const VaspComments = ({ vaspId, vaspName }) => {
           {comments.length > 0 && !isExpanded && (
             <span className="text-xs text-gray-500">({comments.length})</span>
           )}
+          <HelpTooltip 
+            content="Share your experiences with this VASP! Your insights help the entire law enforcement community. Click to expand and contribute."
+            position="topRight"
+          >
+            <HelpCircle className="w-4 h-4 text-blue-500 hover:text-blue-700" />
+          </HelpTooltip>
         </div>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -290,6 +309,12 @@ const VaspComments = ({ vaspId, vaspName }) => {
                     />
                     <span className="text-gray-700">This is an update notification</span>
                   </label>
+                  <HelpTooltip 
+                    content="Check this box if you're reporting important changes like new contact info, address updates, or compliance requirement changes. Admins will be notified to update the official record."
+                    position="right"
+                  >
+                    <HelpCircle className="w-4 w-4 text-amber-500 hover:text-amber-700" />
+                  </HelpTooltip>
                 </div>
                 
                 <div className="flex gap-2">
