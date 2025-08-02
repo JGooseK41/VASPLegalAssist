@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
+import { Users, Globe, FileText, AlertCircle, CheckCircle, XCircle, BarChart3, MessageSquare } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 
 const StatCard = ({ icon: Icon, title, value, color = 'blue' }) => {
@@ -32,7 +32,8 @@ const AdminDashboard = ({ onNavigate }) => {
     totalVasps: 0,
     activeVasps: 0,
     pendingSubmissions: 0,
-    totalDocuments: 0
+    totalDocuments: 0,
+    pendingUpdateNotifications: 0
   });
   const [loading, setLoading] = useState(true);
   
@@ -69,7 +70,7 @@ const AdminDashboard = ({ onNavigate }) => {
       </div>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <StatCard
           icon={Users}
           title="Total Users"
@@ -106,6 +107,12 @@ const AdminDashboard = ({ onNavigate }) => {
           value={stats.totalDocuments}
           color="blue"
         />
+        <StatCard
+          icon={MessageSquare}
+          title="Update Notifications"
+          value={stats.pendingUpdateNotifications}
+          color="red"
+        />
       </div>
       
       {/* Quick Actions */}
@@ -134,6 +141,19 @@ const AdminDashboard = ({ onNavigate }) => {
                 <button
                   onClick={() => onNavigate && onNavigate('submissions')}
                   className="text-sm text-orange-700 hover:text-orange-800 font-medium"
+                >
+                  Review →
+                </button>
+              </div>
+            )}
+            {stats.pendingUpdateNotifications > 0 && (
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                <span className="text-sm font-medium text-red-900">
+                  {stats.pendingUpdateNotifications} VASP update notifications
+                </span>
+                <button
+                  onClick={() => onNavigate && onNavigate('update-notifications')}
+                  className="text-sm text-red-700 hover:text-red-800 font-medium"
                 >
                   Review →
                 </button>

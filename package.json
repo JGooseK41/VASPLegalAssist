@@ -11,5 +11,11 @@
     "backup:setup": "cd github-deployment && npm run backup:setup",
     "postinstall": "cd github-deployment && npm install"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "prisma": "^6.13.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.13.0"
+  }
 }

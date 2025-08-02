@@ -139,11 +139,15 @@ model VaspComment {
   voteScore Int           @default(0)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  isProcessed Boolean     @default(false) // Track if admin has reviewed this update
+  processedAt DateTime?
+  processedBy String?
   votes     CommentVote[]
   user      User          @relation(fields: [userId], references: [id])
   vasp      Vasp          @relation(fields: [vaspId], references: [id])
 
   @@index([vaspId, voteScore])
+  @@index([isUpdate, isProcessed]) // Index for finding unprocessed updates
 }
 
 model CommentVote {

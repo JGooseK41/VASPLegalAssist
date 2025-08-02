@@ -26,7 +26,11 @@ const {
   
   // Update Requests
   getUpdateRequests,
-  processUpdateRequest
+  processUpdateRequest,
+  
+  // Update Notifications
+  getUpdateNotifications,
+  processUpdateNotification
 } = require('../controllers/adminController');
 
 // Health check endpoint (no auth required)
@@ -66,5 +70,9 @@ router.post('/submissions/:submissionId/reject', rejectSubmission);
 // Update Request Management
 router.get('/update-requests', getUpdateRequests);
 router.put('/update-requests/:id', processUpdateRequest);
+
+// Update Notifications from comments
+router.get('/update-notifications', getUpdateNotifications);
+router.put('/update-notifications/:notificationId/process', processUpdateNotification);
 
 module.exports = router;

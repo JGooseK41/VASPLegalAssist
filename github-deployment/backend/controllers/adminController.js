@@ -398,14 +398,16 @@ const getDashboardStats = async (req, res) => {
       totalVasps,
       activeVasps,
       pendingSubmissions,
-      totalDocuments
+      totalDocuments,
+      pendingUpdateNotifications
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { isApproved: false } }),
       prisma.vasp.count(),
       prisma.vasp.count({ where: { isActive: true } }),
       prisma.vaspSubmission.count({ where: { status: 'PENDING' } }),
-      prisma.document.count()
+      prisma.document.count(),
+      prisma.vaspComment.count({ where: { isUpdate: true, isProcessed: false } })
     ]);
     
     res.json({
@@ -414,7 +416,8 @@ const getDashboardStats = async (req, res) => {
       totalVasps,
       activeVasps,
       pendingSubmissions,
-      totalDocuments
+      totalDocuments,
+      pendingUpdateNotifications
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -547,6 +550,66 @@ const getUserFeedback = async (req, res) => {
   }
 };
 
+// Get pending VASP update notifications
+const getUpdateNotifications = async (req, res) => {
+  try {
+    const notifications = await prisma.vaspComment.findMany({
+      where: {
+        isUpdate: true,
+        isProcessed: false
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            agencyName: true
+          }
+        },
+        vasp: {
+          select: {
+            id: true,
+            name: true,
+            legalName: true,
+            email: true,
+            jurisdiction: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching update notifications:', error);
+    res.status(500).json({ error: 'Failed to fetch update notifications' });
+  }
+};
+
+// Mark update notification as processed
+const processUpdateNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    
+    const notification = await prisma.vaspComment.update({
+      where: { id: notificationId },
+      data: {
+        isProcessed: true,
+        processedAt: new Date(),
+        processedBy: req.userId
+      }
+    });
+    
+    res.json({ message: 'Update notification processed', notification });
+  } catch (error) {
+    console.error('Error processing update notification:', error);
+    res.status(500).json({ error: 'Failed to process update notification' });
+  }
+};
+
 module.exports = {
   // VASP Management
   getVasps,
@@ -571,5 +634,9 @@ module.exports = {
   
   // Update Requests
   getUpdateRequests,
-  processUpdateRequest
+  processUpdateRequest,
+  
+  // Update Notifications
+  getUpdateNotifications,
+  processUpdateNotification
 };

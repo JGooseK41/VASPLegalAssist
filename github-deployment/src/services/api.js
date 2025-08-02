@@ -415,6 +415,16 @@ export const adminAPI = {
   processUpdateRequest: async (id, action, adminNotes) => {
     const response = await api.put(`/admin/update-requests/${id}`, { action, adminNotes });
     return response.data;
+  },
+  
+  getUpdateNotifications: async () => {
+    const response = await api.get('/admin/update-notifications');
+    return response.data;
+  },
+  
+  processUpdateNotification: async (notificationId) => {
+    const response = await api.put(`/admin/update-notifications/${notificationId}/process`);
+    return response.data;
   }
 };
 
