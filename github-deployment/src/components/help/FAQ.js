@@ -710,16 +710,16 @@ Badge #{{badge_number}}
           question: 'How secure is my investigation data and custom templates?',
           answer: (
             <div>
-              <p className="mb-3">Your data is protected with military-grade encryption:</p>
+              <p className="mb-3">Your data is protected with strong encryption:</p>
               
               <div className="space-y-4">
                 <div>
                   <h5 className="font-semibold text-gray-900 mb-2">🔐 Custom Templates</h5>
                   <ul className="list-disc list-inside space-y-1 text-sm">
-                    <li>Your custom agency templates and subpoenas with logos are encrypted</li>
-                    <li>Only you can view or use your templates - they're invisible to everyone else</li>
-                    <li>Even site administrators and the site owner cannot access your templates</li>
-                    <li>Templates remain encrypted at rest in the database</li>
+                    <li>Your private custom templates are encrypted with AES-256-GCM encryption</li>
+                    <li>Private templates are only visible to you</li>
+                    <li>Templates you choose to share with the community are NOT encrypted</li>
+                    <li>Encryption keys are derived from your unique user ID</li>
                   </ul>
                 </div>
                 
@@ -729,25 +729,34 @@ Badge #{{badge_number}}
                     <li>All generated letterheads, subpoenas, and search warrants are encrypted</li>
                     <li>Documents are encrypted at rest in the database</li>
                     <li>Downloads are protected during transit with HTTPS encryption</li>
-                    <li>Investigation details cannot be viewed by anyone except you</li>
+                    <li>Only you can access your generated documents</li>
                   </ul>
                 </div>
                 
                 <div>
-                  <h5 className="font-semibold text-gray-900 mb-2">🛡️ Zero-Knowledge Architecture</h5>
+                  <h5 className="font-semibold text-gray-900 mb-2">🛡️ Security Architecture</h5>
                   <ul className="list-disc list-inside space-y-1 text-sm">
-                    <li>Each user has a unique encryption key derived from their account</li>
-                    <li>Your data is encrypted with AES-256-GCM (military-grade encryption)</li>
-                    <li>Even with database access, your data remains unreadable without your key</li>
-                    <li>We cannot recover your data if you lose access to your account</li>
+                    <li>Your data is encrypted with AES-256-GCM encryption</li>
+                    <li>Each user's data is encrypted with keys derived from their account</li>
+                    <li>Database backups contain encrypted data</li>
+                    <li>HTTPS encryption protects all data in transit</li>
                   </ul>
                 </div>
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                   <p className="text-sm text-blue-800">
-                    <strong>Bottom Line:</strong> Your investigations, templates, and generated documents 
-                    are completely private. No one - not administrators, not the site owner, not even someone 
-                    with direct database access - can view your sensitive data. Only you have the key.
+                    <strong>Important:</strong> Your private templates and documents are encrypted and 
+                    accessible only to you. However, templates you explicitly choose to share with the 
+                    community are stored unencrypted to allow other users to access them. Always review 
+                    templates before sharing to ensure they don't contain sensitive information.
+                  </p>
+                </div>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> For maximum security, we recommend following standard 
+                    operational security practices and avoiding storage of highly classified 
+                    information in any online system.
                   </p>
                 </div>
               </div>
@@ -778,16 +787,25 @@ Badge #{{badge_number}}
           question: 'Can law enforcement agencies request access to my data?',
           answer: (
             <div>
-              <p>Due to our encryption architecture:</p>
+              <p>Regarding data access and legal requests:</p>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>We cannot decrypt or access your templates and documents</li>
-                <li>Each user's data is encrypted with their unique key</li>
-                <li>We can only provide encrypted data, which is useless without your key</li>
-                <li>This protects the confidentiality of ongoing investigations</li>
+                <li>Your private templates and documents are encrypted with AES-256-GCM</li>
+                <li>Each user's data is encrypted with keys derived from their unique user ID</li>
+                <li>Encrypted data in the database is not readable without the proper keys</li>
+                <li>We do not store or log decrypted versions of your sensitive data</li>
               </ul>
               <p className="mt-3">
-                This design ensures that sensitive investigation details remain confidential 
-                and cannot be compromised, even under legal compulsion.
+                <strong>Important considerations:</strong>
+              </p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Templates shared with the community are not encrypted</li>
+                <li>System metadata (login times, IP addresses) may be logged for security</li>
+                <li>VASP information and comments are not encrypted as they're community resources</li>
+                <li>We recommend not storing classified or highly sensitive data in any online system</li>
+              </ul>
+              <p className="mt-3 text-sm text-yellow-700 bg-yellow-50 p-3 rounded">
+                While we implement strong security measures, no online system can guarantee absolute 
+                confidentiality. Use appropriate operational security practices for sensitive investigations.
               </p>
             </div>
           ),

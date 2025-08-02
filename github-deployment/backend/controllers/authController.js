@@ -58,7 +58,7 @@ const register = async (req, res) => {
     await createDefaultTemplates(user.id);
 
     // Send verification email
-    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com'}/verify-email?token=${verificationToken}`;
     emailService.sendEmailVerification(user.email, user.firstName, verificationUrl).catch(err => {
       console.error('Failed to send verification email:', err);
     });
@@ -508,7 +508,7 @@ const resendVerificationEmail = async (req, res) => {
     });
 
     // Send verification email
-    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com'}/verify-email?token=${verificationToken}`;
     await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
 
     res.json({ 
