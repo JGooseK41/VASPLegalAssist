@@ -1,6 +1,5 @@
 const crypto = require('crypto');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 // Simple IP geolocation using a free service
 async function getGeoLocation(ip) {

@@ -16,8 +16,7 @@ console.log('Version: 1.0.4');
 console.log('Time:', new Date().toISOString());
 
 // Initialize Prisma
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('./config/database');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -160,6 +159,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/documents', express.static(path.join(__dirname, 'public/documents')));
 
 // Public routes (no auth required)
+app.use('/api/health', require('./routes/health'));
 app.use('/api/public/vasp-registration', require('./routes/public/vaspRegistration'));
 
 // Protected routes
