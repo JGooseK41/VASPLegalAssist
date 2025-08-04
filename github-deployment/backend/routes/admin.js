@@ -16,6 +16,11 @@ const {
   updateUserRole,
   getUserFeedback,
   
+  // Admin Applications
+  getAdminApplications,
+  approveAdminApplication,
+  rejectAdminApplication,
+  
   // VASP Submissions
   getSubmissions,
   approveSubmission,
@@ -74,5 +79,10 @@ router.put('/update-requests/:id', processUpdateRequest);
 // Update Notifications from comments
 router.get('/update-notifications', getUpdateNotifications);
 router.put('/update-notifications/:notificationId/process', processUpdateNotification);
+
+// Admin Applications
+router.get('/admin-applications', getAdminApplications);
+router.put('/admin-applications/:applicationId/approve', approveAdminApplication);
+router.put('/admin-applications/:applicationId/reject', rejectAdminApplication);
 
 module.exports = router;

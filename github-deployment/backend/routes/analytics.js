@@ -1,9 +1,8 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Custom admin check middleware that accepts both ADMIN and MASTER_ADMIN
 const requireAdminAccess = (req, res, next) => {

@@ -588,8 +588,8 @@ const getUpdateNotifications = async (req, res) => {
           select: {
             id: true,
             name: true,
-            legalName: true,
-            email: true,
+            legal_name: true,
+            compliance_email: true,
             jurisdiction: true
           }
         }
@@ -627,6 +627,131 @@ const processUpdateNotification = async (req, res) => {
   }
 };
 
+// Get admin applications
+const getAdminApplications = async (req, res) => {
+  try {
+    const { status = 'PENDING' } = req.query;
+    
+    const where = {};
+    if (status !== 'ALL') {
+      where.status = status;
+    }
+    
+    const applications = await prisma.adminApplication.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            agencyName: true,
+            agencyAddress: true,
+            title: true,
+            createdAt: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    res.json(applications);
+  } catch (error) {
+    console.error('Error fetching admin applications:', error);
+    res.status(500).json({ error: 'Failed to fetch admin applications' });
+  }
+};
+
+// Approve admin application
+const approveAdminApplication = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    
+    // Get the application
+    const application = await prisma.adminApplication.findUnique({
+      where: { id: applicationId },
+      include: { user: true }
+    });
+    
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+    
+    if (application.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Application has already been processed' });
+    }
+    
+    // Update application status
+    await prisma.adminApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: 'APPROVED',
+        reviewedBy: req.userId,
+        reviewNotes: req.body.notes
+      }
+    });
+    
+    // Update user role to ADMIN and opt out of leaderboard
+    await prisma.user.update({
+      where: { id: application.userId },
+      data: { 
+        role: 'ADMIN',
+        leaderboardOptOut: true
+      }
+    });
+    
+    // Send approval email
+    try {
+      const emailService = require('../services/emailService');
+      await emailService.sendApprovalEmail(application.user.email, application.user.firstName);
+    } catch (emailError) {
+      console.error('Failed to send admin approval email:', emailError);
+    }
+    
+    res.json({ message: 'Admin application approved successfully' });
+  } catch (error) {
+    console.error('Error approving admin application:', error);
+    res.status(500).json({ error: 'Failed to approve admin application' });
+  }
+};
+
+// Reject admin application
+const rejectAdminApplication = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const { reason } = req.body;
+    
+    const application = await prisma.adminApplication.findUnique({
+      where: { id: applicationId }
+    });
+    
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+    
+    if (application.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Application has already been processed' });
+    }
+    
+    await prisma.adminApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: 'REJECTED',
+        reviewedBy: req.userId,
+        reviewNotes: reason
+      }
+    });
+    
+    res.json({ message: 'Admin application rejected' });
+  } catch (error) {
+    console.error('Error rejecting admin application:', error);
+    res.status(500).json({ error: 'Failed to reject admin application' });
+  }
+};
+
 module.exports = {
   // VASP Management
   getVasps,
@@ -640,6 +765,11 @@ module.exports = {
   rejectUser,
   updateUserRole,
   getUserFeedback,
+  
+  // Admin Applications
+  getAdminApplications,
+  approveAdminApplication,
+  rejectAdminApplication,
   
   // VASP Submissions
   getSubmissions,
