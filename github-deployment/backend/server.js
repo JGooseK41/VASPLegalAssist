@@ -10,46 +10,14 @@ const csrf = require('csurf');
 // Load environment variables
 dotenv.config();
 
-// FORCE REDEPLOY - Run migrations before starting server
+// Start server
 console.log('🚀 VASP Legal Assistant Backend Starting...');
-console.log('Version: 1.0.3 - FORCE REDEPLOY WITH MIGRATE FIX');
+console.log('Version: 1.0.4');
 console.log('Time:', new Date().toISOString());
-console.log('🔧 All routes now use isActive field instead of status field');
 
-const { execSync } = require('child_process');
-console.log('\n🔧 Running database migrations...');
-try {
-  console.log('Step 1: Generating Prisma client...');
-  execSync('npx prisma generate', { stdio: 'inherit' });
-  
-  console.log('Step 2: Deploying migrations...');
-  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-  
-  console.log('✅ Migrations completed successfully!');
-} catch (error) {
-  console.error('❌ Migration failed:', error.message);
-  console.error('Continuing anyway - migrations might already be applied');
-}
-
-// Check if VASPs need to be migrated
+// Initialize Prisma
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
-async function checkAndMigrateVasps() {
-  try {
-    const vaspCount = await prisma.vasp.count();
-    console.log(`\n📊 Found ${vaspCount} VASPs in database`);
-    
-    if (vaspCount === 0) {
-      console.log('🚀 No VASPs found, running migration from CSV...');
-      execSync('node scripts/migrate-vasps-to-db-fixed.js', { stdio: 'inherit' });
-    }
-  } catch (error) {
-    console.error('Error checking VASPs:', error.message);
-  }
-}
-
-checkAndMigrateVasps();
 
 // Import routes
 const authRoutes = require('./routes/auth');
