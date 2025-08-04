@@ -69,9 +69,14 @@ const register = async (req, res) => {
 
     // Send verification email
     const verificationUrl = `${getBaseUrl()}/verify-email?token=${verificationToken}`;
-    emailService.sendEmailVerification(user.email, user.firstName, verificationUrl).catch(err => {
+    try {
+      await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
+      console.log('Verification email sent successfully to:', user.email);
+    } catch (err) {
       console.error('Failed to send verification email:', err);
-    });
+      console.error('Email error details:', err.response?.body || err.message);
+      // Continue with registration even if email fails
+    }
 
     // Send admin notification email (for new registrations)
     emailService.sendAdminNotification(user).catch(err => {
@@ -98,7 +103,7 @@ const register = async (req, res) => {
     }
 
     // For regular users, don't generate token - they need email verification and approval
-    res.status(201).json({
+    const response = {
       message: 'Registration successful! Please check your email to verify your account. After verification, your account will need to be approved by an administrator.',
       requiresEmailVerification: true,
       requiresApproval: true,
@@ -114,7 +119,15 @@ const register = async (req, res) => {
         isEmailVerified: user.isEmailVerified
       }
       // No token provided - user must verify email and wait for approval
-    });
+    };
+    
+    // In development, include verification URL for testing
+    if (process.env.NODE_ENV !== 'production') {
+      response.verificationUrl = verificationUrl;
+      console.log('DEV MODE - Verification URL:', verificationUrl);
+    }
+    
+    res.status(201).json(response);
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Failed to register user' });

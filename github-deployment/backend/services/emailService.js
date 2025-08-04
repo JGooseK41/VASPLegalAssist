@@ -1,7 +1,12 @@
 const sgMail = require('@sendgrid/mail');
 
 // Initialize SendGrid with API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_API_KEY !== 'your-sendgrid-api-key-here') {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('SendGrid initialized successfully');
+} else {
+  console.error('WARNING: SendGrid API key not configured properly. Email sending will fail.');
+}
 
 const emailService = {
   sendPasswordResetEmail: async (to, resetUrl) => {
