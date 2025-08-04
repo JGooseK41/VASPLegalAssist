@@ -353,6 +353,98 @@ const emailService = {
       console.error('Error sending email verification:', error);
       throw error; // Throw error for verification emails as they are critical
     }
+  },
+
+  sendApprovalEmail: async (to, firstName) => {
+    const loginUrl = process.env.NODE_ENV === 'production' && process.env.CLIENT_URL?.includes('localhost') 
+      ? 'https://theblockrecord.com/login' 
+      : `${process.env.CLIENT_URL || 'https://theblockrecord.com'}/login`;
+
+    const msg = {
+      to,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
+        name: process.env.SENDGRID_FROM_NAME || 'VASP Legal Assistant'
+      },
+      subject: 'Your Account Has Been Approved - VASP Legal Assistant',
+      text: `
+        Hello ${firstName},
+
+        Great news! Your VASP Legal Assistant account has been approved by an administrator.
+
+        You can now log in and access all features of the platform:
+        ${loginUrl}
+
+        If you have any questions or need assistance, please don't hesitate to contact our support team.
+
+        Best regards,
+        VASP Legal Assistant Team
+      `,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #10b981; color: white; padding: 20px; text-align: center; }
+            .content { background-color: #f9f9f9; padding: 30px; }
+            .button { 
+              display: inline-block; 
+              padding: 12px 24px; 
+              background-color: #2563eb; 
+              color: white; 
+              text-decoration: none; 
+              border-radius: 4px; 
+              margin: 20px 0;
+            }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            .features { background-color: #e5e7eb; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Welcome to VASP Legal Assistant!</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${firstName},</p>
+              <p><strong>Great news!</strong> Your VASP Legal Assistant account has been approved by an administrator.</p>
+              <p>You can now log in and start using all the features of our platform:</p>
+              <div style="text-align: center;">
+                <a href="${loginUrl}" class="button">Log In Now</a>
+              </div>
+              <div class="features">
+                <p><strong>What you can do now:</strong></p>
+                <ul>
+                  <li>Search and access VASP contact information</li>
+                  <li>Generate legal documents and subpoenas</li>
+                  <li>Submit new VASP information</li>
+                  <li>Contribute to the community knowledge base</li>
+                  <li>Track your contributions on the leaderboard</li>
+                </ul>
+              </div>
+              <p>If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.</p>
+              <p>Best regards,<br>VASP Legal Assistant Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log('Approval notification sent successfully to:', to);
+      return true;
+    } catch (error) {
+      console.error('Error sending approval email:', error);
+      // Don't throw - approval emails are not critical for the approval process
+      return false;
+    }
   }
 };
 

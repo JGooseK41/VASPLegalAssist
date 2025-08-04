@@ -228,6 +228,16 @@ const approveUser = async (req, res) => {
       data: { isApproved: true }
     });
     
+    // Send approval email notification
+    const emailService = require('../services/emailService');
+    try {
+      await emailService.sendApprovalEmail(user.email, user.firstName);
+      console.log('Approval email sent to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send approval email:', emailError);
+      // Don't fail the approval if email fails
+    }
+    
     res.json({ message: 'User approved successfully', user });
   } catch (error) {
     console.error('Error approving user:', error);
