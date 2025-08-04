@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,425 +11,99 @@ datasource db {
 }
 
 model User {
-  id                      String               @id @default(uuid())
-  email                   String               @unique
+  id                      String    @id @default(uuid())
+  email                   String    @unique
   password                String
   firstName               String
   lastName                String
   agencyName              String
+  agencyAddress           String?
   badgeNumber             String?
   title                   String?
   phone                   String?
-  role                    String               @default("USER")
-  isApproved              Boolean              @default(false)
-  leaderboardOptOut       Boolean              @default(false)
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
-  agencyAddress           String?
-  isEmailVerified         Boolean              @default(false)
+  role                    String    @default("USER")
+  isEmailVerified         Boolean   @default(false)
   emailVerificationToken  String?
   emailVerificationExpiry DateTime?
+  isApproved              Boolean   @default(false)
   lastSurveyReminderShown DateTime?
-  lastMilestoneShown      Int                  @default(0)
-  firstLeaderboardShown   Boolean              @default(false)
-  currentLeaderboardStreak Int                 @default(0)
-  longestLeaderboardStreak Int                 @default(0)
-  lastOnLeaderboard       DateTime?
-  votes                   CommentVote[]
-  documents               Document[]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  
   templates               DocumentTemplate[]
-  passwordResets          PasswordResetToken[]
-  comments                VaspComment[]
-  vaspResponses           VaspResponse[]
-  vaspSubmissions         VaspSubmission[]
-  templateUsage           TemplateUsage[]
-  vaspUpdateRequests      VaspUpdateRequest[]
+  documents               Document[]
   sessions                UserSession[]
-  milestoneNotifications  MilestoneNotification[]
-  contributorFeedback     ContributorFeedback[]
-  leaderboardHistory      LeaderboardHistory[]
+  passwordResetTokens     PasswordResetToken[]
 }
 
 model DocumentTemplate {
-  id                    String   @id @default(uuid())
-  userId                String
-  templateType          String
-  templateName          String
-  agencyHeader          String
-  agencyAddress         String
-  agencyContact         String
-  footerText            String
-  signatureBlock        String
-  customFields          String?
-  isDefault             Boolean  @default(false)
-  fileUrl               String?
-  fileType              String?
-  fileSize              Int?
-  originalFilename      String?
-  templateContent       String?
-  markers               String?
-  markerMappings        String?
-  isEncrypted           Boolean  @default(false)
-  encryptedContent      String?
-  encryptedMarkers      String?
-  encryptedMappings     String?
-  encryptedCustomFields String?
-  isClientEncrypted     Boolean  @default(false)
-  encryptionVersion     String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  isGlobal              Boolean  @default(false)
-  isUserShared          Boolean  @default(false) // User chose to share with community
-  sharePoints           Int      @default(0) // Points earned from shares
-  sharedTitle           String?  // Clear title for shared templates
-  sharedDescription     String?  @db.Text // Use case description for shared templates
-  allowedDomains        String[] @default([]) // Email domains allowed to use template (empty = all)
-  user                  User     @relation(fields: [userId], references: [id])
-  usageTracking         TemplateUsage[]
+  id              String    @id @default(uuid())
+  userId          String
+  templateType    String
+  templateName    String
+  agencyHeader    String
+  agencyAddress   String
+  agencyContact   String
+  footerText      String
+  signatureBlock  String
+  customFields    String?   // JSON string for additional fields
+  isDefault       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   
-  @@index([isUserShared])
+  user            User      @relation(fields: [userId], references: [id])
 }
 
 model Document {
-  id                          String              @id @default(uuid())
-  userId                      String
-  vaspId                      Int
-  vaspName                    String
-  vaspJurisdiction            String
-  vaspEmail                   String
-  documentType                String
-  caseNumber                  String
-  crimeDescription            String
-  statute                     String
-  transactionDetails          String
-  requestedData               String
-  pdfUrl                      String?
-  createdAt                   DateTime            @default(now())
-  isEncrypted                 Boolean             @default(false)
-  encryptedTransactionDetails String?
-  encryptedRequestedData      String?
-  encryptedContent            String?
-  isClientEncrypted           Boolean             @default(false)
-  encryptionVersion           String?
-  outputFormat                String?             @default("pdf")
-  filePath                    String?
-  metadata                    String?
-  encrypted_crimeDescription  String?
-  encrypted_statute           String?
-  encrypted_caseNumber        String?
-  encryptedFilePath           String?
-  fileEncryptionMetadata      String?
-  user                        User                @relation(fields: [userId], references: [id])
-  transactionImports          TransactionImport[]
-  vaspResponses               VaspResponse[]
+  id                  String    @id @default(uuid())
+  userId              String
+  vaspId              Int
+  vaspName            String
+  vaspJurisdiction    String
+  vaspEmail           String
+  documentType        String
+  caseNumber          String
+  crimeDescription    String
+  statute             String
+  transactionDetails  String    // JSON string
+  requestedData       String    // JSON string
+  pdfUrl              String?
+  createdAt           DateTime  @default(now())
+  
+  user                User      @relation(fields: [userId], references: [id])
+  transactionImports  TransactionImport[]
 }
 
 model TransactionImport {
-  id         String   @id @default(uuid())
-  documentId String
-  csvData    String
-  processed  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  document   Document @relation(fields: [documentId], references: [id])
-}
-
-model VaspComment {
-  id        String        @id @default(uuid())
-  userId    String
-  vaspId    Int
-  content   String
-  isUpdate  Boolean       @default(false)
-  voteScore Int           @default(0)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  isProcessed Boolean     @default(false) // Track if admin has reviewed this update
-  processedAt DateTime?
-  processedBy String?
-  votes     CommentVote[]
-  user      User          @relation(fields: [userId], references: [id])
-  vasp      Vasp          @relation(fields: [vaspId], references: [id])
-
-  @@index([vaspId, voteScore])
-  @@index([isUpdate, isProcessed]) // Index for finding unprocessed updates
-}
-
-model CommentVote {
-  id        String      @id @default(uuid())
-  userId    String
-  commentId String
-  value     Int
-  createdAt DateTime    @default(now())
-  comment   VaspComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [userId], references: [id])
-
-  @@unique([userId, commentId])
-}
-
-model Vasp {
-  id                  Int            @id @default(autoincrement())
-  name                String
-  legal_name          String
-  jurisdiction        String
-  compliance_email    String
-  compliance_contact  String?
-  service_address     String?
-  phone               String?
-  processing_time     String         @default("5-10 business days")
-  preferred_method    String
-  required_document   String?
-  info_types          String[]
-  service_types       String[]       @default([])
-  accepts_us_service  Boolean        @default(false)
-  has_own_portal      Boolean        @default(false)
-  law_enforcement_url String?
-  notes               String?
+  id              String    @id @default(uuid())
+  documentId      String
+  csvData         String    // JSON string
+  processed       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
   
-  // Request type specific fields
-  records_processing_time    String?
-  records_required_document  String?
-  records_accepts_us         Boolean?
-  records_jurisdictions      String[]      @default([])
-  freeze_processing_time     String?
-  freeze_required_document   String?
-  freeze_accepts_us          Boolean?
-  freeze_jurisdictions       String[]      @default([])
-  isActive            Boolean        @default(true)
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  comments            VaspComment[]
-  responses           VaspResponse[]
-  updateRequests      VaspUpdateRequest[]
-}
-
-model VaspSubmission {
-  id                  String    @id @default(uuid())
-  userId              String?
-  status              String    @default("PENDING")
-  rejectionReason     String?
-  name                String
-  legal_name          String
-  jurisdiction        String
-  compliance_email    String
-  compliance_contact  String?
-  service_address     String?
-  phone               String?
-  processing_time     String
-  preferred_method    String
-  required_document   String?
-  info_types          String[]
-  service_types       String[]  @default([])
-  accepts_us_service  Boolean   @default(false)
-  has_own_portal      Boolean   @default(false)
-  law_enforcement_url String?
-  notes               String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  reviewedAt          DateTime?
-  reviewedBy          String?
-  isVerified          Boolean   @default(false)
-  submissionType      String    @default("USER")
-  submitterEmail      String?
-  submitterName       String?
-  submitterPhone      String?
-  submitterTitle      String?
-  templateUrls        String[]
-  verificationCode    String?
-  user                User?     @relation(fields: [userId], references: [id])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([token, expiresAt])
-}
-
-model VaspResponse {
-  id                     String   @id @default(uuid())
-  userId                 String
-  vaspId                 Int
-  documentId             String
-  documentType           String
-  isUsCompliant          Boolean
-  recordsRequestMethod   String?
-  freezeRequestMethod    String?
-  turnaroundTime         String
-  additionalNotes        String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  additionalRequirements String?
-  contactEmailUsed       String?
-  contactEmailWorked     Boolean?
-  dataFormat             String?
-  directContactEmail     String?
-  directContactName      String?
-  directContactTitle     String?
-  documentWorked         Boolean?
-  failureReasons         String[]
-  fees                   String?
-  requiredDocuments      String[]
-  responseQuality        String?
-  suggestedEmailUpdate   String?
-  leoFriendlinessRating  Int?
-  document               Document @relation(fields: [documentId], references: [id])
-  user                   User     @relation(fields: [userId], references: [id])
-  vasp                   Vasp     @relation(fields: [vaspId], references: [id])
-
-  @@index([vaspId])
-  @@index([userId])
-  @@index([documentId])
-  @@index([documentWorked])
-  @@index([vaspId, documentWorked])
-}
-
-model VisitorSession {
-  id           String     @id @default(uuid())
-  anonymizedIp String
-  country      String?
-  countryCode  String?
-  region       String?
-  city         String?
-  latitude     Float?
-  longitude    Float?
-  userAgent    String?
-  referrer     String?
-  createdAt    DateTime   @default(now())
-  pageViews    PageView[]
-
-  @@index([createdAt])
-  @@index([country])
-  @@index([countryCode])
-}
-
-model PageView {
-  id        String         @id @default(uuid())
-  sessionId String
-  path      String
-  duration  Int?
-  createdAt DateTime       @default(now())
-  session   VisitorSession @relation(fields: [sessionId], references: [id])
-
-  @@index([sessionId])
-  @@index([path])
-  @@index([createdAt])
-}
-
-model DocumentStats {
-  id                    String   @id @default("global-stats")
-  totalDocumentsCreated Int      @default(0)
-  updatedAt             DateTime @updatedAt
-}
-
-model TemplateUsage {
-  id          String   @id @default(uuid())
-  templateId  String
-  userId      String    // User who used the template
-  createdAt   DateTime  @default(now())
-  
-  user        User      @relation(fields: [userId], references: [id])
-  template    DocumentTemplate @relation(fields: [templateId], references: [id])
-  
-  @@index([templateId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model VaspUpdateRequest {
-  id                    String   @id @default(uuid())
-  vaspId                Int
-  vasp                  Vasp     @relation(fields: [vaspId], references: [id])
-  userId                String
-  user                  User     @relation(fields: [userId], references: [id])
-  proposedChanges       Json
-  userComments          String
-  status                String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  adminNotes            String?
-  evidenceFiles         UpdateRequestEvidence[]
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
-  @@index([vaspId])
-  @@index([userId])
-  @@index([status])
-}
-
-model UpdateRequestEvidence {
-  id                String   @id @default(uuid())
-  updateRequestId   String
-  updateRequest     VaspUpdateRequest @relation(fields: [updateRequestId], references: [id], onDelete: Cascade)
-  fileName          String
-  originalName      String
-  mimeType          String
-  fileSize          Int
-  fileUrl           String
-  description       String?
-  createdAt         DateTime @default(now())
-  
-  @@index([updateRequestId])
+  document        Document  @relation(fields: [documentId], references: [id])
 }
 
 model UserSession {
-  id          String    @id @default(uuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  token       String    @unique
-  ipAddress   String?
-  userAgent   String?
-  loginAt     DateTime  @default(now())
-  lastActivity DateTime @default(now())
-  expiresAt   DateTime
-  isActive    Boolean   @default(true)
-  
-  @@index([userId])
-  @@index([token])
-  @@index([isActive])
-  @@index([lastActivity])
-}
-
-model MilestoneNotification {
   id              String    @id @default(uuid())
   userId          String
+  token           String    @unique
+  ipAddress       String?
+  userAgent       String?
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  
   user            User      @relation(fields: [userId], references: [id])
-  milestone       Int       // 1, 100, 200, 300, etc.
-  notifiedAt      DateTime  @default(now())
-  acknowledged    Boolean   @default(false)
-  acknowledgedAt  DateTime?
-  
-  @@unique([userId, milestone])
-  @@index([userId])
-  @@index([milestone])
 }
 
-model ContributorFeedback {
-  id                String   @id @default(uuid())
-  userId            String
-  user              User     @relation(fields: [userId], references: [id])
-  milestone         Int      // Points milestone when feedback was given
-  discoverySource   String   // How they found the site
-  suggestions       String?  @db.Text // Improvements or suggestions
-  feedbackType      String   // "FIRST_POINT", "MILESTONE_100", etc.
-  createdAt         DateTime @default(now())
+model PasswordResetToken {
+  id              String    @id @default(uuid())
+  userId          String
+  token           String
+  expiresAt       DateTime
+  used            Boolean   @default(false)
+  createdAt       DateTime  @default(now())
   
-  @@index([userId])
-  @@index([milestone])
-  @@index([createdAt])
-}
-
-model LeaderboardHistory {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  position  Int      // 1-10 for top 10
-  points    Int
-  date      DateTime @default(now())
-  
-  @@unique([userId, date])
-  @@index([userId])
-  @@index([date])
-  @@index([position])
+  user            User      @relation(fields: [userId], references: [id])
 }
