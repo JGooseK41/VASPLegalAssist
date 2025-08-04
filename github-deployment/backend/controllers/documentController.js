@@ -338,13 +338,8 @@ const importTransactions = async (req, res) => {
 // Get total document count across all users (for platform stats)
 const getTotalDocumentCount = async (req, res) => {
   try {
-    // Get the historical total from DocumentStats
-    const stats = await prisma.documentStats.findUnique({
-      where: { id: 'global-stats' }
-    });
-    
-    // If stats don't exist (shouldn't happen after migration), fallback to actual count
-    const totalCount = stats?.totalDocumentsCreated || await prisma.document.count();
+    // Get the actual count from the database
+    const totalCount = await prisma.document.count();
     
     res.json({ count: totalCount });
   } catch (error) {
