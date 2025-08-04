@@ -158,7 +158,7 @@ const emailService = {
   sendAdminNotification: async (newUser) => {
     try {
       // Get admin emails from environment or use a default
-      const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['admin@vasplegalassist.com'];
+      const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['info@theblockrecord.com'];
       
       const msg = {
         to: adminEmails,
