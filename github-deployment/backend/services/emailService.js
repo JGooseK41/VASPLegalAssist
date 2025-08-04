@@ -7,7 +7,7 @@ const emailService = {
   sendPasswordResetEmail: async (to, resetUrl) => {
     const msg = {
       to,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com', // Must be verified in SendGrid
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com', // Must be verified in SendGrid
       subject: 'Password Reset Request - VASP Legal Assistant',
       text: `
         You requested a password reset for your VASP Legal Assistant account.
@@ -87,7 +87,7 @@ const emailService = {
   sendWelcomeEmail: async (to, firstName) => {
     const msg = {
       to,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com',
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
       subject: 'Welcome to VASP Legal Assistant',
       text: `
         Welcome ${firstName}!
@@ -157,7 +157,7 @@ const emailService = {
       
       const msg = {
         to: adminEmails,
-        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com',
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
         subject: 'New User Registration - Approval Required',
         text: `
           A new user has registered and requires approval:
@@ -241,7 +241,7 @@ const emailService = {
                 <p>Please log in to the admin panel to approve or reject this registration.</p>
                 
                 <center>
-                  <a href="${process.env.FRONTEND_URL || 'https://vasplegalassist.com'}/admin/users" class="button">
+                  <a href="${process.env.NODE_ENV === 'production' && process.env.CLIENT_URL?.includes('localhost') ? 'https://theblockrecord.com' : (process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com')}/admin/users" class="button">
                     Go to Admin Panel
                   </a>
                 </center>
@@ -267,7 +267,7 @@ const emailService = {
     const msg = {
       to,
       from: {
-        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@vasplegalassist.com',
+        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
         name: process.env.SENDGRID_FROM_NAME || 'VASP Legal Assistant'
       },
       subject: 'Verify Your Email - VASP Legal Assistant',

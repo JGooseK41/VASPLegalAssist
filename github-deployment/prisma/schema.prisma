@@ -6,26 +6,34 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  password        String
-  firstName       String
-  lastName        String
-  agencyName      String
-  badgeNumber     String
-  title           String?
-  phone           String?
-  role            String    @default("USER")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                      String    @id @default(uuid())
+  email                   String    @unique
+  password                String
+  firstName               String
+  lastName                String
+  agencyName              String
+  agencyAddress           String?
+  badgeNumber             String
+  title                   String?
+  phone                   String?
+  role                    String    @default("USER")
+  isEmailVerified         Boolean   @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpiry DateTime?
+  isApproved              Boolean   @default(false)
+  lastSurveyReminderShown DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
   
-  templates       DocumentTemplate[]
-  documents       Document[]
+  templates               DocumentTemplate[]
+  documents               Document[]
+  sessions                UserSession[]
+  passwordResetTokens     PasswordResetToken[]
 }
 
 model DocumentTemplate {
@@ -74,4 +82,28 @@ model TransactionImport {
   createdAt       DateTime  @default(now())
   
   document        Document  @relation(fields: [documentId], references: [id])
+}
+
+model UserSession {
+  id              String    @id @default(uuid())
+  userId          String
+  token           String    @unique
+  ipAddress       String?
+  userAgent       String?
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model PasswordResetToken {
+  id              String    @id @default(uuid())
+  userId          String
+  token           String
+  expiresAt       DateTime
+  used            Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id])
 }

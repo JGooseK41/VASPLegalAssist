@@ -16,6 +16,16 @@ const generateVerificationToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
 
+const getBaseUrl = () => {
+  let baseUrl = process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com';
+  // Ensure we never use localhost in production
+  if (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost')) {
+    console.warn('CLIENT_URL contains localhost in production, using default URL');
+    baseUrl = 'https://theblockrecord.com';
+  }
+  return baseUrl;
+};
+
 const register = async (req, res) => {
   try {
     const { email, password, firstName, lastName, agencyName, agencyAddress, badgeNumber, title, phone } = req.body;
@@ -58,7 +68,7 @@ const register = async (req, res) => {
     await createDefaultTemplates(user.id);
 
     // Send verification email
-    const verificationUrl = `${process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com'}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${getBaseUrl()}/verify-email?token=${verificationToken}`;
     emailService.sendEmailVerification(user.email, user.firstName, verificationUrl).catch(err => {
       console.error('Failed to send verification email:', err);
     });
@@ -307,7 +317,7 @@ const forgotPassword = async (req, res) => {
     });
 
     // Create reset URL
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${getBaseUrl()}/reset-password?token=${resetToken}`;
     
     // Send email
     try {
@@ -508,7 +518,7 @@ const resendVerificationEmail = async (req, res) => {
     });
 
     // Send verification email
-    const verificationUrl = `${process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com'}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${getBaseUrl()}/verify-email?token=${verificationToken}`;
     await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
 
     res.json({ 
