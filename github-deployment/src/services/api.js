@@ -88,6 +88,16 @@ export const authAPI = {
   logout: async () => {
     const response = await api.post('/auth/logout');
     return response.data;
+  },
+
+  submitAdminApplication: async (applicationData) => {
+    const response = await api.post('/auth/admin-application', applicationData);
+    return response.data;
+  },
+
+  getMyAdminApplication: async () => {
+    const response = await api.get('/auth/admin-application');
+    return response.data;
   }
 };
 

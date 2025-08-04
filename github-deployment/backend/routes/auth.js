@@ -40,4 +40,13 @@ router.get('/verify-token', requireAuth, (req, res) => {
   });
 });
 
+// Admin Application Routes
+const { submitAdminApplication, getMyAdminApplication } = require('../controllers/authController');
+
+// POST /api/auth/admin-application
+router.post('/admin-application', requireAuth, submitAdminApplication);
+
+// GET /api/auth/admin-application
+router.get('/admin-application', requireAuth, getMyAdminApplication);
+
 module.exports = router;

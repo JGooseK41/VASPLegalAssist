@@ -427,11 +427,261 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const submitAdminApplication = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const {
+      lawEnforcementRole,
+      yearsExperience,
+      reasonForVolunteering,
+      availableHours,
+      experience,
+      references
+    } = req.body;
+
+    // Check if user already has an application
+    const existingApplication = await prisma.adminApplication.findFirst({
+      where: { 
+        userId,
+        status: 'PENDING'
+      }
+    });
+
+    if (existingApplication) {
+      return res.status(400).json({ error: 'You already have a pending admin application' });
+    }
+
+    // Check if user is already an admin
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (user.role === 'ADMIN' || user.role === 'MASTER_ADMIN') {
+      return res.status(400).json({ error: 'You are already an admin' });
+    }
+
+    // Create the application
+    const application = await prisma.adminApplication.create({
+      data: {
+        userId,
+        lawEnforcementRole,
+        yearsExperience,
+        reasonForVolunteering,
+        availableHours,
+        experience,
+        references
+      }
+    });
+
+    // Send notification email to admins
+    try {
+      const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['info@theblockaudit.com'];
+      const emailService = require('../services/emailService');
+      
+      // Create notification email for admins
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      
+      const msg = {
+        to: adminEmails,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
+        subject: 'New Admin Application - Review Required',
+        text: `
+          A new admin application has been submitted:
+          
+          Name: ${user.firstName} ${user.lastName}
+          Email: ${user.email}
+          Agency: ${user.agencyName}
+          Current Role: ${lawEnforcementRole}
+          Years of Experience: ${yearsExperience}
+          Available Hours: ${availableHours}
+          
+          Reason for Volunteering:
+          ${reasonForVolunteering}
+          
+          Relevant Experience:
+          ${experience}
+          
+          Please log in to the admin portal to review this application.
+        `,
+        html: `
+          <h2>New Admin Application</h2>
+          <p>A new admin application has been submitted and requires review:</p>
+          
+          <h3>Applicant Information</h3>
+          <ul>
+            <li><strong>Name:</strong> ${user.firstName} ${user.lastName}</li>
+            <li><strong>Email:</strong> ${user.email}</li>
+            <li><strong>Agency:</strong> ${user.agencyName}</li>
+            <li><strong>Current Role:</strong> ${lawEnforcementRole}</li>
+            <li><strong>Years of Experience:</strong> ${yearsExperience}</li>
+            <li><strong>Available Hours:</strong> ${availableHours}</li>
+          </ul>
+          
+          <h3>Reason for Volunteering</h3>
+          <p>${reasonForVolunteering.replace(/\n/g, '<br>')}</p>
+          
+          <h3>Relevant Experience</h3>
+          <p>${experience.replace(/\n/g, '<br>')}</p>
+          
+          ${references ? `<h3>References</h3><p>${references.replace(/\n/g, '<br>')}</p>` : ''}
+          
+          <p><a href="${process.env.CLIENT_URL || 'https://theblockrecord.com'}/admin/applications">Review Application in Admin Portal</a></p>
+        `
+      };
+      
+      await sgMail.send(msg);
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
+      // Don't fail the application submission if email fails
+    }
+
+    res.json({ 
+      message: 'Admin application submitted successfully',
+      application: {
+        id: application.id,
+        status: application.status,
+        createdAt: application.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Submit admin application error:', error);
+    res.status(500).json({ error: 'Failed to submit admin application' });
+  }
+};
+
+const getMyAdminApplication = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    const application = await prisma.adminApplication.findFirst({
+      where: { 
+        userId,
+        status: 'PENDING'
+      },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        lawEnforcementRole: true,
+        yearsExperience: true,
+        availableHours: true
+      }
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: 'No pending application found' });
+    }
+
+    res.json(application);
+  } catch (error) {
+    console.error('Get admin application error:', error);
+    res.status(500).json({ error: 'Failed to get admin application' });
+  }
+};
+
+const forgotPassword = requestPasswordReset; // Alias for consistency
+
+const validateResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    
+    const resetToken = await prisma.passwordResetToken.findFirst({
+      where: {
+        token,
+        used: false,
+        expiresAt: {
+          gt: new Date()
+        }
+      }
+    });
+
+    if (!resetToken) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    res.json({ valid: true });
+  } catch (error) {
+    console.error('Validate reset token error:', error);
+    res.status(500).json({ error: 'Failed to validate reset token' });
+  }
+};
+
+const getMemberCount = async (req, res) => {
+  try {
+    const count = await prisma.user.count({
+      where: {
+        isApproved: true
+      }
+    });
+    
+    res.json({ count });
+  } catch (error) {
+    console.error('Get member count error:', error);
+    res.status(500).json({ error: 'Failed to get member count' });
+  }
+};
+
+const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      // Don't reveal if user exists
+      return res.json({ message: 'If an account exists with this email, a verification email has been sent.' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerificationExpiry = new Date();
+    emailVerificationExpiry.setHours(emailVerificationExpiry.getHours() + 24);
+
+    // Update user with new token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken,
+        emailVerificationExpiry
+      }
+    });
+
+    // Send verification email
+    const baseUrl = getBaseUrl();
+    const verificationUrl = `${baseUrl}/verify-email?token=${emailVerificationToken}`;
+    
+    try {
+      await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      return res.status(500).json({ error: 'Failed to send verification email' });
+    }
+
+    res.json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   verifyEmail,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  forgotPassword,
+  validateResetToken,
+  getMemberCount,
+  resendVerificationEmail,
+  submitAdminApplication,
+  getMyAdminApplication
 };

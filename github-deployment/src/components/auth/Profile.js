@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Save, Key, AlertCircle, CheckCircle, X, Trophy, Eye, EyeOff, ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Mail, Save, Key, AlertCircle, CheckCircle, X, Trophy, Eye, EyeOff, ArrowLeft, Trash2, AlertTriangle, Shield } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { profileAPI } from '../../services/api';
+import { profileAPI, authAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import AdminApplicationForm from '../admin/AdminApplicationForm';
 
 const Profile = () => {
   const { user, updateUser, logout } = useAuth();
@@ -32,10 +33,23 @@ const Profile = () => {
     acknowledgeEncryption: false
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAdminApplication, setShowAdminApplication] = useState(false);
+  const [hasExistingApplication, setHasExistingApplication] = useState(false);
 
   useEffect(() => {
     loadProfile();
+    checkAdminApplication();
   }, []);
+
+  const checkAdminApplication = async () => {
+    try {
+      await authAPI.getMyAdminApplication();
+      setHasExistingApplication(true);
+    } catch (error) {
+      // No existing application
+      setHasExistingApplication(false);
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -466,6 +480,40 @@ const Profile = () => {
           )}
         </div>
 
+        {/* Admin Application - Only show for non-admin users */}
+        {user?.role === 'USER' && (
+          <div className="bg-white shadow rounded-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Shield className="h-5 w-5 text-blue-500 mr-2" />
+                <h2 className="text-lg font-medium text-gray-900">Volunteer as Admin</h2>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                We're looking for law enforcement professionals who can volunteer to help maintain the platform by approving new members and managing VASP data update requests.
+              </p>
+              
+              {hasExistingApplication ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <p className="text-sm text-blue-800">
+                    You have already submitted an admin application. We'll review it and get back to you soon.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAdminApplication(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Apply to be an Admin
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Delete Account - Only show for non-demo users */}
         {user?.role !== 'DEMO' && (
           <div className="bg-white shadow rounded-lg p-6">
@@ -618,6 +666,18 @@ const Profile = () => {
               </form>
             )}
           </div>
+        )}
+
+        {/* Admin Application Modal */}
+        {showAdminApplication && (
+          <AdminApplicationForm
+            onClose={() => setShowAdminApplication(false)}
+            onSuccess={() => {
+              setShowAdminApplication(false);
+              setHasExistingApplication(true);
+              setSuccess('Admin application submitted successfully!');
+            }}
+          />
         )}
       </div>
     </div>
