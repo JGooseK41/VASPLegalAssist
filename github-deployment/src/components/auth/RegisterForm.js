@@ -25,6 +25,9 @@ const RegisterForm = () => {
     e.preventDefault();
     setValidationError('');
     setSuccessMessage('');
+    
+    // Show loading state
+    console.log('Submitting registration for:', formData.email);
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
@@ -40,11 +43,12 @@ const RegisterForm = () => {
 
     const { confirmPassword, ...registrationData } = formData;
     const result = await register(registrationData);
+    console.log('Registration result:', result);
     
     if (result.success) {
       if (result.requiresApproval || result.requiresEmailVerification) {
         // Show success message for users requiring approval or email verification
-        setSuccessMessage(result.message);
+        setSuccessMessage(result.message || 'Registration successful! Please check your email to verify your account.');
         // Clear form
         setFormData({
           email: '',
