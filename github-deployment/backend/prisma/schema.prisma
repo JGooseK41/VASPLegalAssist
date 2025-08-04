@@ -27,6 +27,12 @@ model User {
   emailVerificationExpiry DateTime?
   isApproved              Boolean   @default(false)
   lastSurveyReminderShown DateTime?
+  leaderboardOptOut       Boolean   @default(false)
+  currentLeaderboardStreak Int      @default(0)
+  longestLeaderboardStreak Int      @default(0)
+  lastOnLeaderboard       DateTime?
+  firstLeaderboardShown   Boolean   @default(false)
+  lastMilestoneShown      Int       @default(0)
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   
@@ -34,6 +40,13 @@ model User {
   documents               Document[]
   sessions                UserSession[]
   passwordResetTokens     PasswordResetToken[]
+  vaspSubmissions         VaspSubmission[]
+  comments                VaspComment[]
+  votes                   CommentVote[]
+  vaspResponses           VaspResponse[]
+  vaspUpdateRequests      VaspUpdateRequest[]
+  milestoneNotifications  MilestoneNotification[]
+  contributorFeedback     ContributorFeedback[]
 }
 
 model DocumentTemplate {
@@ -48,6 +61,18 @@ model DocumentTemplate {
   signatureBlock  String
   customFields    String?   // JSON string for additional fields
   isDefault       Boolean   @default(false)
+  isGlobal        Boolean   @default(false)
+  isUserShared    Boolean   @default(false)
+  sharePoints     Int       @default(0)
+  allowedDomains  String?   // JSON array of allowed domains
+  isEncrypted     Boolean   @default(false)
+  isClientEncrypted Boolean @default(false)
+  templateContent String?
+  markers         String?   // JSON array
+  markerMappings  String?   // JSON object
+  fileType        String?
+  fileSize        Int?
+  originalFilename String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -68,10 +93,15 @@ model Document {
   transactionDetails  String    // JSON string
   requestedData       String    // JSON string
   pdfUrl              String?
+  filePath            String?
+  isEncrypted         Boolean   @default(false)
+  isClientEncrypted   Boolean   @default(false)
+  outputFormat        String?
   createdAt           DateTime  @default(now())
   
   user                User      @relation(fields: [userId], references: [id])
   transactionImports  TransactionImport[]
+  vaspResponses       VaspResponse[]
 }
 
 model TransactionImport {
@@ -91,6 +121,8 @@ model UserSession {
   ipAddress       String?
   userAgent       String?
   isActive        Boolean   @default(true)
+  lastActivity    DateTime?
+  loginAt         DateTime  @default(now())
   expiresAt       DateTime
   createdAt       DateTime  @default(now())
   
@@ -106,4 +138,208 @@ model PasswordResetToken {
   createdAt       DateTime  @default(now())
   
   user            User      @relation(fields: [userId], references: [id])
+}
+
+model Vasp {
+  id                      Int       @id @default(autoincrement())
+  name                    String
+  legal_name              String?
+  jurisdiction            String
+  compliance_email        String
+  compliance_contact      String?
+  service_address         String?
+  website                 String?
+  phone                   String?
+  processing_time         String?
+  preferred_method        String?
+  required_document       String?
+  info_types              String[]  @default([])
+  service_types           String[]  @default([])
+  accepts_us_service      Boolean   @default(false)
+  has_own_portal          Boolean   @default(false)
+  law_enforcement_url     String?
+  notes                   String?
+  isActive                Boolean   @default(true)
+  records_processing_time String?
+  records_required_document String?
+  records_accepts_us      Boolean   @default(false)
+  records_jurisdictions   String[]  @default([])
+  freeze_processing_time  String?
+  freeze_required_document String?
+  freeze_accepts_us       Boolean   @default(false)
+  freeze_jurisdictions    String[]  @default([])
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  comments                VaspComment[]
+  responses               VaspResponse[]
+}
+
+model VaspSubmission {
+  id              String    @id @default(uuid())
+  userId          String
+  vaspName        String
+  legalName       String?
+  jurisdiction    String
+  complianceEmail String
+  complianceContact String?
+  serviceAddress  String?
+  website         String?
+  phone           String?
+  processingTime  String?
+  preferredMethod String?
+  requiredDocument String?
+  infoTypes       String[]  @default([])
+  serviceTypes    String[]  @default([])
+  acceptsUsService Boolean  @default(false)
+  hasOwnPortal    Boolean   @default(false)
+  lawEnforcementUrl String?
+  notes           String?
+  status          String    @default("PENDING")
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model VaspComment {
+  id              String    @id @default(uuid())
+  vaspId          Int
+  userId          String
+  content         String
+  voteScore       Int       @default(0)
+  isUpdate        Boolean   @default(false)
+  updateType      String?
+  isProcessed     Boolean   @default(false)
+  processedAt     DateTime?
+  processedBy     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  vasp            Vasp      @relation(fields: [vaspId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+  votes           CommentVote[]
+}
+
+model CommentVote {
+  id              String    @id @default(uuid())
+  commentId       String
+  userId          String
+  value           Int       // 1 for upvote, -1 for downvote
+  createdAt       DateTime  @default(now())
+
+  comment         VaspComment @relation(fields: [commentId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+}
+
+model VaspResponse {
+  id              String    @id @default(uuid())
+  documentId      String
+  userId          String
+  vaspId          Int
+  responseType    String
+  responseTime    String?
+  contactUsed     String?
+  documentsReceived String?
+  notes           String?
+  effectiveness   String?
+  leoFriendliness String?
+  requestType     String?
+  jurisdiction    String?
+  leoType         String?
+  documentTypes   String[]  @default([])
+  turnaroundDays  Int?
+  followUpNeeded  Boolean   @default(false)
+  freezeComplied  Boolean?
+  freezeTimeframe String?
+  recordsFormat   String?
+  dataQuality     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  document        Document  @relation(fields: [documentId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+  vasp            Vasp      @relation(fields: [vaspId], references: [id])
+}
+
+model VaspUpdateRequest {
+  id              String    @id @default(uuid())
+  vaspId          Int
+  userId          String
+  updateType      String
+  fieldName       String
+  oldValue        String?
+  newValue        String
+  reason          String?
+  evidence        String?   // JSON array of evidence links/descriptions
+  status          String    @default("PENDING")
+  reviewedBy      String?
+  reviewNotes     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model LeaderboardHistory {
+  id              String    @id @default(uuid())
+  userId          String
+  position        Int
+  points          Int
+  date            DateTime
+  createdAt       DateTime  @default(now())
+
+  @@unique([userId, date])
+}
+
+model MilestoneNotification {
+  id              String    @id @default(uuid())
+  userId          String
+  milestone       Int
+  acknowledged    Boolean   @default(false)
+  acknowledgedAt  DateTime?
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model ContributorFeedback {
+  id              String    @id @default(uuid())
+  userId          String
+  milestone       Int
+  discoverySource String?
+  suggestions     String?
+  feedbackType    String?
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model VisitorSession {
+  id              String    @id @default(uuid())
+  anonymizedIp    String
+  userAgent       String?
+  country         String?
+  region          String?
+  city            String?
+  countryCode     String?
+  startTime       DateTime  @default(now())
+  endTime         DateTime?
+  duration        Int?      // in seconds
+  pageViews       PageView[]
+  createdAt       DateTime  @default(now())
+}
+
+model PageView {
+  id              String    @id @default(uuid())
+  sessionId       String
+  path            String
+  referrer        String?
+  timestamp       DateTime  @default(now())
+  timeOnPage      Int?      // in seconds
+  
+  session         VisitorSession @relation(fields: [sessionId], references: [id])
 }
