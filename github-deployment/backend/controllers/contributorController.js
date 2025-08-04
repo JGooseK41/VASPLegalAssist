@@ -114,7 +114,9 @@ const getTopContributor = async (req, res) => {
     // Get all users except admins with their contribution data
     const users = await prisma.user.findMany({
       where: {
-        role: { not: 'ADMIN' },
+        role: { 
+          notIn: ['ADMIN', 'MASTER_ADMIN'] 
+        },
         leaderboardOptOut: false
       },
       include: {
@@ -220,7 +222,9 @@ const getLeaderboard = async (req, res) => {
     // Get all users except admins with their contribution data
     const users = await prisma.user.findMany({
       where: {
-        role: { not: 'ADMIN' },
+        role: { 
+          notIn: ['ADMIN', 'MASTER_ADMIN'] 
+        },
         leaderboardOptOut: false
       },
       include: {

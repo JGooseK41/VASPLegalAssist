@@ -276,9 +276,16 @@ const updateUserRole = async (req, res) => {
       return res.status(403).json({ error: 'Cannot modify master admin role' });
     }
     
+    // If promoting to admin, automatically opt out of leaderboard
+    const updateData = { role };
+    if (role === 'ADMIN') {
+      updateData.leaderboardOptOut = true;
+      console.log('updateUserRole: Automatically opting admin out of leaderboard');
+    }
+    
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { role }
+      data: updateData
     });
     
     res.json({ message: 'User role updated successfully', user });
