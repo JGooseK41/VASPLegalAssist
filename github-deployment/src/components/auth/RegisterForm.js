@@ -42,8 +42,8 @@ const RegisterForm = () => {
     const result = await register(registrationData);
     
     if (result.success) {
-      if (result.requiresApproval) {
-        // Show success message for users requiring approval
+      if (result.requiresApproval || result.requiresEmailVerification) {
+        // Show success message for users requiring approval or email verification
         setSuccessMessage(result.message);
         // Clear form
         setFormData({
@@ -62,6 +62,10 @@ const RegisterForm = () => {
         // Admin users or already approved users can navigate
         navigate('/');
       }
+    } else {
+      // Registration failed - error should already be set in context
+      // But also set validation error as backup
+      setValidationError(result.error || 'Registration failed. Please try again.');
     }
   };
 

@@ -61,8 +61,13 @@ export const authAPI = {
   },
   
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
+    try {
+      const response = await api.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Registration API error:', error.response?.data || error.message);
+      throw error;
+    }
   },
   
   getMemberCount: async () => {
