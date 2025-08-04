@@ -85,6 +85,22 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth middleware error:', error.message);
+    
+    // Handle specific JWT errors
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: 'Token expired',
+        message: 'Your session has expired. Please log in again.',
+        code: 'TOKEN_EXPIRED'
+      });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        error: 'Invalid token',
+        message: 'Authentication token is invalid. Please log in again.',
+        code: 'INVALID_TOKEN'
+      });
+    }
+    
     res.status(401).json({ error: 'Please authenticate' });
   }
 };
@@ -177,6 +193,22 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('RequireAuth error:', error.message);
+    
+    // Handle specific JWT errors
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: 'Token expired',
+        message: 'Your session has expired. Please log in again.',
+        code: 'TOKEN_EXPIRED'
+      });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        error: 'Invalid token',
+        message: 'Authentication token is invalid. Please log in again.',
+        code: 'INVALID_TOKEN'
+      });
+    }
+    
     res.status(401).json({ error: 'Invalid authentication token' });
   }
 };

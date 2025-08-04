@@ -101,8 +101,13 @@ async function trackVisitor(req, res, next) {
     const userAgent = req.headers['user-agent'] || null;
     const referrer = req.headers['referer'] || req.headers['referrer'] || null;
     
-    // Get or create session ID from signed cookie
-    let sessionId = req.signedCookies?.sessionId;
+    // Get or create session ID from cookie
+    let sessionId;
+    if (process.env.COOKIE_SECRET || process.env.SESSION_SECRET) {
+      sessionId = req.signedCookies?.sessionId;
+    } else {
+      sessionId = req.cookies?.sessionId;
+    }
     
     if (!sessionId) {
       // Create new session without geolocation first (non-blocking)
@@ -119,13 +124,19 @@ async function trackVisitor(req, res, next) {
       sessionId = session.id;
       
       // Set session cookie (expires in 30 minutes)
-      res.cookie('sessionId', sessionId, {
+      const cookieOptions = {
         maxAge: 30 * 60 * 1000,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        signed: true
-      });
+        sameSite: 'strict'
+      };
+      
+      // Only sign cookies if a secret is available
+      if (process.env.COOKIE_SECRET || process.env.SESSION_SECRET) {
+        cookieOptions.signed = true;
+      }
+      
+      res.cookie('sessionId', sessionId, cookieOptions);
       
       // Update geolocation asynchronously (non-blocking)
       getGeoLocation(ip).then(geo => {
