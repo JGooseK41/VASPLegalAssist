@@ -115,7 +115,6 @@ async function trackVisitor(req, res, next) {
         data: {
           anonymizedIp,
           userAgent,
-          referrer,
           country: 'Pending',
           countryCode: 'XX'
         }
