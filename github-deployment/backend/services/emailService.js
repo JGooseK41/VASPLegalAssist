@@ -13,9 +13,9 @@ const emailService = {
     const msg = {
       to,
       from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com', // Must be verified in SendGrid
-      subject: 'Password Reset Request - VASP Legal Assistant',
+      subject: 'Password Reset Request - The Block Record',
       text: `
-        You requested a password reset for your VASP Legal Assistant account.
+        You requested a password reset for your Block Record account.
         
         Please click the following link to reset your password:
         ${resetUrl}
@@ -25,7 +25,9 @@ const emailService = {
         If you did not request this password reset, please ignore this email.
         
         Best regards,
-        VASP Legal Assistant Team
+        The Block Record Team
+        A product of The Block Audit LLC
+        https://www.theblockaudit.com
       `,
       html: `
         <!DOCTYPE html>
@@ -55,7 +57,7 @@ const emailService = {
             </div>
             <div class="content">
               <p>Hello,</p>
-              <p>You requested a password reset for your VASP Legal Assistant account.</p>
+              <p>You requested a password reset for your Block Record account.</p>
               <p>Please click the button below to reset your password:</p>
               <div style="text-align: center;">
                 <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Reset Password</a>
@@ -64,11 +66,14 @@ const emailService = {
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
               <p style="word-break: break-all; color: #2563eb;">${resetUrl}</p>
               <p>If you did not request this password reset, please ignore this email and your password will remain unchanged.</p>
-              <p>Best regards,<br>VASP Legal Assistant Team</p>
+              <p>Best regards,<br>
+              The Block Record Team<br>
+              A product of The Block Audit LLC<br>
+              <a href="https://www.theblockaudit.com" style="color: #2563eb;">www.theblockaudit.com</a></p>
             </div>
             <div class="footer">
               <p>This is an automated message, please do not reply to this email.</p>
-              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} The Block Audit LLC. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -93,16 +98,18 @@ const emailService = {
     const msg = {
       to,
       from: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
-      subject: 'Welcome to VASP Legal Assistant',
+      subject: 'Welcome to The Block Record',
       text: `
         Welcome ${firstName}!
         
-        Your account has been created successfully. You can now log in and start using VASP Legal Assistant.
+        Your account has been created successfully. You can now log in and start using The Block Record.
         
         If you need any help, please check our FAQ section or contact support.
         
         Best regards,
-        VASP Legal Assistant Team
+        The Block Record Team
+        A product of The Block Audit LLC
+        https://www.theblockaudit.com
       `,
       html: `
         <!DOCTYPE html>
@@ -119,7 +126,7 @@ const emailService = {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to VASP Legal Assistant!</h1>
+              <h1>Welcome to The Block Record!</h1>
             </div>
             <div class="content">
               <p>Hello ${firstName},</p>
@@ -133,10 +140,13 @@ const emailService = {
                 <li>Submit new VASP information</li>
               </ul>
               <p>If you need any help getting started, please check our FAQ section.</p>
-              <p>Best regards,<br>VASP Legal Assistant Team</p>
+              <p>Best regards,<br>
+              The Block Record Team<br>
+              A product of The Block Audit LLC<br>
+              <a href="https://www.theblockaudit.com" style="color: #2563eb;">www.theblockaudit.com</a></p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} The Block Audit LLC. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -178,7 +188,9 @@ const emailService = {
           Please log in to the admin panel to approve or reject this registration.
           
           Best regards,
-          VASP Legal Assistant System
+          The Block Record Team
+          A product of The Block Audit LLC
+          https://www.theblockaudit.com
         `,
         html: `
           <!DOCTYPE html>
@@ -252,7 +264,7 @@ const emailService = {
                 </center>
               </div>
               <div class="footer">
-                <p>This is an automated notification from VASP Legal Assistant</p>
+                <p>This is an automated notification from The Block Record</p>
               </div>
             </div>
           </body>
@@ -273,13 +285,13 @@ const emailService = {
       to,
       from: {
         email: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
-        name: process.env.SENDGRID_FROM_NAME || 'VASP Legal Assistant'
+        name: process.env.SENDGRID_FROM_NAME || 'The Block Record'
       },
-      subject: 'Verify Your Email - VASP Legal Assistant',
+      subject: 'Verify Your Email - The Block Record',
       text: `
         Hello ${firstName},
 
-        Thank you for registering with VASP Legal Assistant!
+        Thank you for registering with The Block Record!
 
         Please verify your email address by clicking the following link:
         ${verificationUrl}
@@ -291,7 +303,9 @@ const emailService = {
         If you did not create an account, please ignore this email.
 
         Best regards,
-        VASP Legal Assistant Team
+        The Block Record Team
+        A product of The Block Audit LLC
+        https://www.theblockaudit.com
       `,
       html: `
         <!DOCTYPE html>
@@ -322,7 +336,7 @@ const emailService = {
             </div>
             <div class="content">
               <p>Hello ${firstName},</p>
-              <p>Thank you for registering with VASP Legal Assistant!</p>
+              <p>Thank you for registering with The Block Record!</p>
               <p>Please verify your email address by clicking the button below:</p>
               <div style="text-align: center;">
                 <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Verify Email Address</a>
@@ -334,10 +348,13 @@ const emailService = {
                 <p>After verifying your email, your account will need to be approved by an administrator before you can log in.</p>
               </div>
               <p>If you did not create an account, please ignore this email.</p>
-              <p>Best regards,<br>VASP Legal Assistant Team</p>
+              <p>Best regards,<br>
+              The Block Record Team<br>
+              A product of The Block Audit LLC<br>
+              <a href="https://www.theblockaudit.com" style="color: #2563eb;">www.theblockaudit.com</a></p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} The Block Audit LLC. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -364,13 +381,13 @@ const emailService = {
       to,
       from: {
         email: process.env.SENDGRID_FROM_EMAIL || 'noreply@theblockrecord.com',
-        name: process.env.SENDGRID_FROM_NAME || 'VASP Legal Assistant'
+        name: process.env.SENDGRID_FROM_NAME || 'The Block Record'
       },
-      subject: 'Your Account Has Been Approved - VASP Legal Assistant',
+      subject: 'Your Account Has Been Approved - The Block Record',
       text: `
         Hello ${firstName},
 
-        Great news! Your VASP Legal Assistant account has been approved by an administrator.
+        Great news! Your Block Record account has been approved by an administrator.
 
         You can now log in and access all features of the platform:
         ${loginUrl}
@@ -378,7 +395,9 @@ const emailService = {
         If you have any questions or need assistance, please don't hesitate to contact our support team.
 
         Best regards,
-        VASP Legal Assistant Team
+        The Block Record Team
+        A product of The Block Audit LLC
+        https://www.theblockaudit.com
       `,
       html: `
         <!DOCTYPE html>
@@ -405,11 +424,11 @@ const emailService = {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to VASP Legal Assistant!</h1>
+              <h1>Welcome to The Block Record!</h1>
             </div>
             <div class="content">
               <p>Hello ${firstName},</p>
-              <p><strong>Great news!</strong> Your VASP Legal Assistant account has been approved by an administrator.</p>
+              <p><strong>Great news!</strong> Your Block Record account has been approved by an administrator.</p>
               <p>You can now log in and start using all the features of our platform:</p>
               <div style="text-align: center;">
                 <a href="${loginUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Log In Now</a>
@@ -425,10 +444,13 @@ const emailService = {
                 </ul>
               </div>
               <p>If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.</p>
-              <p>Best regards,<br>VASP Legal Assistant Team</p>
+              <p>Best regards,<br>
+              The Block Record Team<br>
+              A product of The Block Audit LLC<br>
+              <a href="https://www.theblockaudit.com" style="color: #2563eb;">www.theblockaudit.com</a></p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} VASP Legal Assistant. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} The Block Audit LLC. All rights reserved.</p>
             </div>
           </div>
         </body>
