@@ -58,7 +58,7 @@ const emailService = {
               <p>You requested a password reset for your VASP Legal Assistant account.</p>
               <p>Please click the button below to reset your password:</p>
               <div style="text-align: center;">
-                <a href="${resetUrl}" class="button">Reset Password</a>
+                <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Reset Password</a>
               </div>
               <p><strong>This link will expire in 1 hour.</strong></p>
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
@@ -246,7 +246,7 @@ const emailService = {
                 <p>Please log in to the admin panel to approve or reject this registration.</p>
                 
                 <center>
-                  <a href="${process.env.NODE_ENV === 'production' && process.env.CLIENT_URL?.includes('localhost') ? 'https://theblockrecord.com' : (process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com')}/admin/users" class="button">
+                  <a href="${process.env.NODE_ENV === 'production' && process.env.CLIENT_URL?.includes('localhost') ? 'https://theblockrecord.com' : (process.env.APP_URL || process.env.CLIENT_URL || 'https://theblockrecord.com')}/admin/users" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">
                     Go to Admin Panel
                   </a>
                 </center>
@@ -325,7 +325,7 @@ const emailService = {
               <p>Thank you for registering with VASP Legal Assistant!</p>
               <p>Please verify your email address by clicking the button below:</p>
               <div style="text-align: center;">
-                <a href="${verificationUrl}" class="button">Verify Email Address</a>
+                <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Verify Email Address</a>
               </div>
               <p>Or copy and paste this link into your browser:</p>
               <p style="word-break: break-all; color: #2563eb;">${verificationUrl}</p>
@@ -412,7 +412,7 @@ const emailService = {
               <p><strong>Great news!</strong> Your VASP Legal Assistant account has been approved by an administrator.</p>
               <p>You can now log in and start using all the features of our platform:</p>
               <div style="text-align: center;">
-                <a href="${loginUrl}" class="button">Log In Now</a>
+                <a href="${loginUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold;">Log In Now</a>
               </div>
               <div class="features">
                 <p><strong>What you can do now:</strong></p>
