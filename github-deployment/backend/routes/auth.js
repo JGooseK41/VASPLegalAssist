@@ -24,8 +24,8 @@ router.get('/validate-token/:token', validateResetToken);
 // GET /api/auth/member-count
 router.get('/member-count', getMemberCount);
 
-// POST /api/auth/verify-email
-router.post('/verify-email', verifyEmail);
+// GET /api/auth/verify-email
+router.get('/verify-email', verifyEmail);
 
 // POST /api/auth/resend-verification
 router.post('/resend-verification', resendVerificationEmail);
