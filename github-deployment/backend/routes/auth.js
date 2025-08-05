@@ -27,6 +27,9 @@ router.get('/member-count', getMemberCount);
 // GET /api/auth/verify-email
 router.get('/verify-email', verifyEmail);
 
+// POST /api/auth/verify-email (temporary fallback for deployment transition)
+router.post('/verify-email', verifyEmail);
+
 // POST /api/auth/resend-verification
 router.post('/resend-verification', resendVerificationEmail);
 

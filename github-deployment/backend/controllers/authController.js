@@ -298,7 +298,8 @@ const logout = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   try {
-    const { token } = req.query;
+    // Support both GET (query params) and POST (body) during transition
+    const token = req.query.token || req.body.token;
 
     if (!token) {
       return res.status(400).json({ error: 'Verification token is required' });
