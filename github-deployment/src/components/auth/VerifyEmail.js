@@ -27,7 +27,13 @@ const VerifyEmail = () => {
         setRequiresApproval(response.requiresApproval);
       } catch (error) {
         setStatus('error');
-        setMessage(error.response?.data?.error || 'Failed to verify email. The link may be invalid or expired.');
+        const errorData = error.response?.data;
+        setMessage(errorData?.error || 'Failed to verify email. The link may be invalid or expired.');
+        
+        // Set a flag for expired tokens to show resend button more prominently
+        if (errorData?.code === 'EXPIRED_TOKEN') {
+          setRequiresApproval(true); // Reuse this state to show resend prominently
+        }
       }
     };
 

@@ -127,10 +127,21 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET));
 
+// Create a stricter rate limiter for verification endpoints
+const verificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Only 3 attempts per 15 minutes
+  message: 'Too many verification attempts. Please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Apply rate limiting AFTER CORS
 app.use('/api/', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', loginLimiter);
+app.use('/api/auth/verify-email', verificationLimiter);
+app.use('/api/auth/resend-verification', verificationLimiter);
 
 // Analytics tracking middleware
 app.use(trackVisitor);

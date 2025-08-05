@@ -34,7 +34,7 @@ const register = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+      return res.status(400).json({ error: 'Registration failed. Please check your information and try again.' });
     }
 
     // Hash password
@@ -45,23 +45,27 @@ const register = async (req, res) => {
     const emailVerificationExpiry = new Date();
     emailVerificationExpiry.setHours(emailVerificationExpiry.getHours() + 24); // 24 hour expiry
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        agencyName,
-        agencyAddress,
-        badgeNumber,
-        title,
-        phone,
-        isEmailVerified: false,
-        emailVerificationToken,
-        emailVerificationExpiry,
-        isApproved: false
-      }
+    // Create user in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          agencyName,
+          agencyAddress,
+          badgeNumber,
+          title,
+          phone,
+          isEmailVerified: false,
+          emailVerificationToken,
+          emailVerificationExpiry,
+          isApproved: false
+        }
+      });
+      
+      return newUser;
     });
 
     // Determine if we should auto-approve (for demo purposes in development)
@@ -82,7 +86,15 @@ const register = async (req, res) => {
       await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
-      // Continue with registration even if email fails
+      
+      // Delete the user if email sending fails (to allow retry)
+      await prisma.user.delete({
+        where: { id: user.id }
+      });
+      
+      return res.status(500).json({ 
+        error: 'Failed to send verification email. Please check your email address and try again.' 
+      });
     }
 
     // Send admin notification email
@@ -305,19 +317,29 @@ const verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'Verification token is required' });
     }
 
-    // Find user with this token
-    const user = await prisma.user.findFirst({
+    // First check if token exists at all
+    const userWithToken = await prisma.user.findFirst({
       where: {
-        emailVerificationToken: token,
-        emailVerificationExpiry: {
-          gt: new Date()
-        }
+        emailVerificationToken: token
       }
     });
 
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    if (!userWithToken) {
+      return res.status(400).json({ 
+        error: 'Invalid verification link. Please check your email for the correct link or request a new one.',
+        code: 'INVALID_TOKEN'
+      });
     }
+
+    // Check if token is expired
+    if (userWithToken.emailVerificationExpiry < new Date()) {
+      return res.status(400).json({ 
+        error: 'Your verification link has expired. Please request a new verification email.',
+        code: 'EXPIRED_TOKEN'
+      });
+    }
+
+    const user = userWithToken;
 
     // Update user to mark email as verified
     await prisma.user.update({
@@ -645,7 +667,7 @@ const resendVerificationEmail = async (req, res) => {
     const emailVerificationExpiry = new Date();
     emailVerificationExpiry.setHours(emailVerificationExpiry.getHours() + 24);
 
-    // Update user with new token
+    // Update user with new token (this will replace any existing token)
     await prisma.user.update({
       where: { id: user.id },
       data: {
