@@ -82,19 +82,22 @@ const register = async (req, res) => {
     const baseUrl = getBaseUrl();
     const verificationUrl = `${baseUrl}/verify-email?token=${emailVerificationToken}`;
     
+    let emailSent = false;
     try {
       await emailService.sendEmailVerification(user.email, user.firstName, verificationUrl);
+      emailSent = true;
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
+      console.error('SendGrid error details:', emailError.response?.body || emailError.message);
       
-      // Delete the user if email sending fails (to allow retry)
-      await prisma.user.delete({
-        where: { id: user.id }
-      });
+      // Log but continue with registration
+      // In production, you should have SendGrid properly configured
+      // For now, we'll log the verification URL for debugging
+      console.log('IMPORTANT: Email failed to send. Manual verification URL:', verificationUrl);
+      console.log('User email:', user.email);
       
-      return res.status(500).json({ 
-        error: 'Failed to send verification email. Please check your email address and try again.' 
-      });
+      // Continue with registration but note the email failure
+      emailSent = false;
     }
 
     // Send admin notification email
@@ -107,7 +110,9 @@ const register = async (req, res) => {
 
     // Prepare response
     const response = {
-      message: 'Registration successful! Please check your email to verify your account.',
+      message: emailSent 
+        ? 'Registration successful! Please check your email to verify your account.'
+        : 'Registration successful! However, we encountered an issue sending the verification email. Please use the resend verification option or contact support.',
       user: {
         id: user.id,
         email: user.email,
@@ -116,7 +121,8 @@ const register = async (req, res) => {
         role: user.role
       },
       requiresEmailVerification: true,
-      requiresApproval: !autoApprove
+      requiresApproval: !autoApprove,
+      emailSent: emailSent
     };
 
     // If auto-approved and email verified (dev mode), include token
