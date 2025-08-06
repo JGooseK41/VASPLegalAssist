@@ -70,7 +70,12 @@ const Analytics = () => {
       } else if (err.response?.status === 401) {
         setError('Your session has expired. Please log in again.');
       } else {
-        setError('Failed to load analytics data. Please try again later.');
+        console.error('Analytics error details:', {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message
+        });
+        setError(`Failed to load analytics data. ${err.response?.data?.message || err.message || 'Please try again later.'}`);
       }
     } finally {
       setLoading(false);
