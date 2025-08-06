@@ -184,6 +184,7 @@ const getUsers = async (req, res) => {
           phone: true,
           role: true,
           isApproved: true,
+          isEmailVerified: true,
           createdAt: true,
           lastMilestoneShown: true,
           _count: {
