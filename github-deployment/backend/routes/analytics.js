@@ -229,7 +229,20 @@ router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
     });
   } catch (error) {
     console.error('Analytics summary error:', error);
-    res.status(500).json({ error: 'Failed to get analytics summary' });
+    
+    // Check if it's a missing table error
+    if (error.code === 'P2021' || error.message.includes('does not exist')) {
+      return res.status(500).json({ 
+        error: 'Analytics tables not found',
+        message: 'The analytics database tables are not set up. Please run database migrations.',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to get analytics summary',
+      message: error.message 
+    });
   }
 });
 

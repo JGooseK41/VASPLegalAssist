@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate-vasps": "node scripts/migrate-vasps-to-db.js",
     "init-db": "node scripts/init-db.js",
-    "build": "./scripts/build.sh",
+    "build": "./build.sh",
+    "check-analytics": "node scripts/check-analytics-tables.js",
+    "create-analytics-tables": "node scripts/create-analytics-tables.js",
     "postinstall": "npx prisma generate"
   },
   "keywords": [],
