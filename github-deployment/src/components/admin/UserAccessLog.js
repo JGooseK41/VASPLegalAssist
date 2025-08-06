@@ -153,6 +153,36 @@ const UserAccessLog = () => {
         </div>
       </div>
 
+      {/* Status Legend */}
+      <div className="bg-white p-4 rounded-lg shadow">
+        <div className="flex items-center mb-3">
+          <AlertCircle className="h-5 w-5 text-gray-400 mr-2" />
+          <h3 className="text-sm font-semibold text-gray-900">Session Status Guide</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full mr-2">Active</span>
+            <span className="text-gray-600">Currently active (< 5 min)</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mr-2">Idle</span>
+            <span className="text-gray-600">No activity (5-30 min)</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mr-2">Away</span>
+            <span className="text-gray-600">Extended absence (30+ min)</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mr-2">Inactive</span>
+            <span className="text-gray-600">Long absence (2-4 hours)</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full mr-2">Expired</span>
+            <span className="text-gray-600">Session ended (4+ hours)</span>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="flex items-center mb-4">
