@@ -107,7 +107,7 @@ router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
     // Get total page views
     const totalPageViews = await prisma.pageView.count({
       where: {
-        createdAt: {
+        timestamp: {
           gte: start,
           lte: end
         }
@@ -118,7 +118,7 @@ router.get('/summary', requireAuth, requireAdminAccess, async (req, res) => {
     const pageViews = await prisma.pageView.groupBy({
       by: ['path'],
       where: {
-        createdAt: {
+        timestamp: {
           gte: start,
           lte: end
         }
@@ -284,7 +284,7 @@ router.get('/sessions', requireAuth, requireAdminAccess, async (req, res) => {
       include: {
         pageViews: {
           orderBy: {
-            createdAt: 'asc'
+            timestamp: 'asc'
           }
         }
       },
@@ -309,7 +309,7 @@ router.get('/sessions', requireAuth, requireAdminAccess, async (req, res) => {
         pageViews: session.pageViews.map(pv => ({
           path: pv.path,
           duration: pv.duration,
-          createdAt: pv.createdAt
+          createdAt: pv.timestamp
         }))
       })),
       pagination: {
@@ -342,7 +342,7 @@ router.get('/realtime', requireAuth, requireAdminAccess, async (req, res) => {
     // Get recent page views
     const recentViews = await prisma.pageView.findMany({
       where: {
-        createdAt: {
+        timestamp: {
           gte: thirtyMinutesAgo
         }
       },
@@ -355,7 +355,7 @@ router.get('/realtime', requireAuth, requireAdminAccess, async (req, res) => {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        timestamp: 'desc'
       },
       take: 20
     });
@@ -364,7 +364,7 @@ router.get('/realtime', requireAuth, requireAdminAccess, async (req, res) => {
       activeVisitors,
       recentViews: recentViews.map(view => ({
         path: view.path,
-        createdAt: view.createdAt,
+        createdAt: view.timestamp,
         location: view.session.city && view.session.country 
           ? `${view.session.city}, ${view.session.country}`
           : view.session.country || 'Unknown'
