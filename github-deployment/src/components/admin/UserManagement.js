@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown, MessageCircle, Eye } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown, MessageCircle, Eye, Mail, MailCheck } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import { isMasterAdmin } from '../../utils/auth';
 
@@ -168,6 +168,18 @@ const UserManagement = () => {
     }
   };
   
+  const handleVerifyEmail = async (userId) => {
+    if (!window.confirm('Are you sure you want to manually verify this user\'s email?')) return;
+    
+    try {
+      await adminAPI.verifyUserEmail(userId);
+      loadUsers();
+    } catch (error) {
+      console.error('Failed to verify user email:', error);
+      alert('Failed to verify user email');
+    }
+  };
+  
   const handleUpdateRole = async (userId, newRole) => {
     if (!window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
     
@@ -256,6 +268,9 @@ const UserManagement = () => {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Activity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -309,6 +324,19 @@ const UserManagement = () => {
                         </span>
                       )}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.isEmailVerified ? (
+                        <span className="flex items-center text-sm text-green-600">
+                          <MailCheck className="w-4 h-4 mr-1" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-sm text-red-600">
+                          <Mail className="w-4 h-4 mr-1" />
+                          Unverified
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>{user._count.documents} documents</div>
                       <div>{user._count.comments} comments</div>
@@ -327,6 +355,15 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
+                        {!user.isEmailVerified && (
+                          <button
+                            onClick={() => handleVerifyEmail(user.id)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Manually verify email"
+                          >
+                            <MailCheck className="w-4 h-4" />
+                          </button>
+                        )}
                         {!user.isApproved && (
                           <>
                             <button

@@ -390,6 +390,11 @@ export const adminAPI = {
     return response.data;
   },
   
+  verifyUserEmail: async (userId) => {
+    const response = await api.post(`/admin/users/${userId}/verify-email`);
+    return response.data;
+  },
+  
   rejectUser: async (userId) => {
     const response = await api.delete(`/admin/users/${userId}/reject`);
     return response.data;

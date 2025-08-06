@@ -245,6 +245,36 @@ const approveUser = async (req, res) => {
   }
 };
 
+const verifyUserEmail = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Update user to mark email as verified
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpiry: null
+      }
+    });
+    
+    console.log('Admin manually verified email for user:', user.email);
+    
+    res.json({ 
+      message: 'Email verified successfully', 
+      user: {
+        id: user.id,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying user email:', error);
+    res.status(500).json({ error: 'Failed to verify user email' });
+  }
+};
+
 const rejectUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -762,6 +792,7 @@ module.exports = {
   // User Management
   getUsers,
   approveUser,
+  verifyUserEmail,
   rejectUser,
   updateUserRole,
   getUserFeedback,

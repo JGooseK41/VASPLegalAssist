@@ -208,8 +208,9 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if email is verified (skip for admin users and master admin)
-    if (!user.isEmailVerified && user.role !== 'ADMIN' && user.role !== 'MASTER_ADMIN') {
+    // Check if email is verified (skip for admin users, master admin, or if verification is disabled)
+    const skipEmailVerification = process.env.SKIP_EMAIL_VERIFICATION === 'true';
+    if (!user.isEmailVerified && user.role !== 'ADMIN' && user.role !== 'MASTER_ADMIN' && !skipEmailVerification) {
       console.log('Login failed - email not verified for:', email);
       return res.status(403).json({ 
         error: 'Please verify your email address before logging in. Check your inbox for the verification email.',

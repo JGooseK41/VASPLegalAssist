@@ -12,6 +12,7 @@ const {
   // User Management
   getUsers,
   approveUser,
+  verifyUserEmail,
   rejectUser,
   updateUserRole,
   getUserFeedback,
@@ -63,6 +64,7 @@ router.delete('/vasps/:id', deleteVasp);
 // User Management routes
 router.get('/users', getUsers);
 router.post('/users/:userId/approve', approveUser);
+router.post('/users/:userId/verify-email', verifyUserEmail);
 router.delete('/users/:userId/reject', rejectUser);
 router.put('/users/:userId/role', updateUserRole);
 router.get('/users/:userId/feedback', getUserFeedback);
