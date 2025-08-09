@@ -36,6 +36,27 @@ router.get('/config-check', (req, res) => {
   });
 });
 
+// POST /api/auth/cleanup-unverified - Manual cleanup of unverified users
+router.post('/cleanup-unverified', async (req, res) => {
+  try {
+    const CleanupService = require('../services/cleanupService');
+    const result = await CleanupService.cleanupUnverifiedUsers();
+    res.json({
+      success: true,
+      message: `Cleaned up ${result.cleaned} unverified users`,
+      emails_freed: result.emails,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Manual cleanup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to run cleanup',
+      message: error.message
+    });
+  }
+});
+
 // POST /api/auth/test-register - Test registration without actually creating user
 router.post('/test-register', async (req, res) => {
   const tests = {

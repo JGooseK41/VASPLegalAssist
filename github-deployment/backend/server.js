@@ -35,6 +35,9 @@ if (missingEnvVars.length > 0) {
 // Initialize Prisma
 const prisma = require('./config/database');
 
+// Initialize scheduler for automated cleanup
+const scheduler = require('./services/scheduler');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
@@ -281,6 +284,9 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Start scheduled cleanup service
+  scheduler.start();
   
   // Start file cleanup service
   startFileCleanup();
