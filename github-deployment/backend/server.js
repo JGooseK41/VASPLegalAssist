@@ -15,6 +15,23 @@ console.log('🚀 VASP Legal Assistant Backend Starting...');
 console.log('Version: 1.0.4');
 console.log('Time:', new Date().toISOString());
 
+// Check required environment variables
+const requiredEnvVars = ['JWT_SECRET', 'DATABASE_URL'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+  console.error('Please set these environment variables in your .env file or deployment configuration');
+  
+  // In production, exit if critical vars are missing
+  if (process.env.NODE_ENV === 'production') {
+    console.error('Exiting due to missing environment variables');
+    process.exit(1);
+  }
+} else {
+  console.log('✅ All required environment variables are configured');
+}
+
 // Initialize Prisma
 const prisma = require('./config/database');
 

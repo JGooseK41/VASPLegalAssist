@@ -155,6 +155,23 @@ const register = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error('Registration error:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Check for common issues
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+    
+    if (error.message?.includes('JWT_SECRET')) {
+      console.error('JWT_SECRET is not configured!');
+      return res.status(500).json({ error: 'Server configuration error. Please contact support.' });
+    }
+    
+    if (error.message?.includes('connect') || error.message?.includes('database')) {
+      console.error('Database connection error!');
+      return res.status(500).json({ error: 'Database connection error. Please try again later.' });
+    }
+    
     res.status(500).json({ error: 'Failed to register user' });
   }
 };
@@ -284,6 +301,18 @@ const login = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     console.error('Stack trace:', error.stack);
+    
+    // Check for common issues
+    if (error.message?.includes('JWT_SECRET')) {
+      console.error('JWT_SECRET is not configured!');
+      return res.status(500).json({ error: 'Server configuration error. Please contact support.' });
+    }
+    
+    if (error.message?.includes('connect') || error.message?.includes('database')) {
+      console.error('Database connection error!');
+      return res.status(500).json({ error: 'Database connection error. Please try again later.' });
+    }
+    
     res.status(500).json({ 
       error: 'An error occurred during login. Please try again.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
