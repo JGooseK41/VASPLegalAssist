@@ -12,7 +12,7 @@ dotenv.config();
 
 // Start server
 console.log('🚀 VASP Legal Assistant Backend Starting...');
-console.log('Version: 1.0.4');
+console.log('Version: 1.0.5');
 console.log('Time:', new Date().toISOString());
 
 // Check required environment variables
