@@ -24,6 +24,16 @@ router.get('/validate-token/:token', validateResetToken);
 // GET /api/auth/member-count
 router.get('/member-count', getMemberCount);
 
+// GET /api/auth/config-check - Simple config check
+router.get('/config-check', (req, res) => {
+  res.json({
+    jwt_configured: !!process.env.JWT_SECRET,
+    database_configured: !!process.env.DATABASE_URL,
+    sendgrid_configured: !!process.env.SENDGRID_API_KEY,
+    environment: process.env.NODE_ENV || 'not set'
+  });
+});
+
 // GET /api/auth/verify-email
 router.get('/verify-email', verifyEmail);
 

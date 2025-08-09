@@ -5,6 +5,11 @@ const crypto = require('crypto');
 const emailService = require('../services/emailService');
 
 const generateToken = (userId, role) => {
+  if (!process.env.JWT_SECRET) {
+    console.error('CRITICAL: JWT_SECRET is not configured!');
+    throw new Error('JWT_SECRET is not configured');
+  }
+  
   const payload = { userId, role };
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
   
