@@ -43,6 +43,36 @@ router.get('/verify-token', requireAuth, (req, res) => {
   });
 });
 
+// GET /api/auth/health - Health check endpoint
+router.get('/health', async (req, res) => {
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'unknown',
+    checks: {
+      jwt_configured: !!process.env.JWT_SECRET,
+      database_url_configured: !!process.env.DATABASE_URL,
+      sendgrid_configured: !!process.env.SENDGRID_API_KEY,
+      client_url: process.env.CLIENT_URL || 'not set',
+      app_url: process.env.APP_URL || 'not set'
+    }
+  };
+
+  // Try database connection
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    await prisma.$queryRaw`SELECT 1`;
+    await prisma.$disconnect();
+    health.checks.database_connected = true;
+  } catch (error) {
+    health.checks.database_connected = false;
+    health.checks.database_error = error.message;
+  }
+
+  res.json(health);
+});
+
 // Admin Application Routes
 const { submitAdminApplication, getMyAdminApplication } = require('../controllers/authController');
 

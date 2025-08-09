@@ -11,7 +11,10 @@
     "build": "./build.sh",
     "check-analytics": "node scripts/check-analytics-tables.js",
     "create-analytics-tables": "node scripts/create-analytics-tables.js",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "migrate:deploy": "npx prisma migrate deploy",
+    "migrate:prod": "node scripts/migrate-prod.js",
+    "db:push": "npx prisma db push"
   },
   "keywords": [],
   "author": "",
