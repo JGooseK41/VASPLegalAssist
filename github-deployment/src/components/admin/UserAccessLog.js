@@ -71,25 +71,26 @@ const UserAccessLog = () => {
 
   const getStatusBadge = (session) => {
     const now = new Date();
-    const expiresAt = new Date(session.expiresAt);
-    
-    if (!session.isActive) {
-      return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Inactive</span>;
-    }
-    
-    if (expiresAt < now) {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Expired</span>;
-    }
-    
     const lastActivityTime = new Date(session.lastActivity);
     const inactiveMins = Math.floor((now - lastActivityTime) / (1000 * 60));
+    const inactiveHours = Math.floor(inactiveMins / 60);
     
-    if (inactiveMins < 5) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>;
-    } else if (inactiveMins < 30) {
+    // Check time-based conditions first
+    if (inactiveHours >= 24) {
+      // Over 24 hours = Expired
+      return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Expired</span>;
+    } else if (inactiveHours >= 2) {
+      // 2-24 hours = Inactive
+      return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Inactive</span>;
+    } else if (inactiveMins >= 30) {
+      // 30 mins - 2 hours = Away
+      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Away</span>;
+    } else if (inactiveMins >= 5) {
+      // 5-30 mins = Idle
       return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Idle</span>;
     } else {
-      return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Away</span>;
+      // Less than 5 mins = Active
+      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>;
     }
   };
 
@@ -231,6 +232,33 @@ const UserAccessLog = () => {
             >
               Clear Filters
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Legend */}
+      <div className="bg-white p-4 rounded-lg shadow">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Session Status Legend</h4>
+        <div className="flex flex-wrap gap-3 text-xs">
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
+            <span className="ml-2 text-gray-600">&lt; 5 minutes</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Idle</span>
+            <span className="ml-2 text-gray-600">5-30 minutes</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Away</span>
+            <span className="ml-2 text-gray-600">30 mins - 2 hours</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">Inactive</span>
+            <span className="ml-2 text-gray-600">2-24 hours</span>
+          </div>
+          <div className="flex items-center">
+            <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">Expired</span>
+            <span className="ml-2 text-gray-600">&gt; 24 hours</span>
           </div>
         </div>
       </div>
