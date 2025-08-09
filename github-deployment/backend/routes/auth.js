@@ -28,10 +28,46 @@ router.get('/member-count', getMemberCount);
 router.get('/config-check', (req, res) => {
   res.json({
     jwt_configured: !!process.env.JWT_SECRET,
+    jwt_length: process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0,
     database_configured: !!process.env.DATABASE_URL,
     sendgrid_configured: !!process.env.SENDGRID_API_KEY,
-    environment: process.env.NODE_ENV || 'not set'
+    environment: process.env.NODE_ENV || 'not set',
+    timestamp: new Date().toISOString()
   });
+});
+
+// POST /api/auth/test-register - Test registration without actually creating user
+router.post('/test-register', async (req, res) => {
+  const tests = {
+    jwt_available: !!process.env.JWT_SECRET,
+    database_available: !!process.env.DATABASE_URL
+  };
+  
+  // Test JWT token generation
+  try {
+    const jwt = require('jsonwebtoken');
+    const testToken = jwt.sign({ test: true }, process.env.JWT_SECRET || 'test', { expiresIn: '1m' });
+    tests.jwt_generation = 'success';
+    tests.token_sample = testToken.substring(0, 20) + '...';
+  } catch (error) {
+    tests.jwt_generation = 'failed';
+    tests.jwt_error = error.message;
+  }
+  
+  // Test database connection
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const count = await prisma.user.count();
+    tests.database_connection = 'success';
+    tests.user_count = count;
+    await prisma.$disconnect();
+  } catch (error) {
+    tests.database_connection = 'failed';
+    tests.db_error = error.message;
+  }
+  
+  res.json(tests);
 });
 
 // GET /api/auth/verify-email
