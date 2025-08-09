@@ -14,7 +14,8 @@
     "postinstall": "npx prisma generate",
     "migrate:deploy": "npx prisma migrate deploy",
     "migrate:prod": "node scripts/migrate-prod.js",
-    "db:push": "npx prisma db push"
+    "db:push": "npx prisma db push",
+    "cleanup:failed-registrations": "node scripts/cleanup-failed-registrations.js"
   },
   "keywords": [],
   "author": "",
