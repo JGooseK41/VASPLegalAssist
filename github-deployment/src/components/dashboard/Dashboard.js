@@ -33,15 +33,24 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Add keyboard shortcut for admins to test the popup (Ctrl+Shift+L)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if ((user?.role === 'ADMIN' || user?.role === 'MASTER_ADMIN') && 
+          e.ctrlKey && e.shiftKey && e.key === 'L') {
+        console.log('Admin manually triggering champion popup');
+        setShowChampionPopup(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [user]);
+
   const checkChampionPopup = async () => {
     try {
-      // Don't show popup for admin users
-      if (user?.role === 'ADMIN' || user?.role === 'MASTER_ADMIN') {
-        return;
-      }
-      
       // Check if we should show the champion popup
-      // Show once per day per user
+      // Show once per day per user (including admins)
       const lastShown = user?.lastChampionPopupShown;
       const now = new Date();
       
@@ -50,6 +59,7 @@ const Dashboard = () => {
         (lastShown && new Date(lastShown).toDateString() !== now.toDateString());
       
       console.log('Champion popup check:', {
+        userRole: user?.role,
         lastShown,
         currentDate: now.toDateString(),
         lastShownDate: lastShown ? new Date(lastShown).toDateString() : 'never',
