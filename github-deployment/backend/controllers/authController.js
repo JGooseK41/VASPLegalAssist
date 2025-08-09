@@ -39,7 +39,7 @@ const register = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'Registration failed. Please check your information and try again.' });
+      return res.status(400).json({ error: 'An account with this email address already exists. Please use a different email or try logging in instead.' });
     }
 
     // Hash password
@@ -164,7 +164,7 @@ const register = async (req, res) => {
     
     // Check for common issues
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(400).json({ error: 'An account with this email address already exists. Please use a different email or try logging in instead.' });
     }
     
     if (error.message?.includes('JWT_SECRET')) {
@@ -177,7 +177,7 @@ const register = async (req, res) => {
       return res.status(500).json({ error: 'Database connection error. Please try again later.' });
     }
     
-    res.status(500).json({ error: 'Failed to register user' });
+    res.status(500).json({ error: 'Registration failed due to an unexpected error. Please try again or contact support if the problem persists.' });
   }
 };
 
@@ -220,14 +220,14 @@ const login = async (req, res) => {
 
     if (!user) {
       console.log('Login failed - user not found:', email);
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'No account found with this email address. Please check your email or register for a new account.' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
       console.log('Login failed - invalid password for:', email);
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Incorrect password. Please check your password and try again.' });
     }
 
     // Check if email is verified (skip for admin users, master admin, or if verification is disabled)
