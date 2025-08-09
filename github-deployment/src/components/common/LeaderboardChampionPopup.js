@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trophy, Flame, TrendingUp, Award, Swords, Target, Crown, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { userAPI } from '../../services/api';
+import { userAPI, profileAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LeaderboardChampionPopup = ({ onClose }) => {
@@ -79,7 +79,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
   const handleDismiss = async () => {
     try {
       // Update last shown timestamp in database
-      await userAPI.updateProfile({ lastChampionPopupShown: new Date().toISOString() });
+      await profileAPI.updateProfile({ lastChampionPopupShown: new Date().toISOString() });
     } catch (error) {
       console.error('Failed to update popup timestamp:', error);
     }
@@ -93,7 +93,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
         subtitle: "No one has claimed the crown yet!",
         message: "Be the first to earn points and become the inaugural champion! Start by updating VASP info or sharing templates.",
         buttonText: "Learn How to Be First",
-        buttonAction: () => navigate('/faq')
+        buttonAction: () => navigate('/faq?section=community&expanded=true')
       };
     }
     
@@ -136,7 +136,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
       ...randomMessage,
       message: `${randomMessage.taunt} Knock them down by participating!`,
       buttonText: "Show Me How to Win",
-      buttonAction: () => navigate('/faq')  // Go to FAQ to learn about points
+      buttonAction: () => navigate('/faq?section=community&expanded=true')  // Go to FAQ community section with question expanded
     };
   };
 
@@ -243,10 +243,10 @@ const LeaderboardChampionPopup = ({ onClose }) => {
                 </div>
 
                 <button
-                  onClick={() => navigate('/faq')}
+                  onClick={() => navigate('/leaderboard')}
                   className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
                 >
-                  How do I earn points and climb the leaderboard?
+                  View Leaderboard
                 </button>
               </>
             )}

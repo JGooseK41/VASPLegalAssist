@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, profileAPI } from '../services/api';
 import { clearEncryptionKeyCache } from '../hooks/useEncryption';
 
 const AuthContext = createContext();
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
           
           // Fetch fresh user data to get latest fields
           try {
-            const response = await authAPI.getProfile();
+            const response = await profileAPI.getProfile();
             if (response) {
               setUser(response);
               localStorage.setItem('user', JSON.stringify(response));

@@ -189,6 +189,7 @@ const getTopContributor = async (req, res) => {
         name: `${user.firstName} ${user.lastName}`,
         agencyName: user.agencyName,
         score: totalScore,
+        createdAt: user.createdAt, // Add creation date for secondary sorting
         breakdown: {
           acceptedVasps: user.vaspSubmissions.length,
           vaspPoints,
@@ -205,8 +206,20 @@ const getTopContributor = async (req, res) => {
       };
     });
 
-    // Sort by score and get the top contributor
-    userScores.sort((a, b) => b.score - a.score);
+    // Sort by score (primary), then by account creation date (secondary), then by userId (tertiary)
+    // This ensures consistent ordering when users have the same score
+    userScores.sort((a, b) => {
+      // First sort by score (descending)
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      // If scores are equal, sort by account creation date (earlier users rank higher)
+      if (a.createdAt && b.createdAt) {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      // Final fallback: sort by userId alphabetically for absolute consistency
+      return a.userId.localeCompare(b.userId);
+    });
     const topContributor = userScores[0] || null;
 
     res.json(topContributor);
@@ -297,6 +310,7 @@ const getLeaderboard = async (req, res) => {
         name: `${user.firstName} ${user.lastName}`,
         agencyName: user.agencyName,
         score: totalScore,
+        createdAt: user.createdAt, // Add creation date for secondary sorting
         breakdown: {
           acceptedVasps: user.vaspSubmissions.length,
           vaspPoints,
@@ -313,8 +327,20 @@ const getLeaderboard = async (req, res) => {
       };
     });
 
-    // Sort by score and get top 10
-    userScores.sort((a, b) => b.score - a.score);
+    // Sort by score (primary), then by account creation date (secondary), then by userId (tertiary)
+    // This ensures consistent ordering when users have the same score
+    userScores.sort((a, b) => {
+      // First sort by score (descending)
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      // If scores are equal, sort by account creation date (earlier users rank higher)
+      if (a.createdAt && b.createdAt) {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      // Final fallback: sort by userId alphabetically for absolute consistency
+      return a.userId.localeCompare(b.userId);
+    });
     const leaderboard = userScores.slice(0, 10);
 
     // Update leaderboard history and streaks

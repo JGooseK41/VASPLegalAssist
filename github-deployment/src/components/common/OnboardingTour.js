@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { userAPI } from '../../services/api';
+import { profileAPI } from '../../services/api';
 import './OnboardingTour.css';
 
 const OnboardingTour = ({ onComplete, isDemo = false }) => {
@@ -354,7 +354,7 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
   const handlePermanentOptOut = async () => {
     try {
       // Update user preference in database
-      await userAPI.updateProfile({ tutorialOptOut: true });
+      await profileAPI.updateProfile({ tutorialOptOut: true });
       localStorage.setItem('tutorialPermanentOptOut', 'true');
       handleComplete(true);
     } catch (error) {

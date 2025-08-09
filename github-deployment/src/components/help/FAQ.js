@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle, Search, FileText, Globe, Users, Shield, AlertCircle, UserPlus, ArrowLeft, MessageSquare, TrendingUp, Award, PlayCircle, Trophy, Star, CheckCircle } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const FAQItem = ({ question, answer, icon: Icon }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const FAQItem = ({ question, answer, icon: Icon, defaultOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   
   return (
     <div className="border-b border-gray-200">
@@ -34,7 +34,9 @@ const FAQItem = ({ question, answer, icon: Icon }) => {
 const FAQ = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState(new Set([0, 1])); // First two sections expanded by default
+  const [expandedQuestion, setExpandedQuestion] = useState(null); // Track which question should be expanded
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   
   const toggleSection = (index) => {
@@ -1048,6 +1050,30 @@ Badge #{{badge_number}}
     }
   ];
   
+  // Handle URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get('section');
+    const expanded = params.get('expanded');
+    
+    if (section === 'community' && expanded === 'true') {
+      // Find the index of the "Community & Points" section
+      const communityIndex = faqSections.findIndex(s => s.title === 'Community & Points');
+      if (communityIndex !== -1) {
+        setExpandedSections(new Set([communityIndex]));
+        // Set the specific question to be expanded (first question about earning points)
+        setExpandedQuestion('How do I earn points and climb the leaderboard?');
+        // Scroll to the section after a brief delay
+        setTimeout(() => {
+          const element = document.getElementById(`faq-section-${communityIndex}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+    }
+  }, [location.search]);
+  
   // Filter FAQ items based on search
   const filteredSections = faqSections.map(section => ({
     ...section,
@@ -1133,7 +1159,7 @@ Badge #{{badge_number}}
             const isExpanded = expandedSections.has(originalIndex);
             
             return (
-              <div key={index} className="bg-white shadow rounded-lg overflow-hidden">
+              <div key={index} id={`faq-section-${originalIndex}`} className="bg-white shadow rounded-lg overflow-hidden">
                 <button
                   onClick={() => toggleSection(originalIndex)}
                   className="w-full bg-blue-600 px-6 py-4 flex items-center justify-between hover:bg-blue-700 transition-colors"
@@ -1151,7 +1177,11 @@ Badge #{{badge_number}}
                 {isExpanded && (
                   <div className="divide-y divide-gray-200">
                     {section.items.map((item, itemIndex) => (
-                      <FAQItem key={itemIndex} {...item} />
+                      <FAQItem 
+                        key={itemIndex} 
+                        {...item} 
+                        defaultOpen={expandedQuestion === item.question}
+                      />
                     ))}
                   </div>
                 )}

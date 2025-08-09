@@ -493,11 +493,6 @@ export const submissionAPI = {
 
 // User API
 export const userAPI = {
-  updateProfile: async (updates) => {
-    const response = await api.put('/users/profile', updates);
-    return response.data;
-  },
-  
   getLeaderboard: async () => {
     const response = await api.get('/contributors/leaderboard');
     return response.data;
