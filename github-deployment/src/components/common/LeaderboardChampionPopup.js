@@ -22,7 +22,18 @@ const LeaderboardChampionPopup = ({ onClose }) => {
 
   const loadChampion = async () => {
     try {
-      const leaderboardData = await userAPI.getLeaderboard();
+      const response = await userAPI.getLeaderboard();
+      
+      // Extract the leaderboard array from the response
+      const leaderboardData = response.leaderboard || response;
+      
+      // Make sure we have an array
+      if (!Array.isArray(leaderboardData)) {
+        console.error('Leaderboard data is not an array:', leaderboardData);
+        setLoading(false);
+        onClose();
+        return;
+      }
       
       // Filter out any admin users that might have slipped through
       // (though they should already be filtered by the API)
@@ -33,15 +44,15 @@ const LeaderboardChampionPopup = ({ onClose }) => {
       if (nonAdminUsers && nonAdminUsers.length > 0) {
         const topUser = nonAdminUsers[0];
         
-        // Calculate days at #1
-        const daysAtTop = topUser.currentLeaderboardStreak || 0;
+        // Calculate days at #1 (use currentStreak from the API response)
+        const daysAtTop = topUser.currentStreak || topUser.currentLeaderboardStreak || 0;
         
         setChampion({
           name: `${topUser.firstName} ${topUser.lastName}`,
-          points: topUser.totalPoints || 0,
+          points: topUser.totalPoints || topUser.score || 0,
           daysAtTop: daysAtTop,
           agency: topUser.agencyName,
-          isCurrentUser: topUser.id === user?.id
+          isCurrentUser: topUser.userId === user?.id || topUser.id === user?.id
         });
       } else {
         // No eligible champion found
@@ -51,6 +62,8 @@ const LeaderboardChampionPopup = ({ onClose }) => {
       }
     } catch (error) {
       console.error('Failed to load champion:', error);
+      setLoading(false);
+      onClose();
     } finally {
       setLoading(false);
     }
