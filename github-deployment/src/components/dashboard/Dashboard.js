@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { vaspAPI, documentAPI, authAPI } from '../../services/api';
+import { vaspAPI, documentAPI, authAPI, userAPI } from '../../services/api';
 import TopContributor from './TopContributor';
+import LeaderboardChampionPopup from '../common/LeaderboardChampionPopup';
 import { downloadFile } from '../../utils/urlHelpers';
 // OnboardingTour moved to Layout component
 
@@ -19,10 +20,30 @@ const Dashboard = () => {
   });
   const [deletingDocId, setDeletingDocId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [showChampionPopup, setShowChampionPopup] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
+    checkChampionPopup();
   }, []);
+
+  const checkChampionPopup = async () => {
+    try {
+      // Check if we should show the champion popup
+      // Show once per day per user
+      const lastShown = user?.lastChampionPopupShown;
+      const now = new Date();
+      
+      if (!lastShown || new Date(lastShown).toDateString() !== now.toDateString()) {
+        // Small delay to let the page load first
+        setTimeout(() => {
+          setShowChampionPopup(true);
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Failed to check champion popup:', error);
+    }
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -359,6 +380,13 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Leaderboard Champion Popup */}
+      {showChampionPopup && (
+        <LeaderboardChampionPopup 
+          onClose={() => setShowChampionPopup(false)}
+        />
+      )}
     </div>
   );
 };

@@ -66,12 +66,23 @@ const Layout = () => {
   
   // Check for onboarding
   useEffect(() => {
+    // Check for permanent opt-out first
+    const permanentOptOut = localStorage.getItem('tutorialPermanentOptOut') === 'true' || user?.tutorialOptOut;
+    
     // Check if tutorial restart was requested
     const restartRequested = localStorage.getItem('restartTutorial');
     if (restartRequested) {
       localStorage.removeItem('restartTutorial');
-      // Add a small delay to ensure page is fully loaded
-      setTimeout(() => setShowOnboarding(true), 500);
+      // Only show if not permanently opted out
+      if (!permanentOptOut) {
+        // Add a small delay to ensure page is fully loaded
+        setTimeout(() => setShowOnboarding(true), 500);
+      }
+      return;
+    }
+    
+    // Don't show if permanently opted out
+    if (permanentOptOut) {
       return;
     }
     

@@ -176,6 +176,7 @@ app.use('/api/public/vasp-registration', require('./routes/public/vaspRegistrati
 // Protected routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/users', require('./routes/users'));
 app.use('/api/templates', templateRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/vasps', vaspRoutes);

@@ -33,6 +33,8 @@ model User {
   lastOnLeaderboard       DateTime?
   firstLeaderboardShown   Boolean   @default(false)
   lastMilestoneShown      Int       @default(0)
+  tutorialOptOut          Boolean   @default(false)
+  lastChampionPopupShown  DateTime?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   
@@ -71,6 +73,7 @@ model DocumentTemplate {
   templateContent String?
   markers         String?   // JSON array
   markerMappings  String?   // JSON object
+  dataStructure   String?   // JSON object for custom data structure configuration
   fileType        String?
   fileSize        Int?
   originalFilename String?

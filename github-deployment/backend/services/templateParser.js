@@ -47,40 +47,53 @@ const SMART_MARKERS = {
   '{{CUSTOM_FIELD_3}}': 'customField3'
 };
 
-// Helper to format transaction table
-handlebars.registerHelper('transactionTable', function(transactions) {
+// Helper to format transaction table with custom structure support
+handlebars.registerHelper('transactionTable', function(transactions, options) {
   if (!transactions || transactions.length === 0) {
     return 'No transactions';
   }
   
-  let table = `<table border="1" cellpadding="5" cellspacing="0">
-    <tr>
-      <th>Transaction ID</th>
-      <th>Date</th>
-      <th>From</th>
-      <th>To</th>
-      <th>Amount</th>
-      <th>Currency</th>
-    </tr>`;
+  // Check if there's a custom data structure defined
+  const dataStructure = options?.data?.root?.dataStructure;
+  let fields = [
+    { name: 'transaction_id', label: 'Transaction ID' },
+    { name: 'date', label: 'Date' },
+    { name: 'from_address', label: 'From' },
+    { name: 'to_address', label: 'To' },
+    { name: 'amount', label: 'Amount' },
+    { name: 'currency', label: 'Currency' }
+  ];
   
+  if (dataStructure?.transaction_table?.fields) {
+    fields = dataStructure.transaction_table.fields;
+  }
+  
+  let table = `<table border="1" cellpadding="5" cellspacing="0">
+    <tr>`;
+  
+  // Add headers based on fields
+  fields.forEach(field => {
+    table += `<th>${field.label}</th>`;
+  });
+  table += '</tr>';
+  
+  // Add rows
   transactions.forEach(tx => {
-    table += `<tr>
-      <td>${tx.transaction_id || ''}</td>
-      <td>${tx.date || ''}</td>
-      <td>${tx.from_address || ''}</td>
-      <td>${tx.to_address || ''}</td>
-      <td>${tx.amount || ''}</td>
-      <td>${tx.currency || ''}</td>
-    </tr>`;
+    table += '<tr>';
+    fields.forEach(field => {
+      table += `<td>${tx[field.name] || ''}</td>`;
+    });
+    table += '</tr>';
   });
   
   table += '</table>';
   return new handlebars.SafeString(table);
 });
 
-// Helper to format requested info as checkboxes
-handlebars.registerHelper('requestedInfoCheckboxes', function(requestedInfo) {
-  const allOptions = [
+// Helper to format requested info as checkboxes with custom structure support
+handlebars.registerHelper('requestedInfoCheckboxes', function(requestedInfo, options) {
+  const dataStructure = options?.data?.root?.dataStructure;
+  let allOptions = [
     { key: 'kyc_info', label: 'KYC Information' },
     { key: 'transaction_history', label: 'Transaction History' },
     { key: 'ip_addresses', label: 'IP Addresses' },
@@ -91,6 +104,14 @@ handlebars.registerHelper('requestedInfoCheckboxes', function(requestedInfo) {
     { key: 'communications', label: 'Communications' }
   ];
   
+  // Use custom fields if defined
+  if (dataStructure?.request_info?.fields) {
+    allOptions = dataStructure.request_info.fields.map(field => ({
+      key: field.name,
+      label: field.label
+    }));
+  }
+  
   let checkboxes = '<div>';
   allOptions.forEach(option => {
     const checked = requestedInfo && requestedInfo.includes(option.key) ? '☑' : '☐';
@@ -99,6 +120,86 @@ handlebars.registerHelper('requestedInfoCheckboxes', function(requestedInfo) {
   checkboxes += '</div>';
   
   return new handlebars.SafeString(checkboxes);
+});
+
+// Helper for transaction list
+handlebars.registerHelper('transactionList', function(transactions, options) {
+  if (!transactions || transactions.length === 0) {
+    return 'No transactions';
+  }
+  
+  const dataStructure = options?.data?.root?.dataStructure;
+  let format = 'list';
+  let fields = [
+    { name: 'transaction_hash', label: 'Transaction Hash' },
+    { name: 'blockchain', label: 'Blockchain' },
+    { name: 'wallet_address', label: 'Wallet Address' }
+  ];
+  
+  if (dataStructure?.transaction_list) {
+    format = dataStructure.transaction_list.format || 'list';
+    if (dataStructure.transaction_list.fields) {
+      fields = dataStructure.transaction_list.fields;
+    }
+  }
+  
+  let result = '<div>';
+  
+  transactions.forEach((tx, index) => {
+    let item = '';
+    fields.forEach(field => {
+      if (tx[field.name]) {
+        item += `${field.label}: ${tx[field.name]}, `;
+      }
+    });
+    item = item.slice(0, -2); // Remove trailing comma
+    
+    switch(format) {
+      case 'numbered':
+        result += `<p>${index + 1}. ${item}</p>`;
+        break;
+      case 'bullets':
+        result += `<p>• ${item}</p>`;
+        break;
+      default:
+        result += `<p>${item}</p>`;
+    }
+  });
+  
+  result += '</div>';
+  return new handlebars.SafeString(result);
+});
+
+// Helper for request info list
+handlebars.registerHelper('requestedInfoList', function(requestedInfo, options) {
+  if (!requestedInfo || requestedInfo.length === 0) {
+    return 'No requested information';
+  }
+  
+  const dataStructure = options?.data?.root?.dataStructure;
+  
+  if (dataStructure?.request_info_list?.fields) {
+    let result = '<ul>';
+    requestedInfo.forEach(info => {
+      result += '<li>';
+      dataStructure.request_info_list.fields.forEach(field => {
+        if (info[field.name]) {
+          result += `${field.label}: ${info[field.name]} `;
+        }
+      });
+      result += '</li>';
+    });
+    result += '</ul>';
+    return new handlebars.SafeString(result);
+  }
+  
+  // Default format
+  let result = '<ul>';
+  requestedInfo.forEach(info => {
+    result += `<li>${info}</li>`;
+  });
+  result += '</ul>';
+  return new handlebars.SafeString(result);
 });
 
 // Helper to format date
@@ -181,15 +282,25 @@ class TemplateParser {
   }
   
   // Process template with data
-  async processTemplate(templateContent, data, markerMappings = {}) {
+  async processTemplate(templateContent, data, markerMappings = {}, dataStructure = null) {
     // Prepare data with mappings
     const processedData = this.prepareData(data, markerMappings);
+    
+    // Add dataStructure to the data if provided
+    if (dataStructure) {
+      processedData.dataStructure = typeof dataStructure === 'string' 
+        ? JSON.parse(dataStructure) 
+        : dataStructure;
+    }
     
     // Create a version that handles case-insensitive markers
     let processedContent = templateContent;
     
     // Replace lowercase markers with data
     Object.entries(processedData).forEach(([key, value]) => {
+      // Skip dataStructure from replacement
+      if (key === 'dataStructure') return;
+      
       // Handle both uppercase and lowercase versions
       const upperKey = key.toUpperCase();
       const lowerKey = key.toLowerCase();

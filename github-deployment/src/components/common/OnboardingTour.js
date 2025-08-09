@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { userAPI } from '../../services/api';
 import './OnboardingTour.css';
 
 const OnboardingTour = ({ onComplete, isDemo = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [tooltipPosition, setTooltipPosition] = useState({});
   const [highlightBounds, setHighlightBounds] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showPermanentOptOut, setShowPermanentOptOut] = useState(false);
   const navigationCountRef = useRef(0);
 
   const steps = [
@@ -340,16 +344,35 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
   };
 
   const handleSkip = () => {
-    handleComplete();
+    if (!isDemo && !showPermanentOptOut) {
+      setShowPermanentOptOut(true);
+    } else {
+      handleComplete(false);
+    }
   };
 
-  const handleComplete = () => {
+  const handlePermanentOptOut = async () => {
+    try {
+      // Update user preference in database
+      await userAPI.updateProfile({ tutorialOptOut: true });
+      localStorage.setItem('tutorialPermanentOptOut', 'true');
+      handleComplete(true);
+    } catch (error) {
+      console.error('Failed to save tutorial preference:', error);
+      handleComplete(false);
+    }
+  };
+
+  const handleComplete = (isPermanentOptOut = false) => {
     setIsVisible(false);
     
     // Only save completion for non-demo users
     if (!isDemo) {
       localStorage.setItem('onboardingCompleted', 'true');
       localStorage.setItem('onboardingCompletedTime', Date.now().toString());
+      if (isPermanentOptOut) {
+        localStorage.setItem('tutorialPermanentOptOut', 'true');
+      }
     }
     
     // Clear all navigation flags and in-progress flag from sessionStorage
@@ -540,32 +563,70 @@ const OnboardingTour = ({ onComplete, isDemo = false }) => {
           ))}
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <button
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className="flex items-center text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </button>
-          
-          <button
-            onClick={handleSkip}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            Skip tour
-          </button>
+        {/* Navigation or Opt-out Dialog */}
+        {showPermanentOptOut ? (
+          <div className="border-t pt-4">
+            <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
+              <div className="flex items-start">
+                <EyeOff className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-yellow-800">Never show this tour again?</p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    You can always access the tutorial from the Help menu if you need it later.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowPermanentOptOut(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Back to tour
+              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleComplete(false)}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700"
+                >
+                  Skip this time
+                </button>
+                <button
+                  onClick={handlePermanentOptOut}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                >
+                  Never show again
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <button
+              onClick={handlePrev}
+              disabled={currentStep === 0}
+              className="flex items-center text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </button>
+            
+            <button
+              onClick={handleSkip}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Skip tour
+            </button>
 
-          <button
-            onClick={handleNext}
-            className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-          >
-            {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </button>
-        </div>
+            <button
+              onClick={handleNext}
+              className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

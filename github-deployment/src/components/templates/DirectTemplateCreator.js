@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Globe, Users } from 'lucide-react';
+import { Globe, Users, Database } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { templateAPI } from '../../services/api';
 import TemplateSharingModal from './TemplateSharingModal';
+import DataStructureDesigner from './DataStructureDesigner';
 
 const DirectTemplateCreator = ({ onSuccess, onCancel, encryptedAPI }) => {
   const { user } = useAuth();
@@ -11,8 +12,10 @@ const DirectTemplateCreator = ({ onSuccess, onCancel, encryptedAPI }) => {
   const [isGlobal, setIsGlobal] = useState(false);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [showSharingModal, setShowSharingModal] = useState(false);
+  const [showDataDesigner, setShowDataDesigner] = useState(false);
   
   const [useEncryption, setUseEncryption] = useState(true);
+  const [dataStructure, setDataStructure] = useState(null);
   
   const [formData, setFormData] = useState({
     templateName: 'Standard VASP Data Request',
@@ -95,6 +98,7 @@ Office: {{agent_phone}}`,
         markers: formData.markers,
         markerMappings: '{}',
         customFields: {},  // Add empty customFields
+        dataStructure: dataStructure ? JSON.stringify(dataStructure) : null,
         isGlobal: user?.role === 'ADMIN' ? isGlobal : false,
         isUserShared: shareWithCommunity,
         sharedTitle: formData.sharedTitle || null,
@@ -194,6 +198,26 @@ Office: {{agent_phone}}`,
           </div>
         )}
         
+        {/* Data Structure Designer Button */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <button
+            type="button"
+            onClick={() => setShowDataDesigner(true)}
+            className="w-full flex items-center justify-between px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <span className="flex items-center">
+              <Database className="h-4 w-4 mr-2" />
+              Configure Data Structure
+            </span>
+            <span className="text-sm opacity-90">
+              {dataStructure ? 'Structure Configured' : 'Optional'}
+            </span>
+          </button>
+          <p className="text-xs text-gray-600 mt-2">
+            Design how to import multiple wallets and transactions in a single request
+          </p>
+        </div>
+
         {/* Community Sharing Option */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <label className="flex items-start">
@@ -270,6 +294,17 @@ Office: {{agent_phone}}`,
         onClose={() => setShowSharingModal(false)}
         onConfirm={handleSharingConfirm}
         templateName={formData.templateName}
+      />
+
+      {/* Data Structure Designer Modal */}
+      <DataStructureDesigner
+        isOpen={showDataDesigner}
+        onClose={() => setShowDataDesigner(false)}
+        onSave={(structure) => {
+          setDataStructure(structure);
+          setShowDataDesigner(false);
+        }}
+        existingStructure={dataStructure}
       />
     </div>
   );

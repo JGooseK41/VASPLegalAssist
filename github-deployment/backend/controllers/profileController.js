@@ -54,7 +54,18 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, agencyName, agencyAddress, badgeNumber, title, phone, leaderboardOptOut } = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      agencyName, 
+      agencyAddress, 
+      badgeNumber, 
+      title, 
+      phone, 
+      leaderboardOptOut,
+      tutorialOptOut,
+      lastChampionPopupShown 
+    } = req.body;
 
     // Demo user cannot be updated
     if (req.userId === 'demo-user-id') {
@@ -73,18 +84,22 @@ const updateProfile = async (req, res) => {
       });
     }
 
+    // Build update data object, only including defined values
+    const updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (agencyName !== undefined) updateData.agencyName = agencyName;
+    if (agencyAddress !== undefined) updateData.agencyAddress = agencyAddress;
+    if (badgeNumber !== undefined) updateData.badgeNumber = badgeNumber;
+    if (title !== undefined) updateData.title = title;
+    if (phone !== undefined) updateData.phone = phone;
+    if (leaderboardOptOut !== undefined) updateData.leaderboardOptOut = leaderboardOptOut;
+    if (tutorialOptOut !== undefined) updateData.tutorialOptOut = tutorialOptOut;
+    if (lastChampionPopupShown !== undefined) updateData.lastChampionPopupShown = new Date(lastChampionPopupShown);
+
     const updatedUser = await prisma.user.update({
       where: { id: req.userId },
-      data: {
-        firstName,
-        lastName,
-        agencyName,
-        agencyAddress,
-        badgeNumber,
-        title,
-        phone,
-        leaderboardOptOut
-      },
+      data: updateData,
       select: {
         id: true,
         email: true,
