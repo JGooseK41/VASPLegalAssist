@@ -203,12 +203,16 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="font-mono bg-white px-2 py-1 rounded">{`{{VASP_NAME}}`} - Service provider name</div>
                   <div className="font-mono bg-white px-2 py-1 rounded">{`{{CASE_NUMBER}}`} - Case reference</div>
-                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{DATE}}`} - Current date</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{DATE_TODAY}}`} - Current date</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{COMPLY_BY_DATE}}`} - Compliance deadline</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{VICTIM_NAME}}`} - Victim's name</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{SUSPECT_NAME}}`} - Suspect's name</div>
                   <div className="font-mono bg-white px-2 py-1 rounded">{`{{AGENT_NAME}}`} - Your name</div>
                   <div className="font-mono bg-white px-2 py-1 rounded">{`{{AGENCY_NAME}}`} - Your agency</div>
                   <div className="font-mono bg-white px-2 py-1 rounded">{`{{VASP_ADDRESS}}`} - Provider address</div>
-                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{CRIME_TYPE}}`} - Crime description</div>
-                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{STATUTE}}`} - Legal statute</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{CRIME_DESCRIPTION}}`} - Crime description</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{CASE_STATUTE}}`} - Legal statute</div>
+                  <div className="font-mono bg-white px-2 py-1 rounded">{`{{INVESTIGATOR_NAME}}`} - Investigator name</div>
                 </div>
               </div>
               
@@ -234,7 +238,12 @@ const SmartTemplateUpload = ({ onSuccess, onCancel }) => {
           <div className="flex">
             <AlertCircle className="h-5 w-5 text-red-400" />
             <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-sm text-red-800">
+                {typeof error === 'object' ? (error.message || error.title || 'An error occurred') : error}
+              </p>
+              {typeof error === 'object' && error.solution && (
+                <p className="text-xs text-red-600 mt-1">{error.solution}</p>
+              )}
             </div>
           </div>
         </div>

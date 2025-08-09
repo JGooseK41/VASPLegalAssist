@@ -162,7 +162,7 @@ const UserAccessLog = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
           <div className="flex items-center">
             <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full mr-2">Active</span>
-            <span className="text-gray-600">Currently active (< 5 min)</span>
+            <span className="text-gray-600">Currently active (&lt; 5 min)</span>
           </div>
           <div className="flex items-center">
             <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mr-2">Idle</span>

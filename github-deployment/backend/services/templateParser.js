@@ -19,6 +19,9 @@ const SMART_MARKERS = {
   '{{CRIME_DESCRIPTION}}': 'crimeDescription',
   '{{DATE_TODAY}}': 'dateToday',
   '{{DATE_DEADLINE}}': 'dateDeadline',
+  '{{VICTIM_NAME}}': 'victimName',
+  '{{SUSPECT_NAME}}': 'suspectName',
+  '{{COMPLY_BY_DATE}}': 'complyByDate',
   
   // Agency Information
   '{{AGENCY_NAME}}': 'agencyName',
@@ -237,10 +240,18 @@ class TemplateParser {
     processedData.FACTS_OF_THE_CASE = data.factsOfTheCase || data.facts_of_the_case || '';
     processedData.JURISDICTION = data.jurisdiction || data.caseJurisdiction || '';
     
+    // Add victim, suspect, and comply by date
+    processedData.VICTIM_NAME = data.victimName || data.victim_name || '';
+    processedData.SUSPECT_NAME = data.suspectName || data.suspect_name || '';
+    processedData.COMPLY_BY_DATE = data.complyByDate || data.comply_by_date || data.dateDeadline || processedData.DATE_DEADLINE || '';
+    
     // Also add lowercase versions
     processedData.crime_under_investigation = processedData.CRIME_UNDER_INVESTIGATION;
     processedData.facts_of_the_case = processedData.FACTS_OF_THE_CASE;
     processedData.jurisdiction = processedData.JURISDICTION;
+    processedData.victim_name = processedData.VICTIM_NAME;
+    processedData.suspect_name = processedData.SUSPECT_NAME;
+    processedData.comply_by_date = processedData.COMPLY_BY_DATE;
     
     // Add agency/agent placeholders
     processedData.AGENCY_NAME = data.agencyName || data.agency_name || '';

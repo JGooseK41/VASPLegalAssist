@@ -334,6 +334,13 @@ const previewTemplate = async (req, res) => {
       caseNumber: 'CASE-2024-001',
       statute: '18 U.S.C. § 1956',
       crimeDescription: 'This is a sample crime description for preview purposes.',
+      victimName: 'John Doe',
+      suspectName: 'Jane Smith',
+      complyByDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
       agencyName: req.body.agencyName || 'U.S. Department of Justice',
       agencyAddress: req.body.agencyAddress || '950 Pennsylvania Avenue NW, Washington, DC 20530',
       agencyPhone: req.body.agencyPhone || '(202) 514-2000',
@@ -464,6 +471,9 @@ const getMarkerDescription = (marker) => {
     '{{CRIME_DESCRIPTION}}': 'Description of alleged crime',
     '{{DATE_TODAY}}': "Today's date",
     '{{DATE_DEADLINE}}': 'Response deadline date',
+    '{{VICTIM_NAME}}': 'Name of the victim',
+    '{{SUSPECT_NAME}}': 'Name of the suspect',
+    '{{COMPLY_BY_DATE}}': 'Date to comply by',
     '{{AGENCY_NAME}}': 'Your agency name',
     '{{AGENCY_ADDRESS}}': 'Your agency address',
     '{{AGENCY_PHONE}}': 'Your agency phone',
