@@ -23,8 +23,15 @@ const LeaderboardChampionPopup = ({ onClose }) => {
   const loadChampion = async () => {
     try {
       const leaderboardData = await userAPI.getLeaderboard();
-      if (leaderboardData && leaderboardData.length > 0) {
-        const topUser = leaderboardData[0];
+      
+      // Filter out any admin users that might have slipped through
+      // (though they should already be filtered by the API)
+      const nonAdminUsers = leaderboardData.filter(
+        u => u.role !== 'ADMIN' && u.role !== 'MASTER_ADMIN'
+      );
+      
+      if (nonAdminUsers && nonAdminUsers.length > 0) {
+        const topUser = nonAdminUsers[0];
         
         // Calculate days at #1
         const daysAtTop = topUser.currentLeaderboardStreak || 0;
@@ -36,6 +43,11 @@ const LeaderboardChampionPopup = ({ onClose }) => {
           agency: topUser.agencyName,
           isCurrentUser: topUser.id === user?.id
         });
+      } else {
+        // No eligible champion found
+        console.log('No eligible champion found (all users may be admins)');
+        setLoading(false);
+        onClose();
       }
     } catch (error) {
       console.error('Failed to load champion:', error);

@@ -24,17 +24,39 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-    checkChampionPopup();
   }, []);
+
+  // Separate useEffect for champion popup that depends on user
+  useEffect(() => {
+    if (user) {
+      checkChampionPopup();
+    }
+  }, [user]);
 
   const checkChampionPopup = async () => {
     try {
+      // Don't show popup for admin users
+      if (user?.role === 'ADMIN' || user?.role === 'MASTER_ADMIN') {
+        return;
+      }
+      
       // Check if we should show the champion popup
       // Show once per day per user
       const lastShown = user?.lastChampionPopupShown;
       const now = new Date();
       
-      if (!lastShown || new Date(lastShown).toDateString() !== now.toDateString()) {
+      // Show if never shown or if last shown was on a different day
+      const shouldShow = !lastShown || 
+        (lastShown && new Date(lastShown).toDateString() !== now.toDateString());
+      
+      console.log('Champion popup check:', {
+        lastShown,
+        currentDate: now.toDateString(),
+        lastShownDate: lastShown ? new Date(lastShown).toDateString() : 'never',
+        shouldShow
+      });
+      
+      if (shouldShow) {
         // Small delay to let the page load first
         setTimeout(() => {
           setShowChampionPopup(true);

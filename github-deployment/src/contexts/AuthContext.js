@@ -19,20 +19,37 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing session on mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Failed to parse saved user:', e);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+    const initAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      const savedUser = localStorage.getItem('user');
+      
+      if (token && savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          
+          // Fetch fresh user data to get latest fields
+          try {
+            const response = await authAPI.getProfile();
+            if (response) {
+              setUser(response);
+              localStorage.setItem('user', JSON.stringify(response));
+            }
+          } catch (error) {
+            console.error('Failed to fetch fresh user profile:', error);
+            // Keep using cached user data
+          }
+        } catch (e) {
+          console.error('Failed to parse saved user:', e);
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        }
       }
-    }
+      
+      setIsLoading(false);
+    };
     
-    setIsLoading(false);
+    initAuth();
   }, []);
 
   const login = async (email, password) => {

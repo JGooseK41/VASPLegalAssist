@@ -37,6 +37,8 @@ const getProfile = async (req, res) => {
         phone: true,
         role: true,
         leaderboardOptOut: true,
+        tutorialOptOut: true,
+        lastChampionPopupShown: true,
         createdAt: true
       }
     });
