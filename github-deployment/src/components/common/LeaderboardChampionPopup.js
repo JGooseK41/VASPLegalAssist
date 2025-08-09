@@ -47,18 +47,29 @@ const LeaderboardChampionPopup = ({ onClose }) => {
         // Calculate days at #1 (use currentStreak from the API response)
         const daysAtTop = topUser.currentStreak || topUser.currentLeaderboardStreak || 0;
         
+        // Handle cases where name might be undefined
+        const firstName = topUser.firstName || 'Mystery';
+        const lastName = topUser.lastName || 'Agent';
+        
         setChampion({
-          name: `${topUser.firstName} ${topUser.lastName}`,
+          name: `${firstName} ${lastName}`,
           points: topUser.totalPoints || topUser.score || 0,
           daysAtTop: daysAtTop,
-          agency: topUser.agencyName,
+          agency: topUser.agencyName || 'Unknown Agency',
           isCurrentUser: topUser.userId === user?.id || topUser.id === user?.id
         });
       } else {
-        // No eligible champion found
-        console.log('No eligible champion found (all users may be admins)');
-        setLoading(false);
-        onClose();
+        // No eligible champion found or all have 0 points
+        // Create a placeholder to encourage participation
+        console.log('No champion with points found, showing placeholder');
+        setChampion({
+          name: 'The Crown Awaits',
+          points: 0,
+          daysAtTop: 0,
+          agency: 'Be the first to claim it!',
+          isCurrentUser: false,
+          isPlaceholder: true
+        });
       }
     } catch (error) {
       console.error('Failed to load champion:', error);
@@ -80,6 +91,16 @@ const LeaderboardChampionPopup = ({ onClose }) => {
   };
 
   const getPlayfulMessage = () => {
+    if (champion?.isPlaceholder) {
+      return {
+        title: "👑 The Throne is Empty!",
+        subtitle: "No one has claimed the crown yet!",
+        message: "Be the first to earn points and become the inaugural champion! Start by updating VASP info or sharing templates.",
+        buttonText: "Learn How to Be First",
+        buttonAction: () => navigate('/faq')
+      };
+    }
+    
     if (champion?.isCurrentUser) {
       return {
         title: "👑 You're the Champion!",
@@ -119,7 +140,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
       ...randomMessage,
       message: `${randomMessage.taunt} Knock them down by participating!`,
       buttonText: "Show Me How to Win",
-      buttonAction: () => navigate('/leaderboard')
+      buttonAction: () => navigate('/faq')  // Go to FAQ to learn about points
     };
   };
 
@@ -159,7 +180,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
 
         {/* Champion Info */}
         <div className="p-6">
-          {!champion.isCurrentUser && (
+          {!champion.isCurrentUser && !champion.isPlaceholder && (
             <div className="bg-white rounded-lg p-4 mb-4 border-2 border-orange-200">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
@@ -183,6 +204,16 @@ const LeaderboardChampionPopup = ({ onClose }) => {
               </div>
             </div>
           )}
+          
+          {champion.isPlaceholder && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 mb-4 border-2 border-yellow-300">
+              <div className="text-center">
+                <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-2" />
+                <p className="text-lg font-bold text-gray-800">{champion.name}</p>
+                <p className="text-sm text-gray-600">{champion.agency}</p>
+              </div>
+            </div>
+          )}
 
           <p className="text-gray-700 mb-6">{content.message}</p>
 
@@ -196,7 +227,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
               <span className="font-bold">{content.buttonText}</span>
             </button>
 
-            {!champion.isCurrentUser && (
+            {!champion.isCurrentUser && !champion.isPlaceholder && (
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -216,12 +247,31 @@ const LeaderboardChampionPopup = ({ onClose }) => {
                 </div>
 
                 <button
-                  onClick={() => navigate('/leaderboard')}
+                  onClick={() => navigate('/faq')}
                   className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
                 >
                   How do I earn points and climb the leaderboard?
                 </button>
               </>
+            )}
+            
+            {champion.isPlaceholder && (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => navigate('/search')}
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  <Target className="h-4 w-4" />
+                  <span className="text-sm font-medium">Update VASPs</span>
+                </button>
+                <button
+                  onClick={() => navigate('/templates')}
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                >
+                  <Award className="h-4 w-4" />
+                  <span className="text-sm font-medium">Share Templates</span>
+                </button>
+              </div>
             )}
           </div>
 
