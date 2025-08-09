@@ -47,16 +47,12 @@ const LeaderboardChampionPopup = ({ onClose }) => {
         // Calculate days at #1 (use currentStreak from the API response)
         const daysAtTop = topUser.currentStreak || topUser.currentLeaderboardStreak || 0;
         
-        // Handle cases where name might be undefined
-        const firstName = topUser.firstName || 'Mystery';
-        const lastName = topUser.lastName || 'Agent';
-        
         setChampion({
-          name: `${firstName} ${lastName}`,
-          points: topUser.totalPoints || topUser.score || 0,
+          name: topUser.name || 'Mystery Agent',  // API returns concatenated name
+          points: topUser.score || 0,  // API returns 'score', not 'totalPoints'
           daysAtTop: daysAtTop,
           agency: topUser.agencyName || 'Unknown Agency',
-          isCurrentUser: topUser.userId === user?.id || topUser.id === user?.id
+          isCurrentUser: topUser.userId === user?.id  // API returns 'userId'
         });
       } else {
         // No eligible champion found or all have 0 points
