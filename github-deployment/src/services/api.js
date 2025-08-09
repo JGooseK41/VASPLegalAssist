@@ -62,10 +62,25 @@ export const authAPI = {
   
   register: async (userData) => {
     try {
+      console.log('Registration API: Attempting to register user at:', API_BASE_URL + '/auth/register');
       const response = await api.post('/auth/register', userData);
+      console.log('Registration API: Success');
       return response.data;
     } catch (error) {
-      console.error('Registration API error:', error.response?.data || error.message);
+      // Enhanced error logging
+      console.error('Registration API: Network Error Details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status,
+        baseURL: API_BASE_URL
+      });
+      
+      // Check if it's a network error
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.error('Registration API: Network Error - Unable to reach server at', API_BASE_URL);
+      }
+      
       throw error;
     }
   },

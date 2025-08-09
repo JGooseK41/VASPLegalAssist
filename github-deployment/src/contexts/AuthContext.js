@@ -108,7 +108,30 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Registration failed';
+      console.error('Registration error:', err);
+      
+      // Handle network errors
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        const errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+      
+      // Handle tunnel connection errors
+      if (err.code === 'ERR_TUNNEL_CONNECTION_FAILED') {
+        const errorMessage = 'Connection to server failed. The service may be temporarily unavailable. Please try again in a few moments.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+      
+      // Handle timeout errors
+      if (err.code === 'ECONNABORTED') {
+        const errorMessage = 'Request timed out. Please check your connection and try again.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+      
+      const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle, Shield, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, User, Building, Badge, Phone, AlertCircle, HelpCircle, Shield, MapPin, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { checkServerConnection, getConnectionErrorMessage } from '../../utils/connectionCheck';
 
 const RegisterForm = () => {
   const { register, isLoading, error } = useAuth();
@@ -20,11 +21,14 @@ const RegisterForm = () => {
   });
   const [validationError, setValidationError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [connectionError, setConnectionError] = useState(null);
+  const [isCheckingConnection, setIsCheckingConnection] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValidationError('');
     setSuccessMessage('');
+    setConnectionError(null);
     
     // Show loading state
     console.log('Submitting registration for:', formData.email);
@@ -67,10 +71,35 @@ const RegisterForm = () => {
         navigate('/');
       }
     } else {
-      // Registration failed - error should already be set in context
-      // But also set validation error as backup
-      setValidationError(result.error || 'Registration failed. Please try again.');
+      // Check if it's a network error
+      if (result.error && (result.error.includes('connect') || result.error.includes('network') || result.error.includes('Connection'))) {
+        setConnectionError({
+          title: 'Connection Problem',
+          message: result.error,
+          canRetry: true
+        });
+      } else {
+        // Registration failed - error should already be set in context
+        setValidationError(result.error || 'Registration failed. Please try again.');
+      }
     }
+  };
+  
+  const checkConnection = async () => {
+    setIsCheckingConnection(true);
+    setConnectionError(null);
+    
+    const connectionStatus = await checkServerConnection();
+    
+    if (!connectionStatus.connected) {
+      setConnectionError({
+        title: 'Connection Issue',
+        message: connectionStatus.message,
+        canRetry: true
+      });
+    }
+    
+    setIsCheckingConnection(false);
   };
 
   const handleChange = (e) => {
@@ -116,7 +145,39 @@ const RegisterForm = () => {
             </div>
           </div>
 
-          {(error || validationError) && (
+          {/* Connection Error Display */}
+          {connectionError && (
+            <div className="mb-6 bg-orange-50 border border-orange-200 rounded-md p-4">
+              <div className="flex">
+                <WifiOff className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                <div className="ml-3 flex-1">
+                  <h3 className="text-sm font-medium text-orange-900">{connectionError.title}</h3>
+                  <p className="text-sm text-orange-800 mt-1">{connectionError.message}</p>
+                  {connectionError.canRetry && (
+                    <button
+                      onClick={checkConnection}
+                      disabled={isCheckingConnection}
+                      className="mt-2 inline-flex items-center text-sm font-medium text-orange-700 hover:text-orange-800"
+                    >
+                      {isCheckingConnection ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                          Checking connection...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Check connection
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {(error || validationError) && !connectionError && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
                 <AlertCircle className="h-5 w-5 text-red-400" />
