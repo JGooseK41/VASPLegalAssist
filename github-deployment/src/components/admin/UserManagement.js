@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown, MessageCircle, Eye, Mail, MailCheck } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Shield, User, AlertCircle, Crown, MessageCircle, Eye, Mail, MailCheck, Trash2 } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import { isMasterAdmin } from '../../utils/auth';
 
@@ -189,6 +189,22 @@ const UserManagement = () => {
     } catch (error) {
       console.error('Failed to update user role:', error);
       alert('Failed to update user role');
+    }
+  };
+  
+  const handleDeleteUser = async (user) => {
+    const confirmMessage = `Are you sure you want to DELETE this user account?\n\nUser: ${user.firstName} ${user.lastName}\nEmail: ${user.email}\nAgency: ${user.agencyName}\n\nThis action is PERMANENT and will delete:\n• All their documents\n• All their comments\n• All their feedback\n• All associated data\n\nType "DELETE" to confirm:`;
+    
+    const confirmation = window.prompt(confirmMessage);
+    if (confirmation !== 'DELETE') return;
+    
+    try {
+      await adminAPI.deleteUser(user.id);
+      alert('User account has been permanently deleted');
+      loadUsers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert('Failed to delete user: ' + (error.response?.data?.error || error.message));
     }
   };
   
@@ -397,6 +413,15 @@ const UserManagement = () => {
                           <span className="text-xs text-gray-500">
                             {user.role === 'MASTER_ADMIN' ? '-' : 'Role locked'}
                           </span>
+                        )}
+                        {user.role !== 'MASTER_ADMIN' && (
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            className="text-red-600 hover:text-red-900 ml-2"
+                            title="Delete User Account"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         )}
                       </div>
                     </td>

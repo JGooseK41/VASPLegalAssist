@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Database, FileText, MessageSquare, Search, Upload, TrendingUp, Users, ChevronRight, Zap, PlusCircle, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { vaspAPI, documentAPI, authAPI, userAPI } from '../../services/api';
+import { vaspAPI, documentAPI, authAPI, userAPI, profileAPI } from '../../services/api';
 import TopContributor from './TopContributor';
 import LeaderboardChampionPopup from '../common/LeaderboardChampionPopup';
 import { downloadFile } from '../../utils/urlHelpers';
@@ -27,11 +27,12 @@ const Dashboard = () => {
   }, []);
 
   // Separate useEffect for champion popup that depends on user
+  // Only run once when user is loaded, not on every user update
   useEffect(() => {
-    if (user) {
+    if (user && !showChampionPopup) {
       checkChampionPopup();
     }
-  }, [user]);
+  }, [user?.id]); // Only re-run if user ID changes (login/logout)
 
   // Add keyboard shortcut for admins to test the popup (Ctrl+Shift+L)
   useEffect(() => {
@@ -49,9 +50,9 @@ const Dashboard = () => {
 
   const checkChampionPopup = async () => {
     try {
-      // Check if we should show the champion popup
-      // Show once per day per user (including admins)
-      const lastShown = user?.lastChampionPopupShown;
+      // Fetch fresh user profile to get the latest lastChampionPopupShown
+      const profile = await profileAPI.getProfile();
+      const lastShown = profile?.lastChampionPopupShown;
       const now = new Date();
       
       // Show if never shown or if last shown was on a different day
@@ -59,7 +60,7 @@ const Dashboard = () => {
         (lastShown && new Date(lastShown).toDateString() !== now.toDateString());
       
       console.log('Champion popup check:', {
-        userRole: user?.role,
+        userRole: profile?.role,
         lastShown,
         currentDate: now.toDateString(),
         lastShownDate: lastShown ? new Date(lastShown).toDateString() : 'never',

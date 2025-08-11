@@ -15,6 +15,7 @@ const {
   verifyUserEmail,
   rejectUser,
   updateUserRole,
+  deleteUser,
   getUserFeedback,
   
   // Admin Applications
@@ -67,6 +68,7 @@ router.post('/users/:userId/approve', approveUser);
 router.post('/users/:userId/verify-email', verifyUserEmail);
 router.delete('/users/:userId/reject', rejectUser);
 router.put('/users/:userId/role', updateUserRole);
+router.delete('/users/:userId', deleteUser);
 router.get('/users/:userId/feedback', getUserFeedback);
 
 // VASP Submission Management

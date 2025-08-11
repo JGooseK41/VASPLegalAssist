@@ -336,6 +336,94 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Only MASTER_ADMIN can delete users, or ADMIN can delete non-admin users
+    if (req.userRole !== 'MASTER_ADMIN' && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Only admins can delete users' });
+    }
+    
+    // Get user info first
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, email: true, firstName: true, lastName: true }
+    });
+    
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Prevent non-master-admins from deleting admins
+    if (req.userRole === 'ADMIN' && (targetUser.role === 'ADMIN' || targetUser.role === 'MASTER_ADMIN')) {
+      return res.status(403).json({ error: 'Admins cannot delete other admin users' });
+    }
+    
+    // Prevent deleting MASTER_ADMIN
+    if (targetUser.role === 'MASTER_ADMIN') {
+      return res.status(403).json({ error: 'Master admin cannot be deleted' });
+    }
+    
+    console.log(`Deleting user: ${targetUser.email} (${targetUser.firstName} ${targetUser.lastName})`);
+    
+    // Delete in proper order to handle foreign key constraints
+    await prisma.$transaction(async (tx) => {
+      // Delete user sessions
+      await tx.userSession.deleteMany({ where: { userId } });
+      
+      // Delete password reset tokens
+      await tx.passwordResetToken.deleteMany({ where: { userId } });
+      
+      // Delete votes by this user
+      await tx.commentVote.deleteMany({ where: { userId } });
+      
+      // Delete comments by this user
+      await tx.vaspComment.deleteMany({ where: { userId } });
+      
+      // Delete VASP responses by this user
+      await tx.vaspResponse.deleteMany({ where: { userId } });
+      
+      // Delete VASP submissions by this user
+      await tx.vaspSubmission.deleteMany({ where: { userId } });
+      
+      // Delete VASP update requests by this user
+      await tx.vaspUpdateRequest.deleteMany({ where: { userId } });
+      
+      // Delete milestone notifications for this user
+      await tx.milestoneNotification.deleteMany({ where: { userId } });
+      
+      // Delete contributor feedback by this user
+      await tx.contributorFeedback.deleteMany({ where: { userId } });
+      
+      // Delete admin applications by this user
+      await tx.adminApplication.deleteMany({ where: { userId } });
+      
+      // Delete documents by this user
+      await tx.document.deleteMany({ where: { userId } });
+      
+      // Delete templates by this user
+      await tx.documentTemplate.deleteMany({ where: { userId } });
+      
+      // Finally delete the user
+      await tx.user.delete({ where: { id: userId } });
+    });
+    
+    console.log(`Successfully deleted user: ${targetUser.email}`);
+    res.json({ 
+      message: 'User and all associated data deleted successfully',
+      deletedUser: {
+        email: targetUser.email,
+        name: `${targetUser.firstName} ${targetUser.lastName}`
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete user', details: error.message });
+  }
+};
+
 // VASP Submissions
 const getSubmissions = async (req, res) => {
   try {
@@ -796,6 +884,7 @@ module.exports = {
   verifyUserEmail,
   rejectUser,
   updateUserRole,
+  deleteUser,
   getUserFeedback,
   
   // Admin Applications

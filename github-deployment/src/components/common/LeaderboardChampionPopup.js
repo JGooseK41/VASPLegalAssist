@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const LeaderboardChampionPopup = ({ onClose }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [champion, setChampion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
@@ -80,6 +80,11 @@ const LeaderboardChampionPopup = ({ onClose }) => {
     try {
       // Update last shown timestamp in database
       await profileAPI.updateProfile({ lastChampionPopupShown: new Date().toISOString() });
+      
+      // Also update the user context to prevent re-showing
+      if (updateUser) {
+        updateUser({ lastChampionPopupShown: new Date().toISOString() });
+      }
     } catch (error) {
       console.error('Failed to update popup timestamp:', error);
     }
@@ -149,12 +154,12 @@ const LeaderboardChampionPopup = ({ onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div 
-        className={`bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-2xl max-w-md w-full transform transition-all duration-500 ${
+        className={`bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all duration-500 border border-gray-200 ${
           animateIn ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
       >
         {/* Header with animated crown */}
-        <div className="relative bg-gradient-to-r from-yellow-400 to-orange-400 rounded-t-xl p-6 text-white">
+        <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-lg p-6 text-white">
           <button
             onClick={handleDismiss}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -164,7 +169,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
           
           <div className="flex items-center space-x-3">
             <div className="relative">
-              <Crown className="h-12 w-12 animate-bounce" />
+              <Crown className="h-12 w-12 text-white animate-bounce" />
               <Zap className="h-6 w-6 absolute -top-1 -right-1 text-yellow-300 animate-pulse" />
             </div>
             <div>
@@ -177,13 +182,13 @@ const LeaderboardChampionPopup = ({ onClose }) => {
         {/* Champion Info */}
         <div className="p-6">
           {!champion.isCurrentUser && !champion.isPlaceholder && (
-            <div className="bg-white rounded-lg p-4 mb-4 border-2 border-orange-200">
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Trophy className="h-5 w-5 text-yellow-500" />
-                  <span className="font-bold text-lg">{champion.name}</span>
+                  <span className="font-bold text-lg text-gray-900">{champion.name}</span>
                 </div>
-                <span className="text-2xl font-bold text-orange-600">#1</span>
+                <span className="text-2xl font-bold text-indigo-600">#1</span>
               </div>
               <div className="text-sm text-gray-600">
                 <p>{champion.agency}</p>
@@ -202,7 +207,7 @@ const LeaderboardChampionPopup = ({ onClose }) => {
           )}
           
           {champion.isPlaceholder && (
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 mb-4 border-2 border-yellow-300">
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
               <div className="text-center">
                 <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-2" />
                 <p className="text-lg font-bold text-gray-800">{champion.name}</p>
@@ -217,10 +222,10 @@ const LeaderboardChampionPopup = ({ onClose }) => {
           <div className="space-y-3">
             <button
               onClick={content.buttonAction}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               <Swords className="h-5 w-5" />
-              <span className="font-bold">{content.buttonText}</span>
+              <span className="font-semibold">{content.buttonText}</span>
             </button>
 
             {!champion.isCurrentUser && !champion.isPlaceholder && (
@@ -228,14 +233,14 @@ const LeaderboardChampionPopup = ({ onClose }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => navigate('/search')}
-                    className="flex items-center justify-center space-x-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                    className="flex items-center justify-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
                   >
                     <Target className="h-4 w-4" />
                     <span className="text-sm font-medium">Update VASPs</span>
                   </button>
                   <button
                     onClick={() => navigate('/templates')}
-                    className="flex items-center justify-center space-x-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                    className="flex items-center justify-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
                   >
                     <Award className="h-4 w-4" />
                     <span className="text-sm font-medium">Share Templates</span>
@@ -244,9 +249,9 @@ const LeaderboardChampionPopup = ({ onClose }) => {
 
                 <button
                   onClick={() => navigate('/leaderboard')}
-                  className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
+                  className="w-full text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                 >
-                  View Leaderboard
+                  View Full Leaderboard →
                 </button>
               </>
             )}
@@ -255,14 +260,14 @@ const LeaderboardChampionPopup = ({ onClose }) => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => navigate('/search')}
-                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
                 >
                   <Target className="h-4 w-4" />
                   <span className="text-sm font-medium">Update VASPs</span>
                 </button>
                 <button
                   onClick={() => navigate('/templates')}
-                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
                 >
                   <Award className="h-4 w-4" />
                   <span className="text-sm font-medium">Share Templates</span>

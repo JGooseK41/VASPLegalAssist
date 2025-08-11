@@ -420,6 +420,11 @@ export const adminAPI = {
     return response.data;
   },
   
+  deleteUser: async (userId) => {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+  
   getUserFeedback: async (userId) => {
     const response = await api.get(`/admin/users/${userId}/feedback`);
     return response.data;
