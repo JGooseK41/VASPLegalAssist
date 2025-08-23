@@ -55,6 +55,15 @@ router.post('/update-request', upload.array('evidence', 5), async (req, res) => 
     
     const { vaspId, proposedChanges, userComments } = updateRequestData;
     
+    // Validate required fields
+    if (!vaspId) {
+      return res.status(400).json({ error: 'VASP ID is required' });
+    }
+    
+    if (!proposedChanges) {
+      return res.status(400).json({ error: 'Proposed changes are required' });
+    }
+    
     // Create update request
     const updateRequest = await prisma.vaspUpdateRequest.create({
       data: {
@@ -126,7 +135,30 @@ router.post('/update-request', upload.array('evidence', 5), async (req, res) => 
     res.json(completeUpdateRequest);
   } catch (error) {
     console.error('Error creating update request:', error);
-    res.status(500).json({ error: 'Failed to submit update request' });
+    
+    // Check for specific Prisma errors
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Duplicate update request already exists' });
+    }
+    
+    if (error.code === 'P2003') {
+      return res.status(400).json({ error: 'Invalid VASP or user reference' });
+    }
+    
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'VASP not found' });
+    }
+    
+    // Check if it's a schema mismatch error
+    if (error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+      console.error('Database schema mismatch detected. The VaspUpdateRequest table needs to be migrated.');
+      return res.status(500).json({ 
+        error: 'Database schema needs updating. Please contact the administrator.',
+        details: 'The VaspUpdateRequest table structure needs to be migrated to support the new format.'
+      });
+    }
+    
+    res.status(500).json({ error: 'Failed to submit update request. Please try again later.' });
   }
 });
 
