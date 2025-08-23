@@ -17,10 +17,10 @@ const VaspSubmissionForm = () => {
     compliance_contact: '',
     service_address: '',
     phone: '',
-    processing_time: '5-10 business days',
-    preferred_method: 'email',
-    required_document: 'Letterhead',
-    info_types: ['KYC', 'Transaction History'],
+    processing_time: '',
+    preferred_method: '',
+    required_document: '',
+    info_types: [],
     service_types: [],
     accepts_us_service: false,
     has_own_portal: false,
@@ -186,14 +186,13 @@ const VaspSubmissionForm = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Legal Name *
+                Legal Name
               </label>
               <input
                 type="text"
                 name="legal_name"
                 value={formData.legal_name}
                 onChange={handleChange}
-                required
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Full legal entity name"
               />
@@ -201,14 +200,13 @@ const VaspSubmissionForm = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Jurisdiction *
+                Jurisdiction
               </label>
               <input
                 type="text"
                 name="jurisdiction"
                 value={formData.jurisdiction}
                 onChange={handleChange}
-                required
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., United States, Singapore"
               />
@@ -216,14 +214,13 @@ const VaspSubmissionForm = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Compliance Email *
+                Compliance Email
               </label>
               <input
                 type="email"
                 name="compliance_email"
                 value={formData.compliance_email}
                 onChange={handleChange}
-                required
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="compliance@example.com"
               />
@@ -293,15 +290,15 @@ const VaspSubmissionForm = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Preferred Service Method *
+                Preferred Service Method
               </label>
               <select
                 name="preferred_method"
                 value={formData.preferred_method}
                 onChange={handleChange}
-                required
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="">Select method</option>
                 <option value="email">Email</option>
                 <option value="portal">Portal</option>
                 <option value="kodex">Kodex</option>
