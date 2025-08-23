@@ -37,7 +37,7 @@ const VaspUpdateModal = ({ isOpen, onClose, vasp }) => {
       // Add the update request data
       const updateRequest = {
         vaspId: vasp.id,
-        vaspName: vasp.name,
+        vaspName: formData.name || vasp.name,  // Use the updated name from form data
         proposedChanges: formData,
         submittedAt: new Date().toISOString(),
         userComments: formData.user_comments
