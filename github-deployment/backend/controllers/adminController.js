@@ -465,6 +465,14 @@ const approveSubmission = async (req, res) => {
     }
     
     // Create the VASP - map from camelCase submission fields to snake_case VASP fields
+    // Convert string booleans to actual booleans
+    const acceptsUsService = submission.acceptsUsService === true || 
+                            submission.acceptsUsService === 'true' || 
+                            submission.acceptsUsService === 1;
+    const hasOwnPortal = submission.hasOwnPortal === true || 
+                        submission.hasOwnPortal === 'true' || 
+                        submission.hasOwnPortal === 1;
+    
     const vasp = await prisma.vasp.create({
       data: {
         name: submission.vaspName,
@@ -480,8 +488,8 @@ const approveSubmission = async (req, res) => {
         required_document: submission.requiredDocument,
         info_types: submission.infoTypes || [],
         service_types: submission.serviceTypes || [],
-        accepts_us_service: submission.acceptsUsService || false,
-        has_own_portal: submission.hasOwnPortal || false,
+        accepts_us_service: acceptsUsService,
+        has_own_portal: hasOwnPortal,
         law_enforcement_url: submission.lawEnforcementUrl,
         notes: submission.notes
       }
