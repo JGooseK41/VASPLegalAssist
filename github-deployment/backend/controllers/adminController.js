@@ -452,6 +452,11 @@ const getSubmissions = async (req, res) => {
 };
 
 const approveSubmission = async (req, res) => {
+  console.log('=== APPROVE SUBMISSION START ===');
+  console.log('Request params:', req.params);
+  console.log('User ID:', req.userId);
+  console.log('User Role:', req.userRole);
+  
   try {
     const { submissionId } = req.params;
     
