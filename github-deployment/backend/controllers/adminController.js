@@ -464,24 +464,25 @@ const approveSubmission = async (req, res) => {
       return res.status(404).json({ error: 'Submission not found' });
     }
     
-    // Create the VASP
+    // Create the VASP - map from camelCase submission fields to snake_case VASP fields
     const vasp = await prisma.vasp.create({
       data: {
-        name: submission.name,
-        legal_name: submission.legal_name,
+        name: submission.vaspName,
+        legal_name: submission.legalName,
         jurisdiction: submission.jurisdiction,
-        compliance_email: submission.compliance_email,
-        compliance_contact: submission.compliance_contact,
-        service_address: submission.service_address,
+        compliance_email: submission.complianceEmail,
+        compliance_contact: submission.complianceContact,
+        service_address: submission.serviceAddress,
+        website: submission.website,
         phone: submission.phone,
-        processing_time: submission.processing_time,
-        preferred_method: submission.preferred_method,
-        required_document: submission.required_document,
-        info_types: submission.info_types,
-        service_types: submission.service_types || [],
-        accepts_us_service: submission.accepts_us_service,
-        has_own_portal: submission.has_own_portal,
-        law_enforcement_url: submission.law_enforcement_url,
+        processing_time: submission.processingTime,
+        preferred_method: submission.preferredMethod,
+        required_document: submission.requiredDocument,
+        info_types: submission.infoTypes || [],
+        service_types: submission.serviceTypes || [],
+        accepts_us_service: submission.acceptsUsService || false,
+        has_own_portal: submission.hasOwnPortal || false,
+        law_enforcement_url: submission.lawEnforcementUrl,
         notes: submission.notes
       }
     });
@@ -490,9 +491,7 @@ const approveSubmission = async (req, res) => {
     await prisma.vaspSubmission.update({
       where: { id: submissionId },
       data: {
-        status: 'APPROVED',
-        reviewedAt: new Date(),
-        reviewedBy: req.userId
+        status: 'APPROVED'
       }
     });
     
