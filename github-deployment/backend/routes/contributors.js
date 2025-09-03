@@ -13,6 +13,15 @@ const {
   getUserContributionDetails
 } = require('../controllers/contributorController');
 
+// Test endpoint (no auth)
+router.get('/test', (req, res) => {
+  res.json({ 
+    status: 'Contributors route working',
+    timestamp: new Date().toISOString(),
+    version: '1.0.1'
+  });
+});
+
 // Apply auth middleware to all routes
 router.use(authMiddleware);
 
