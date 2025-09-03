@@ -19,7 +19,7 @@ const UpdateRequestDetail = ({ updateRequest, onClose, onApprove, onReject }) =>
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              Update Request for {originalVasp.name}
+              Update Request for {originalVasp.name || changes.name || 'Unknown VASP'}
             </h2>
             <button
               onClick={onClose}
@@ -206,26 +206,89 @@ const SubmissionDetail = ({ submission, onClose, onApprove, onReject }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">VASP Name</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.name}</p>
+              <p className="mt-1 text-sm text-gray-900">{submission.vaspName || 'Not provided'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Legal Name</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.legal_name}</p>
+              <p className="mt-1 text-sm text-gray-900">{submission.legalName || 'Not provided'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Jurisdiction</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.jurisdiction}</p>
+              <p className="mt-1 text-sm text-gray-900">{submission.jurisdiction || 'Not provided'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Compliance Email</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.compliance_email}</p>
+              <p className="mt-1 text-sm text-gray-900">{submission.complianceEmail || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Compliance Contact</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.complianceContact || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Phone</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.phone || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Website</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.website || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Processing Time</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.processingTime || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Preferred Method</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.preferredMethod || 'Not provided'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Required Document</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.requiredDocument || 'Not provided'}</p>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">Service Address</label>
+            <p className="mt-1 text-sm text-gray-900">{submission.serviceAddress || 'Not provided'}</p>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">Law Enforcement URL</label>
+            <p className="mt-1 text-sm text-gray-900">{submission.lawEnforcementUrl || 'Not provided'}</p>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">Info Types</label>
+            <p className="mt-1 text-sm text-gray-900">
+              {submission.infoTypes && submission.infoTypes.length > 0 
+                ? submission.infoTypes.join(', ') 
+                : 'Not provided'}
+            </p>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">Service Types</label>
+            <p className="mt-1 text-sm text-gray-900">
+              {submission.serviceTypes && submission.serviceTypes.length > 0 
+                ? submission.serviceTypes.join(', ') 
+                : 'Not provided'}
+            </p>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Accepts US Service</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.acceptsUsService ? 'Yes' : 'No'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Has Own Portal</label>
+              <p className="mt-1 text-sm text-gray-900">{submission.hasOwnPortal ? 'Yes' : 'No'}</p>
             </div>
           </div>
           
           {submission.notes && (
-            <div>
+            <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700">Notes</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.notes}</p>
+              <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{submission.notes}</p>
             </div>
           )}
           
@@ -1074,10 +1137,10 @@ const VaspManagement = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {submission.name}
+                              {submission.vaspName || 'No name provided'}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {submission.legal_name}
+                              {submission.legalName || submission.complianceEmail || 'No details'}
                             </div>
                           </div>
                         </td>
@@ -1187,8 +1250,13 @@ const VaspManagement = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {request.vasp?.name}
+                            {request.vasp?.name || request.proposedChanges?.name || 'Unknown VASP'}
                           </div>
+                          {(!request.vasp?.name && request.proposedChanges?.name) && (
+                            <div className="text-xs text-orange-600">
+                              (from update request)
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
