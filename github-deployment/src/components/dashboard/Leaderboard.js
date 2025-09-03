@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle, Shield, ArrowLeft, Flame, Calendar } from 'lucide-react';
+import { Trophy, Medal, Award, Star, MessageSquare, CheckCircle, Shield, ArrowLeft, Flame, Calendar, Eye, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,9 @@ function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedContributor, setSelectedContributor] = useState(null);
+  const [contributionDetails, setContributionDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -37,6 +40,38 @@ function Leaderboard() {
 
     fetchLeaderboard();
   }, []);
+
+  const fetchContributionDetails = async (userId, name) => {
+    setSelectedContributor({ userId, name });
+    setDetailsLoading(true);
+    
+    try {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/contributors/${userId}/details`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contribution details');
+      }
+
+      const data = await response.json();
+      setContributionDetails(data);
+    } catch (err) {
+      console.error('Error loading contribution details:', err);
+      setContributionDetails({ error: 'Failed to load details' });
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedContributor(null);
+    setContributionDetails(null);
+  };
 
   const getRankIcon = (rank) => {
     switch (rank) {
@@ -149,9 +184,18 @@ function Leaderboard() {
                   </div>
                 </div>
                 
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-800">{contributor.score}</p>
-                  <p className="text-sm text-gray-600">points</p>
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-gray-800">{contributor.score}</p>
+                    <p className="text-sm text-gray-600">points</p>
+                  </div>
+                  <button
+                    onClick={() => fetchContributionDetails(contributor.userId, contributor.name)}
+                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="View contribution details"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
@@ -221,6 +265,163 @@ function Leaderboard() {
           </p>
         </div>
       </div>
+
+      {/* Contribution Details Modal */}
+      {selectedContributor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                Contributions by {selectedContributor.name}
+              </h2>
+              <button
+                onClick={closeDetailsModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {detailsLoading ? (
+                <div className="space-y-4">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+                    <div className="space-y-2">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="h-12 bg-gray-100 rounded"></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : contributionDetails?.error ? (
+                <div className="text-red-600 text-center py-8">
+                  {contributionDetails.error}
+                </div>
+              ) : contributionDetails ? (
+                <div className="space-y-6">
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <Trophy className="w-8 h-8 text-blue-600" />
+                        <div className="text-right">
+                          <p className="text-2xl font-bold">{contributionDetails.totalScore || 0}</p>
+                          <p className="text-sm text-gray-600">Total Points</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <CheckCircle className="w-8 h-8 text-green-600" />
+                        <div className="text-right">
+                          <p className="text-2xl font-bold">{contributionDetails.acceptedVasps || 0}</p>
+                          <p className="text-sm text-gray-600">VASPs</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-purple-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <MessageSquare className="w-8 h-8 text-purple-600" />
+                        <div className="text-right">
+                          <p className="text-2xl font-bold">{contributionDetails.comments || 0}</p>
+                          <p className="text-sm text-gray-600">Comments</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-yellow-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <Star className="w-8 h-8 text-yellow-600" />
+                        <div className="text-right">
+                          <p className="text-2xl font-bold">{contributionDetails.upvotes || 0}</p>
+                          <p className="text-sm text-gray-600">Upvotes</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Accepted VASPs */}
+                  {contributionDetails.acceptedVaspsList && contributionDetails.acceptedVaspsList.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                        Accepted VASP Submissions
+                      </h3>
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        {contributionDetails.acceptedVaspsList.map((vasp, idx) => (
+                          <div key={idx} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                            <div>
+                              <p className="font-medium">{vasp.vaspName}</p>
+                              <p className="text-sm text-gray-600">{vasp.jurisdiction}</p>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {new Date(vasp.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Comments */}
+                  {contributionDetails.recentComments && contributionDetails.recentComments.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />
+                        Recent Comments
+                      </h3>
+                      <div className="space-y-3">
+                        {contributionDetails.recentComments.map((comment, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-800">{comment.content}</p>
+                                <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                                  <span>On: {comment.vaspName}</span>
+                                  <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                  <span className="flex items-center">
+                                    <Star className="w-3 h-3 mr-1" />
+                                    {comment.voteScore} upvotes
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VASP Responses */}
+                  {contributionDetails.vaspResponses && contributionDetails.vaspResponses.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Shield className="w-5 h-5 mr-2 text-purple-600" />
+                        VASP Response Logs
+                      </h3>
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        {contributionDetails.vaspResponses.map((response, idx) => (
+                          <div key={idx} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                            <div>
+                              <p className="font-medium">{response.vaspName}</p>
+                              <p className="text-sm text-gray-600">
+                                {response.responseType} - {response.turnaroundDays || 'N/A'} days
+                              </p>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {new Date(response.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

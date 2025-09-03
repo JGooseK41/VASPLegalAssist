@@ -633,6 +633,101 @@ const acknowledgeLeaderboardAchievement = async (req, res) => {
   }
 };
 
+// Get detailed contribution information for a specific user
+const getUserContributionDetails = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Get accepted VASPs
+    const acceptedVasps = await prisma.vaspSubmission.findMany({
+      where: {
+        userId: userId,
+        status: 'APPROVED'
+      },
+      select: {
+        vaspName: true,
+        jurisdiction: true,
+        createdAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    // Get comments with vote scores
+    const comments = await prisma.vaspComment.findMany({
+      where: {
+        userId: userId
+      },
+      select: {
+        content: true,
+        voteScore: true,
+        createdAt: true,
+        vasp: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10 // Recent 10 comments
+    });
+    
+    // Get VASP responses
+    const vaspResponses = await prisma.vaspResponse.findMany({
+      where: {
+        userId: userId
+      },
+      select: {
+        responseType: true,
+        turnaroundDays: true,
+        createdAt: true,
+        vasp: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10 // Recent 10 responses
+    });
+    
+    // Calculate totals
+    const totalUpvotes = comments.reduce((sum, comment) => sum + comment.voteScore, 0);
+    const totalScore = (acceptedVasps.length * 10) + 
+                      (totalUpvotes * 5) + 
+                      (vaspResponses.length * 5) + 
+                      comments.length;
+    
+    res.json({
+      totalScore,
+      acceptedVasps: acceptedVasps.length,
+      comments: comments.length,
+      upvotes: totalUpvotes,
+      acceptedVaspsList: acceptedVasps,
+      recentComments: comments.map(c => ({
+        content: c.content,
+        voteScore: c.voteScore,
+        vaspName: c.vasp?.name || 'Unknown VASP',
+        createdAt: c.createdAt
+      })),
+      vaspResponses: vaspResponses.map(r => ({
+        vaspName: r.vasp?.name || 'Unknown VASP',
+        responseType: r.responseType,
+        turnaroundDays: r.turnaroundDays,
+        createdAt: r.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Get contribution details error:', error);
+    res.status(500).json({ error: 'Failed to get contribution details' });
+  }
+};
+
 module.exports = {
   getTopContributor,
   getLeaderboard,
@@ -641,5 +736,6 @@ module.exports = {
   submitMilestoneFeedback,
   acknowledgeMilestone,
   checkLeaderboardAchievement,
-  acknowledgeLeaderboardAchievement
+  acknowledgeLeaderboardAchievement,
+  getUserContributionDetails
 };
