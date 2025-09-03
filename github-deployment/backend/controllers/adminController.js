@@ -455,14 +455,24 @@ const approveSubmission = async (req, res) => {
   try {
     const { submissionId } = req.params;
     
+    console.log('Approving submission:', submissionId);
+    
     // Get the submission
     const submission = await prisma.vaspSubmission.findUnique({
       where: { id: submissionId }
     });
     
     if (!submission) {
+      console.error('Submission not found:', submissionId);
       return res.status(404).json({ error: 'Submission not found' });
     }
+    
+    console.log('Found submission:', {
+      id: submission.id,
+      vaspName: submission.vaspName,
+      email: submission.complianceEmail,
+      status: submission.status
+    });
     
     // Create the VASP - map from camelCase submission fields to snake_case VASP fields
     // Convert string booleans to actual booleans
@@ -503,10 +513,29 @@ const approveSubmission = async (req, res) => {
       }
     });
     
+    console.log('Successfully created VASP:', vasp.id, vasp.name);
     res.json({ message: 'Submission approved and VASP created', vasp });
   } catch (error) {
-    console.error('Error approving submission:', error);
-    res.status(500).json({ error: 'Failed to approve submission' });
+    console.error('Error approving submission - Full error:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Send more detailed error info
+    if (error.code === 'P2002') {
+      res.status(400).json({ 
+        error: 'A VASP with this name or email already exists',
+        details: error.message 
+      });
+    } else if (error.code === 'P2003') {
+      res.status(400).json({ 
+        error: 'Foreign key constraint failed',
+        details: error.message 
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Failed to approve submission',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
   }
 };
 
