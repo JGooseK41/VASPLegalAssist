@@ -10,6 +10,7 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
     compliance_email: vasp?.compliance_email || '',
     compliance_contact: vasp?.compliance_contact || '',
     service_address: vasp?.service_address || '',
+    website: vasp?.website || '',
     phone: vasp?.phone || '',
     processing_time: vasp?.processing_time || '5-10 business days',
     preferred_method: vasp?.preferred_method || 'email',
@@ -201,6 +202,20 @@ const VaspForm = ({ vasp, onClose, onSuccess }) => {
                 name="compliance_contact"
                 value={formData.compliance_contact}
                 onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Website
+              </label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                placeholder="https://example.com"
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

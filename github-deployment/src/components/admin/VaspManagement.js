@@ -570,6 +570,8 @@ const VaspManagement = () => {
   const [editingRequiredDocs, setEditingRequiredDocs] = useState(null);
   const [updateRequestStatusFilter, setUpdateRequestStatusFilter] = useState('PENDING');
   const [selectedUpdateRequest, setSelectedUpdateRequest] = useState(null);
+  const [deletingVasp, setDeletingVasp] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   useEffect(() => {
     if (activeTab === 'vasps') {
@@ -626,16 +628,28 @@ const VaspManagement = () => {
     setShowForm(true);
   };
   
-  const handleDeleteVasp = async (id) => {
-    if (!window.confirm('Are you sure you want to deactivate this VASP?')) return;
+  const handleDeleteVasp = async (vasp) => {
+    setDeletingVasp(vasp);
+    setShowDeleteConfirm(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!deletingVasp) return;
     
     try {
-      await adminAPI.deleteVasp(id);
+      await adminAPI.deleteVasp(deletingVasp.id);
+      setShowDeleteConfirm(false);
+      setDeletingVasp(null);
       loadVasps();
     } catch (error) {
       console.error('Failed to delete VASP:', error);
-      alert('Failed to deactivate VASP');
+      alert('Failed to delete VASP. It may have related data that needs to be removed first.');
     }
+  };
+  
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeletingVasp(null);
   };
   
   const handleFormClose = () => {
@@ -996,8 +1010,9 @@ const VaspManagement = () => {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteVasp(vasp.id)}
+                        onClick={() => handleDeleteVasp(vasp)}
                         className="text-red-600 hover:text-red-900"
+                        title="Delete VASP"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1330,6 +1345,68 @@ const VaspManagement = () => {
           onClose={() => setEditingRequiredDocs(null)}
           onSave={handleSaveRequiredDocs}
         />
+      )}
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && deletingVasp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Confirm VASP Deletion
+              </h3>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to permanently delete this VASP?
+              </p>
+            </div>
+            
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start">
+                <Shield className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-red-900">
+                    {deletingVasp.name}
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    {deletingVasp.compliance_email}
+                  </p>
+                  <p className="text-xs text-red-700">
+                    {deletingVasp.jurisdiction}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+              <p className="text-xs text-yellow-800">
+                <strong>Warning:</strong> This action cannot be undone. All related data including:
+              </p>
+              <ul className="text-xs text-yellow-700 mt-1 ml-4 list-disc">
+                <li>VASP responses and feedback</li>
+                <li>Comments and votes</li>
+                <li>Update history</li>
+              </ul>
+              <p className="text-xs text-yellow-800 mt-1">
+                will also be affected.
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete VASP
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

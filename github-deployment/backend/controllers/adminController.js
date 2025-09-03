@@ -132,17 +132,47 @@ const updateVasp = async (req, res) => {
 const deleteVasp = async (req, res) => {
   try {
     const { id } = req.params;
+    const { hardDelete } = req.query;
     
-    // Soft delete by setting isActive to false
-    await prisma.vasp.update({
-      where: { id: parseInt(id) },
-      data: { isActive: false }
-    });
+    const vaspId = parseInt(id);
     
-    res.json({ message: 'VASP deactivated successfully' });
+    if (hardDelete === 'true') {
+      // Hard delete - permanently remove the VASP and related data
+      await prisma.$transaction(async (tx) => {
+        // Delete related data first
+        await tx.vaspComment.deleteMany({ where: { vaspId } });
+        await tx.vaspResponse.deleteMany({ where: { vaspId } });
+        await tx.vaspUpdateRequest.deleteMany({ where: { vaspId } });
+        
+        // Finally delete the VASP
+        await tx.vasp.delete({
+          where: { id: vaspId }
+        });
+      });
+      
+      res.json({ message: 'VASP permanently deleted' });
+    } else {
+      // Soft delete by setting isActive to false
+      await prisma.vasp.update({
+        where: { id: vaspId },
+        data: { isActive: false }
+      });
+      
+      res.json({ message: 'VASP deactivated successfully' });
+    }
   } catch (error) {
     console.error('Error deleting VASP:', error);
-    res.status(500).json({ error: 'Failed to delete VASP' });
+    
+    if (error.code === 'P2025') {
+      res.status(404).json({ error: 'VASP not found' });
+    } else if (error.code === 'P2003') {
+      res.status(400).json({ 
+        error: 'Cannot delete VASP with existing related data',
+        details: 'This VASP has related documents or responses that must be removed first'
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to delete VASP' });
+    }
   }
 };
 

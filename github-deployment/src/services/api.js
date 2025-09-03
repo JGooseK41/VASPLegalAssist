@@ -389,8 +389,10 @@ export const adminAPI = {
     return response.data;
   },
   
-  deleteVasp: async (id) => {
-    const response = await api.delete(`/admin/vasps/${id}`);
+  deleteVasp: async (id, hardDelete = true) => {
+    const response = await api.delete(`/admin/vasps/${id}`, {
+      params: { hardDelete }
+    });
     return response.data;
   },
   
