@@ -49,11 +49,14 @@ const SimpleBatchDocumentBuilder = () => {
   };
 
   const handleDownloadTemplate = () => {
-    // Create a sample CSV template
+    // Create a sample CSV template showing multiple transactions for same VASP
     const csvContent = `VASP_Name,VASP_Email,VASP_Address,VASP_Jurisdiction,Transaction_ID,Date,From_Address,To_Address,Amount,Currency
 Binance US,compliance@binance.us,"1 Main St, San Francisco, CA",United States,abc123def456,2024-01-15,1A2B3C4D5E,5E4D3C2B1A,0.5,BTC
-Coinbase,legal@coinbase.com,"100 Pine St, San Francisco, CA",United States,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,ETH
-Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,100,USDT`;
+Binance US,compliance@binance.us,"1 Main St, San Francisco, CA",United States,xyz789ghi012,2024-01-16,6F7G8H9I0J,0J9I8H7G6F,1.2,BTC
+Binance US,compliance@binance.us,"1 Main St, San Francisco, CA",United States,def456abc123,2024-01-17,2B3C4D5E6F,6F5E4D3C2B,0.8,BTC
+Coinbase,legal@coinbase.com,"100 Pine St, San Francisco, CA",United States,mno345pqr678,2024-01-15,7G8H9I0J1K,1K0J9I8H7G,2.5,ETH
+Coinbase,legal@coinbase.com,"100 Pine St, San Francisco, CA",United States,stu901vwx234,2024-01-16,3C4D5E6F7G,7G6F5E4D3C,1.0,ETH
+Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,yza567bcd890,2024-01-17,8H9I0J1K2L,2L1K0J9I8H,100,USDT`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -100,7 +103,9 @@ Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,de
       const response = await documentAPI.createSimpleBatch(formData);
       
       setBatchResults(response);
-      setSuccess(`Successfully generated ${response.successful} documents!`);
+      const vaspCount = response.successful;
+      const transactionCount = response.totalTransactions || response.total;
+      setSuccess(`Successfully generated ${vaspCount} document${vaspCount !== 1 ? 's' : ''} for ${vaspCount} VASP${vaspCount !== 1 ? 's' : ''} (${transactionCount} total transactions)!`);
       
       // Clear form
       setSelectedFile(null);
@@ -145,6 +150,24 @@ Kraken,compliance@kraken.com,"237 Kearny St, San Francisco, CA",United States,de
           </div>
         </div>
       )}
+
+      {/* Important Notice */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div className="flex">
+          <Info className="h-5 w-5 text-yellow-600 mt-0.5" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-yellow-800">Important: One CSV Per Case Number</h3>
+            <div className="mt-2 text-sm text-yellow-700">
+              <ul className="list-disc list-inside space-y-1">
+                <li>Upload only one CSV file per case number</li>
+                <li>All transactions in the CSV will be grouped by VASP automatically</li>
+                <li>Each VASP will receive one letter containing all their relevant transactions</li>
+                <li>Do not mix multiple case numbers in a single CSV file</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* CSV Template Download */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">

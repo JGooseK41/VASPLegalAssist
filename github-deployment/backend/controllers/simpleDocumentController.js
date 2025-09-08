@@ -30,11 +30,15 @@ Crime Under Investigation: {{crimeDescription}}
 
 {{#if transactions.[0]}}
 TRANSACTION INFORMATION:
-Transaction ID: {{transactions.[0].transaction_id}}
-Date: {{transactions.[0].date}}
-From Address: {{transactions.[0].from_address}}
-To Address: {{transactions.[0].to_address}}
-Amount: {{transactions.[0].amount}} {{transactions.[0].currency}}
+{{#each transactions}}
+Transaction {{add1 @index}}:
+  Transaction ID: {{this.transaction_id}}
+  Date: {{this.date}}
+  From Address: {{this.from_address}}
+  To Address: {{this.to_address}}
+  Amount: {{this.amount}} {{this.currency}}
+
+{{/each}}
 {{/if}}
 
 Pursuant to our investigation, we request that you immediately freeze any and all cryptocurrency assets associated with the above-referenced addresses and prevent any further transactions or withdrawals.
@@ -78,11 +82,15 @@ Crime Under Investigation: {{crimeDescription}}
 
 {{#if transactions.[0]}}
 TRANSACTION INFORMATION:
-Transaction ID: {{transactions.[0].transaction_id}}
-Date: {{transactions.[0].date}}
-From Address: {{transactions.[0].from_address}}
-To Address: {{transactions.[0].to_address}}
-Amount: {{transactions.[0].amount}} {{transactions.[0].currency}}
+{{#each transactions}}
+Transaction {{add1 @index}}:
+  Transaction ID: {{this.transaction_id}}
+  Date: {{this.date}}
+  From Address: {{this.from_address}}
+  To Address: {{this.to_address}}
+  Amount: {{this.amount}} {{this.currency}}
+
+{{/each}}
 {{/if}}
 
 We respectfully request the following information:
@@ -367,24 +375,54 @@ const createSimpleBatch = async (req, res) => {
         });
       }
       
+      // First, group all transactions by VASP
+      const vaspGroups = {};
+      
+      for (const record of records) {
+        const vaspName = record.VASP_Name || record.vasp_name || record.Vasp || record.VASP || '';
+        
+        if (!vaspName) {
+          console.error('No VASP name found in row:', record);
+          continue;
+        }
+        
+        // Initialize VASP group if it doesn't exist
+        if (!vaspGroups[vaspName]) {
+          vaspGroups[vaspName] = {
+            vaspName,
+            vaspEmail: record.VASP_Email || record.vasp_email || record.Email || '',
+            vaspAddress: record.VASP_Address || record.vasp_address || record.Address || '',
+            vaspJurisdiction: record.VASP_Jurisdiction || record.vasp_jurisdiction || record.Jurisdiction || '',
+            transactions: []
+          };
+        }
+        
+        // Add transaction to this VASP's group if transaction data exists
+        if (record.Transaction_ID || record.transaction_id) {
+          vaspGroups[vaspName].transactions.push({
+            transaction_id: record.Transaction_ID || record.transaction_id || '',
+            date: record.Date || record.date || '',
+            from_address: record.From_Address || record.from_address || record.From || '',
+            to_address: record.To_Address || record.to_address || record.To || '',
+            amount: record.Amount || record.amount || '',
+            currency: record.Currency || record.currency || 'BTC'
+          });
+        }
+      }
+      
       const results = {
-        total: records.length,
+        total: Object.keys(vaspGroups).length,
+        totalTransactions: records.length,
         successful: 0,
         failed: 0,
         documents: []
       };
       
-      // Process each record
-      for (const record of records) {
+      console.log(`Processing ${results.total} VASPs with ${results.totalTransactions} total transactions`);
+      
+      // Process each VASP group
+      for (const [vaspName, vaspData] of Object.entries(vaspGroups)) {
         try {
-          // Extract VASP name from CSV row
-          const vaspName = record.VASP_Name || record.vasp_name || record.Vasp || record.VASP || '';
-          
-          if (!vaspName) {
-            console.error('No VASP name found in row:', record);
-            results.failed++;
-            continue;
-          }
           
           // Look up VASP details from database
           const vasp = await prisma.vasp.findFirst({
@@ -397,22 +435,35 @@ const createSimpleBatch = async (req, res) => {
             }
           });
           
-          if (!vasp) {
-            console.error(`VASP not found in database: ${vaspName}`);
-            results.failed++;
-            continue;
-          }
+          // Use database details if available, otherwise use CSV data
+          let vaspEmail, vaspAddress, vaspJurisdiction, vaspLegalName;
           
-          // Use VASP details from database
-          const vaspEmail = vasp.compliance_email || '';
-          const vaspAddress = vasp.service_address || '';
-          const vaspJurisdiction = vasp.jurisdiction || '';
-          const vaspLegalName = vasp.legal_name || vasp.name;
+          if (vasp) {
+            // Use VASP details from database
+            vaspEmail = vasp.compliance_email || vaspData.vaspEmail || '';
+            vaspAddress = vasp.service_address || vaspData.vaspAddress || '';
+            vaspJurisdiction = vasp.jurisdiction || vaspData.vaspJurisdiction || '';
+            vaspLegalName = vasp.legal_name || vasp.name;
+          } else {
+            // Use CSV data if VASP not in database
+            console.log(`VASP not found in database: ${vaspName}, using CSV data`);
+            vaspEmail = vaspData.vaspEmail;
+            vaspAddress = vaspData.vaspAddress;
+            vaspJurisdiction = vaspData.vaspJurisdiction;
+            vaspLegalName = vaspName;
+            
+            // Skip if no contact info available
+            if (!vaspEmail && !vaspAddress) {
+              console.error(`Insufficient VASP data for ${vaspName} - no email or address`);
+              results.failed++;
+              continue;
+            }
+          }
           
           // Prepare document data
           const documentData = {
-            // VASP Information from DATABASE
-            vaspName: vasp.name,
+            // VASP Information
+            vaspName: vaspLegalName,
             vaspLegalName: vaspLegalName,
             vaspEmail,
             vaspAddress,
@@ -432,8 +483,8 @@ const createSimpleBatch = async (req, res) => {
             statute: statute || '',
             crimeDescription,
             
-            // Transaction Information from CSV
-            transactions: [],
+            // Transaction Information - ALL transactions for this VASP
+            transactions: vaspData.transactions,
             
             // Date
             dateToday: new Date().toLocaleDateString('en-US', {
@@ -442,18 +493,6 @@ const createSimpleBatch = async (req, res) => {
               day: 'numeric'
             })
           };
-          
-          // Check if this row has transaction data
-          if (record.Transaction_ID || record.transaction_id) {
-            documentData.transactions.push({
-              transaction_id: record.Transaction_ID || record.transaction_id || '',
-              date: record.Date || record.date || '',
-              from_address: record.From_Address || record.from_address || '',
-              to_address: record.To_Address || record.to_address || '',
-              amount: record.Amount || record.amount || '',
-              currency: record.Currency || record.currency || 'BTC'
-            });
-          }
           
           // Select template based on document type
           const templateContent = documentType === 'freeze_request' 
@@ -476,7 +515,7 @@ const createSimpleBatch = async (req, res) => {
           results.successful++;
           
         } catch (error) {
-          console.error(`Failed to process VASP ${record.VASP_Name}:`, error);
+          console.error(`Failed to process VASP ${vaspName}:`, error);
           results.failed++;
         }
       }

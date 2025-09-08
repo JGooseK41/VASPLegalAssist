@@ -5,6 +5,11 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const Handlebars = require('handlebars');
 
+// Register Handlebars helpers
+Handlebars.registerHelper('add1', function(value) {
+  return parseInt(value) + 1;
+});
+
 // Helper function to escape XML special characters
 function escapeXml(unsafe) {
   if (typeof unsafe !== 'string') {

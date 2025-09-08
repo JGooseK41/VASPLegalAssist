@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, Download, AlertCircle, CheckCircle, Search, Users, Info, X } from 'lucide-react';
+import { FileText, Download, AlertCircle, CheckCircle, Search, Users, Info, X, Plus, Trash2 } from 'lucide-react';
 import { documentAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { downloadFile } from '../../utils/urlHelpers';
@@ -26,15 +26,15 @@ const SimpleDocumentBuilder = () => {
     crimeDescription: ''
   });
   
-  // Transaction Information
-  const [transaction, setTransaction] = useState({
+  // Transaction Information - Now supports multiple transactions
+  const [transactions, setTransactions] = useState([{
     transactionId: '',
     fromAddress: '',
     toAddress: '',
     amount: '',
     currency: 'BTC',
     date: ''
-  });
+  }]);
 
   useEffect(() => {
     // Check for selected VASP from session storage
@@ -50,7 +50,14 @@ const SimpleDocumentBuilder = () => {
       const state = JSON.parse(savedState);
       setDocumentType(state.documentType);
       setCaseInfo(state.caseInfo);
-      setTransaction(state.transaction);
+      setTransactions(state.transactions || [{
+        transactionId: '',
+        fromAddress: '',
+        toAddress: '',
+        amount: '',
+        currency: 'BTC',
+        date: ''
+      }]);
       sessionStorage.removeItem('simpleDocumentState');
     }
     
@@ -72,9 +79,47 @@ const SimpleDocumentBuilder = () => {
     sessionStorage.setItem('simpleDocumentState', JSON.stringify({
       documentType,
       caseInfo,
-      transaction
+      transactions
     }));
     navigate('/search');
+  };
+
+  // Add a new transaction
+  const addTransaction = () => {
+    console.log('Adding new transaction. Current count:', transactions.length);
+    const newTransaction = {
+      transactionId: '',
+      fromAddress: '',
+      toAddress: '',
+      amount: '',
+      currency: 'BTC',
+      date: ''
+    };
+    setTransactions([...transactions, newTransaction]);
+    console.log('New transaction added. New count:', transactions.length + 1);
+  };
+
+  // Remove a transaction
+  const removeTransaction = (index) => {
+    const newTransactions = transactions.filter((_, i) => i !== index);
+    setTransactions(newTransactions.length > 0 ? newTransactions : [{
+      transactionId: '',
+      fromAddress: '',
+      toAddress: '',
+      amount: '',
+      currency: 'BTC',
+      date: ''
+    }]);
+  };
+
+  // Update a specific transaction
+  const updateTransaction = (index, field, value) => {
+    const newTransactions = [...transactions];
+    newTransactions[index] = {
+      ...newTransactions[index],
+      [field]: value
+    };
+    setTransactions(newTransactions);
   };
 
   const handleGenerateDocument = async (e) => {
@@ -121,15 +166,17 @@ const SimpleDocumentBuilder = () => {
         statute: caseInfo.statute,
         crimeDescription: caseInfo.crimeDescription,
         
-        // Transaction Information (only include if at least transaction ID is provided)
-        transactions: transaction.transactionId ? [{
-          transaction_id: transaction.transactionId,
-          from_address: transaction.fromAddress || '',
-          to_address: transaction.toAddress || '',
-          amount: transaction.amount || '',
-          currency: transaction.currency || 'BTC',
-          date: transaction.date || ''
-        }] : [],
+        // Transaction Information (filter out empty transactions)
+        transactions: transactions
+          .filter(tx => tx.transactionId || tx.fromAddress || tx.toAddress)
+          .map(tx => ({
+            transaction_id: tx.transactionId,
+            from_address: tx.fromAddress || '',
+            to_address: tx.toAddress || '',
+            amount: tx.amount || '',
+            currency: tx.currency || 'BTC',
+            date: tx.date || ''
+          })),
         
         // Date (auto-filled)
         dateToday: new Date().toLocaleDateString('en-US', {
@@ -150,14 +197,14 @@ const SimpleDocumentBuilder = () => {
         // Clear form after successful generation
         setTimeout(() => {
           setCaseInfo({ caseNumber: '', statute: '', crimeDescription: '' });
-          setTransaction({
+          setTransactions([{
             transactionId: '',
             fromAddress: '',
             toAddress: '',
             amount: '',
             currency: 'BTC',
             date: ''
-          });
+          }]);
           setSuccess(null);
         }, 5000);
       }
@@ -409,87 +456,121 @@ const SimpleDocumentBuilder = () => {
 
         {/* Transaction Information */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Step 4: Transaction Information
-            <span className="text-sm text-gray-500 ml-2 font-normal">Optional - Add specific transaction details</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Transaction ID
-              </label>
-              <input
-                type="text"
-                value={transaction.transactionId}
-                onChange={(e) => setTransaction({...transaction, transactionId: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., abc123..."
-              />
+              <h2 className="text-lg font-medium text-gray-900">
+                Step 4: Transaction Information
+                <span className="text-sm text-gray-500 ml-2 font-normal">Optional - Add specific transaction details</span>
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Currently showing {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Date
-              </label>
-              <input
-                type="date"
-                value={transaction.date}
-                onChange={(e) => setTransaction({...transaction, date: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                From Address
-              </label>
-              <input
-                type="text"
-                value={transaction.fromAddress}
-                onChange={(e) => setTransaction({...transaction, fromAddress: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Sender address"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                To Address
-              </label>
-              <input
-                type="text"
-                value={transaction.toAddress}
-                onChange={(e) => setTransaction({...transaction, toAddress: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Recipient address"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Amount
-              </label>
-              <input
-                type="text"
-                value={transaction.amount}
-                onChange={(e) => setTransaction({...transaction, amount: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., 0.5"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Currency
-              </label>
-              <select
-                value={transaction.currency}
-                onChange={(e) => setTransaction({...transaction, currency: e.target.value})}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="BTC">BTC</option>
-                <option value="ETH">ETH</option>
-                <option value="USDT">USDT</option>
-                <option value="USDC">USDC</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+            <button
+              type="button"
+              onClick={addTransaction}
+              className="inline-flex items-center px-4 py-2 border border-solid border-blue-600 text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              style={{ backgroundColor: '#2563eb', color: 'white', minWidth: '140px' }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Transaction
+            </button>
           </div>
+          
+          {transactions.map((transaction, index) => (
+            <div key={index} className="mb-6 pb-6 border-b border-gray-200 last:border-b-0">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sm font-medium text-gray-700">
+                  Transaction {index + 1}
+                </h3>
+                {transactions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeTransaction(index)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Transaction ID
+                  </label>
+                  <input
+                    type="text"
+                    value={transaction.transactionId}
+                    onChange={(e) => updateTransaction(index, 'transactionId', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., abc123..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={transaction.date}
+                    onChange={(e) => updateTransaction(index, 'date', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    From Address
+                  </label>
+                  <input
+                    type="text"
+                    value={transaction.fromAddress}
+                    onChange={(e) => updateTransaction(index, 'fromAddress', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Sender address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    To Address
+                  </label>
+                  <input
+                    type="text"
+                    value={transaction.toAddress}
+                    onChange={(e) => updateTransaction(index, 'toAddress', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Recipient address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Amount
+                  </label>
+                  <input
+                    type="text"
+                    value={transaction.amount}
+                    onChange={(e) => updateTransaction(index, 'amount', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., 0.5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Currency
+                  </label>
+                  <select
+                    value={transaction.currency}
+                    onChange={(e) => updateTransaction(index, 'currency', e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="USDT">USDT</option>
+                    <option value="USDC">USDC</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Auto-filled Information Preview */}
